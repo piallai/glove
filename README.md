@@ -32,6 +32,8 @@
 
 - Modularity by relying on template specializations
 
+- Documentation available [here](https://piallai.github.io/glove/)
+
 # Table of contents
 
 1. [Presentation](#presentation)
