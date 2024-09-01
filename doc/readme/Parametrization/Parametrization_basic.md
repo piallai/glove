@@ -96,8 +96,9 @@ More details in [sample001_1.cpp](/src/src_samples/src_sample001_1/sample001_1.c
 The macro `glvm_parametrization` can be used to declare a basic parametrization as follow:
 
 ```cpp
-glvm_parametrization(ClassA, "ClassA", paramA, int, "parameter_A", "Comment about parameter A", 1
-                                        paramB, double, "parameter_B", "Comment about parameter B", 2.)
+glvm_parametrization(ClassA, "ClassA",
+                             paramA, int, "parameter_A", "Comment about parameter A", 1
+                             paramB, double, "parameter_B", "Comment about parameter B", 2.)
 ```
 
 But in this case, you can naturally not declare additional members in the class.

@@ -30,7 +30,8 @@ It is also possible to manage save and load of a full parametrization easily.
 Considering a basic parametrization such as:
 
 ```cpp
-glvm_parametrization(ParamTest, "ParamTest", paramA, int, "paramA", "comment about parameterA", 0,
+glvm_parametrization(ParamTest, "ParamTest",
+                                              paramA, int, "paramA", "comment about parameterA", 0,
                                               paramB, bool, "paramB", "comment about parameterB", true)
 ```
 

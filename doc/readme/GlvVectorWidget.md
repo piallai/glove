@@ -1,6 +1,6 @@
 # [GlvVectorWidget](/src/src_glove/GlvVectorWidget.h)
 
-![sample009-1](../images/widgets/GlvVectorWidget.png)
+![GlvVectorWidget](../images/widgets/GlvVectorWidget.png)
 
 Widget designed to manage a <code>std::vector</code>.
 

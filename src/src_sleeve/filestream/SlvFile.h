@@ -53,6 +53,9 @@ public:
     /*! Set path of file. The extension of the file will be added to allowed extensions.*/
     SlvFile(const std::string& _path, IO _io_mode = IO::Any, std::string _description = "");
     SlvFile(const char* _string, IO _io_mode = IO::Any, std::string _description = "");
+    SlvFile(const std::string& _path, const SlvFileExtensions& _allowed_extensions, IO _io_mode = IO::Any, std::string _description = "");
+    SlvFile(const char* _string, const SlvFileExtensions& _allowed_extensions, IO _io_mode = IO::Any, std::string _description = "");
+    SlvFile(IO _io_mode, std::string _description = "");
     SlvFile(const SlvDirectory& _directory, const SlvFileName& _file_name, IO _io_mode = IO::Any, std::string _description = "");
     SlvFile(const SlvDirectory& _directory, SlvFileExtensions _allowed_extensions = SlvFileExtensions(), IO _io_mode = IO::Any);
     SlvFile(SlvFileExtensions _allowed_extensions, IO _io_mode = IO::Any, std::string _description = "");
@@ -83,6 +86,7 @@ public:
 
     /*! Add extension \p _ext in the allowed extensions for this file (format: .ext)*/
     void add_allowed_extension(const std::string& _ext);
+    void add_allowed_extensions(const SlvFileExtensions& _extensions);
 
     /*! Return true if the file exists.*/
     bool exists() const;

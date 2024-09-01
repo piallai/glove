@@ -12,6 +12,7 @@
 ![Teaser](/doc/images/teaser/teaser.png)
 
 *Code of samples above*:  
+
 - [sample001 : Class parametrization](/src/src_samples/src_sample001/sample001.cpp)  
 - [sample010_0 : Progress feedback](/src/src_samples/src_sample010_0/sample010_0.cpp)  
 - [matrix8D : Table view](/src/src_samples/src_sample004_0/sample004_0.cpp)
@@ -32,7 +33,9 @@
 
 - Modularity by relying on template specializations
 
-- Documentation available [here](https://piallai.github.io/glove/)
+- Tutorials available in this page
+
+- Doxygen documentation available [here](https://piallai.github.io/glove/)
 
 # Table of contents
 
@@ -130,7 +133,7 @@ A parametrization can currently contain up to 25 parameters of any type. Paramet
 
 Each parametrization widget <code>GlvParametrizationWidget</code> and data widget <code>GlvWidget</code> can be extended easily with an input/output file interface.
 
-###### Examples :
+##### Examples :
 
 ###### [Save/load : binary](/doc/readme/SaveLoad/SaveLoad_binary.md)
 
@@ -184,7 +187,7 @@ Some specializations related to common containers are already available and list
 
 The table view can handle data of multiple dimensions, using different containers, while displaying a handy interface for view and edition.
 
-##### Examples :
+#### Examples :
 
 ##### [Basic](/doc/readme/ModelView/ModelView_basic.md)
 
@@ -202,7 +205,7 @@ The table view can handle data of multiple dimensions, using different container
 
 A progress interface is proposed in the library. Running an algorithm in a separate thread and monitoring its progress is made easy. You can find examples below of how to use the interface.
 
-##### Examples :
+#### Examples :
 
 ##### [Basic](/doc/readme/Progress/Progress_basic.md)
 
@@ -214,7 +217,7 @@ A progress interface is proposed in the library. Running an algorithm in a separ
 
 Filesystem : C++11 compatible. Does not need boost.
 
-##### Examples :
+#### Examples :
 
 ##### [File opening](/doc/readme/ReadWriteFile/ReadWriteFile_opening.md)
 
@@ -337,7 +340,7 @@ An example project using the installed library is proposed [here](/example).
 
 ###### Find library
 
-Copy [CMake/FindGlove.cmake](./CMake/FindGlove.cmake) to a folder named <code>/CMake/CMakeModules</code> at the root of the CMake project.
+Copy [CMake/FindGlove.cmake](./CMake/FindGlove.cmake) to a folder named <code>/CMake/CMakeModules</code> at the root of your CMake project.
 In the CMakeLists.txt, add where to look for <code>FindGlove.cmake</code> by setting  
 
 ```cmake

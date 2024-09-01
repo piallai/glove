@@ -44,6 +44,9 @@ public:
     /*! Remove an extension.*/
     void remove(const SlvFileExtension& _extension);
 
+    /*! Add extensions.*/
+    void add(const SlvFileExtensions& _extensions);
+
     /*! Whether the instance contains extensions or not.*/
     bool empty() const;
 

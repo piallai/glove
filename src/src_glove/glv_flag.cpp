@@ -20,7 +20,7 @@
 #include <QMessageBox>
 #include "SlvCombo.h"
 
-void glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
+QString glv::flag::toQString(const SlvStatus& _status, bool _l_show_all) {
 
 	QString message;
 	if (!_l_show_all) {
@@ -35,16 +35,33 @@ void glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWid
 			}
 		}
 	}
+	return message;
+}
 
-	if (_status.get_type() == SlvStatus::statusType::ok) {
+void glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
 
-	} else if (_status.get_type() == SlvStatus::statusType::information) {
+	showQMessageBox("", _status, _l_show_all, _parent);
+}
+
+void glv::flag::showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
+
+	QString message;
+	if (_status.get_type() != SlvStatus::statusType::ok) {
+		if (!_message.isEmpty()) {
+			message = _message;
+			message += "\n";
+		}
+		message += toQString(_status, _l_show_all);
+	}
+
+	if (_status.get_type() == SlvStatus::statusType::information) {
 		QMessageBox::information(_parent, "", message);
 	} else if (_status.get_type() == SlvStatus::statusType::warning) {
 		QMessageBox::warning(_parent, "", message);
 	} else if (_status.get_type() == SlvStatus::statusType::critical) {
 		QMessageBox::critical(_parent, "", message);
 	}
+
 }
 
 void glv::flag::BREAK(std::string warning_message, QWidget* _parent) {

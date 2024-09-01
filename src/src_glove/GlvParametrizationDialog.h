@@ -37,13 +37,15 @@ private:
 public:
 
     /*! \p _parametrization : Initial parametrization.
-    * \p _l_dialog: Whether the widget enables QDialog properties or not, such as button box, and related signals.*/
-    GlvParametrizationDialog(Tparametrization _parametrization = Tparametrization(), bool _l_dialog = true, QWidget* _parent = NULL);
+    * \p _l_dialog: Whether the widget enables QDialog properties or not, such as button box, and related signals.
+    * \p _l_deny_invalid_parameters : if true, acceptance of the parametrization is not possible if one of the parameters is invalid.*/
+    GlvParametrizationDialog(Tparametrization _parametrization = Tparametrization(), bool _l_dialog = true, bool _l_deny_invalid_parameters = true, QWidget* _parent = NULL);
+    GlvParametrizationDialog(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent = NULL);
     GlvParametrizationDialog(bool _l_dialog, QWidget* _parent = NULL);
     GlvParametrizationDialog(QWidget* _parent);
     ~GlvParametrizationDialog();
 
-    /*! Get current parametrization.*/
+    /*! Get current parametrization in memory. Does not return the parametrization currently displayed in the parametrization widget.*/
     const Tparametrization& get_parametrization() const;
     /*! Set parameterization. If \p _l_param_only is true, then only the parameters are set. If false, the whole instance is assigned (not recommended, must be a special case).*/
     void set_parametrization(const Tparametrization& _parametrization, bool _l_param_only = true);
@@ -78,7 +80,7 @@ private:
 #include "glv_flag.h"
 
 template <class Tparametrization>
-GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(Tparametrization _parametrization, bool _l_dialog, QWidget* _parent) :GlvParametrizationDialog_base(_l_dialog, _parent) {
+GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(Tparametrization _parametrization, bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :GlvParametrizationDialog_base(_l_dialog, _l_deny_invalid_parameters, _parent) {
 
     parametrization_base = new Tparametrization;
     parametrization_widget = new GlvParametrizationWidget<Tparametrization>;
@@ -93,8 +95,13 @@ GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(Tparametriz
 }
 
 template <class Tparametrization>
-GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(bool _l_dialog, QWidget* _parent) :GlvParametrizationDialog(Tparametrization(), _l_dialog, _parent) {
+GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :GlvParametrizationDialog(Tparametrization(), _l_dialog, _l_deny_invalid_parameters, _parent) {
+    
+}
 
+template <class Tparametrization>
+GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(bool _l_dialog, QWidget* _parent) :GlvParametrizationDialog(Tparametrization(), _l_dialog, true, _parent) {
+    
 }
 
 template <class Tparametrization>
@@ -179,7 +186,7 @@ void GlvParametrizationDialog<Tparametrization>::accept() {
 
     SlvStatus status = apply();
 
-    if (status) {
+    if (status || !l_deny_invalid_parameters) {
 
         if (l_dialog) {
             QDialog::accept();
@@ -203,7 +210,7 @@ SlvStatus GlvParametrizationDialog<Tparametrization>::apply() {
     update_parametrization();
 
     SlvStatus status = parametrization_base->check_parameters();
-    if (!status) {
+    if (!status && l_deny_invalid_parameters) {
         glv::flag::showQMessageBox(status, false, this);
     }
     return status;

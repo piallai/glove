@@ -87,16 +87,15 @@ bool SlvDirectory::operator!=(const SlvDirectory& _directory) const {
 
 void SlvDirectory::istream(std::istream& _is) {
 
-    std::cout << "Enter path : ";
     std::string tmp_path;
-    _is >> tmp_path;
+    slv::string::istream(_is, tmp_path);
     *this = SlvDirectory(tmp_path);
 
 }
 
 void SlvDirectory::ostream(std::ostream& _os) const {
 
-    _os << path << ", is_relative: " << l_relative;
+    _os << path;
 
 }
 

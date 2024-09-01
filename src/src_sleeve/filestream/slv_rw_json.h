@@ -270,7 +270,7 @@ namespace slv {
 #include "SlvIOFS.h"
 /* Types enabling << >> operators. Containers managed by the json library are excluded.
 * Such exclusion is not required for other type checkers, assuming no type managed intrisically by the json library has any method writeJson/readJson/ostream/istream/ofstream/ifstream.*/
-#define Tenable_chevrons \
+#define Tenable_chevrons(Tdat) \
 (SlvHasOstreamOperator<Tdat>::value || std::is_base_of<SlvOS, Tdat>::value || std::is_base_of<SlvOFS, Tdat>::value) &&\
 (SlvHasIstreamOperator<Tdat>::value || std::is_base_of<SlvIS, Tdat>::value || std::is_base_of<SlvIFS, Tdat>::value)\
 && (std::is_class<Tdat>::value || std::is_enum<Tdat>::value)\
@@ -282,7 +282,7 @@ namespace slv {
             namespace typemgr {
 
                 template <class Tdat>
-                struct JsonRW_use_chevrons<Tdat, typename std::enable_if<Tenable_chevrons>::type> {
+                struct JsonRW_use_chevrons<Tdat, typename std::enable_if<Tenable_chevrons(Tdat)>::type> {
                     static constexpr bool l_valid = true;
                     static void writeJson(const Tdat& _value, nlohmann::json& _json) {
                         std::ostringstream oss;
@@ -292,6 +292,21 @@ namespace slv {
                     static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
                         std::istringstream iss(_json.get<std::string>());
                         iss >> _value;
+                        return SlvStatus();
+                    }
+                };
+
+                /*! std::string specialization : otherwise chevron reads up to space character.*/
+                template <>
+                struct JsonRW_use_chevrons<std::string, typename std::enable_if<Tenable_chevrons(std::string)>::type> {
+                    static constexpr bool l_valid = true;
+                    static void writeJson(const std::string& _value, nlohmann::json& _json) {
+                        std::ostringstream oss;
+                        oss << _value;
+                        _json = oss.str();
+                    }
+                    static SlvStatus readJson(std::string& _value, const nlohmann::json& _json) {
+                        _value = _json.get<std::string>();
                         return SlvStatus();
                     }
                 };

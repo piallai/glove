@@ -38,10 +38,11 @@ protected:
     QDialogButtonBox* button_box;
     QPushButton* abide_rules_button;
     bool l_dialog;//whether has buttons. if so, parent's activation depends on "this" state. Also QDialog::accept/reject is activated
+    bool l_deny_invalid_parameters;
     SlvParametrization_base* parametrization_base;//usefull to cast to correct child type (see macros)
     QVBoxLayout* m_layout;
 
-    GlvParametrizationDialog_base(bool _l_dialog, QWidget* _parent);
+    GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent);
 public:
     virtual ~GlvParametrizationDialog_base();
 

@@ -37,7 +37,7 @@ protected:
 	}
 
 	SlvParametrization24(const SlvParametrization24& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter24 =  _parametrization.get_parameter24().clone();
+		parameter24 =  _parametrization.get_parameter24().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter24);
 	}
 

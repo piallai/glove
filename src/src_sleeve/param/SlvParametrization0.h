@@ -99,11 +99,12 @@ public:
 #define glvm_pv_SlvParametrization_readJson(N)\
 nlohmann::json::const_iterator it = _json[this->get_name()].find(parameter##N->get_name());\
 if (it != _json[this->get_name()].end()) {\
-    T##N value;\
-    status += slv::rw::json::readJson(value, *it);\
-    if (status) {\
+    T##N value = parameter##N->get_default_value();\
+    SlvStatus status_json = slv::rw::json::readJson(value, *it);\
+    if (status_json) {\
         const_cast<SlvParameter<T##N>*>(parameter##N)->set_value(value);\
     } else {\
+		status += status_json;\
         status += SlvStatus(SlvStatus::statusType::warning, "Problem reading parameter : " + parameter##N->get_name());\
     }\
 } else {\

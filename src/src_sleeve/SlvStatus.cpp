@@ -18,6 +18,7 @@
 #include "SlvStatus.h"
 #include "SlvCombo.h"
 #include <algorithm>
+#include "slv_vector.h"
 
 SlvStatus::SlvStatus(statusType _type, std::string _message) {
 
@@ -47,13 +48,15 @@ bool SlvStatus::sortStatus(SlvStatusSignal _signal1, SlvStatusSignal _signal2) {
 void SlvStatus::push(const statusType& _type, const std::string& _message) {
 
     SlvStatusSignal signal(_message, _type);
-    if (status_signals->empty() || _type != statusType::ok) {//do not add multiple 'ok' status
-        status_signals->push_back(signal);
-    }
-    std::sort(status_signals->begin(), status_signals->end(), SlvStatus::sortStatus);
-    // Remove 'ok' if more relevant signals exist
-    if (status_signals->size() > 1 && status_signals->back().value == statusType::ok) {
-        status_signals->pop_back();
+    if (!slv::vector::find(signal, *status_signals)) {
+        if (status_signals->empty() || _type != statusType::ok) {//do not add multiple 'ok' status
+            status_signals->push_back(signal);
+        }
+        std::sort(status_signals->begin(), status_signals->end(), SlvStatus::sortStatus);
+        // Remove 'ok' if more relevant signals exist
+        if (status_signals->size() > 1 && status_signals->back().value == statusType::ok) {
+            status_signals->pop_back();
+        }
     }
 
 }
@@ -90,7 +93,7 @@ const std::string& SlvStatus::get_message(const unsigned int i) const {
     return (*status_signals)[i].data;
 }
 
-SlvStatus::operator bool() {
+SlvStatus::operator bool() const {
 
     return (get_type() == statusType::ok);
 }

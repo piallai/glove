@@ -87,3 +87,9 @@ void slv::string::remove_substring(const std::string& _substring, std::string& _
     }
 
 }
+
+void slv::string::istream(std::istream& _is, std::string& _string) {
+
+    std::getline(_is, _string);
+
+}

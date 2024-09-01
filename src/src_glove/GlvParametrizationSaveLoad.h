@@ -38,10 +38,12 @@ public:
     GlvParametrizationSaveLoad(GlvParametrizationWidget<Tparametrization>* _parametrization_widget, SlvFileExtensions _allowed_extensions = {}, Qt::Orientation _orientation = Qt::Orientation::Horizontal);
     ~GlvParametrizationSaveLoad();
 
-private:
+    /*! Save parametrization to file \p _file_name.*/
+    void save(const std::string& _file_name);
+    /*! Load parametrization from file \p _file_name.*/
+    SlvStatus load(const std::string& _file_name);
 
-    void save();
-    SlvStatus load();
+private :
 
     static SlvFileExtensions allowed_extensions_constructor(SlvFileExtensions _allowed_extensions);
 
@@ -72,23 +74,20 @@ GlvParametrizationSaveLoad<Tparametrization>::~GlvParametrizationSaveLoad() {
 }
 
 template <class Tparametrization>
-void GlvParametrizationSaveLoad<Tparametrization>::save() {
+void GlvParametrizationSaveLoad<Tparametrization>::save(const std::string& _file_name) {
 
     bool l_write_default_binary = true;
 
-    std::string file_name = GlvWidgetSaveLoad_base::get_file_name();
-
 #if OPTION_USE_THIRDPARTY_JSON==1
-    if (SlvFileMgr::get_extension(file_name) == ".json") {
+    if (SlvFileMgr::get_extension(_file_name) == ".json") {
         if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
 
             l_write_default_binary = false;
 
             std::ofstream file_stream;
-            SlvStatus status = SlvFileMgr::open_file(file_stream, file_name);
+            SlvStatus status = SlvFileMgr::open_file(file_stream, _file_name);
             if (status) {
                 nlohmann::json json_value;
-                //parametrization_widget->get_value().writeJson(json_value);
                 slv::rw::json::ReadWrite<Tparametrization>::writeJson(parametrization_widget->get_value(), json_value);
                 file_stream << json_value.dump(4);
                 file_stream.close();
@@ -102,36 +101,35 @@ void GlvParametrizationSaveLoad<Tparametrization>::save() {
 #endif
 
     if (l_write_default_binary) {
-        SlvFileMgr::write_binary(parametrization_widget->get_value().param_cast(), file_name);
+        SlvFileMgr::write_binary(parametrization_widget->get_value().param_cast(), _file_name);
     }
 
 }
 
 template <class Tparametrization>
-SlvStatus GlvParametrizationSaveLoad<Tparametrization>::load() {
+SlvStatus GlvParametrizationSaveLoad<Tparametrization>::load(const std::string& _file_name) {
 
     SlvStatus status;
     Tparametrization value;
-    std::string file_name = GlvWidgetSaveLoad_base::get_file_name();
 
     bool l_read_default_binary = true;
 
 #if OPTION_USE_THIRDPARTY_JSON==1
-    if (SlvFileMgr::get_extension(file_name) == ".json") {
+    if (SlvFileMgr::get_extension(_file_name) == ".json") {
         if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
 
             l_read_default_binary = false;
 
             std::ifstream file_stream;
-            status = SlvFileMgr::open_file(file_stream, file_name);
+            status = SlvFileMgr::open_file(file_stream, _file_name);
             if (status) {
 
                 nlohmann::json json_value;
                 file_stream >> json_value;
                 if (!json_value.empty()) {
-                    //status = value.readJson(json_value);
                     status = slv::rw::json::ReadWrite<Tparametrization>::readJson(value, json_value);
-                    if (status) {
+                    bool l_set_parameters = interactive_load_parameters(_file_name, status);
+                    if (l_set_parameters) {
                         value.param_init();
                         parametrization_widget->set_value(value);
                     }
@@ -149,7 +147,7 @@ SlvStatus GlvParametrizationSaveLoad<Tparametrization>::load() {
 
     if (l_read_default_binary) {
 
-        status = SlvFileMgr::read_binary(value.param_cast(), GlvWidgetSaveLoad_base::get_file_name());
+        status = SlvFileMgr::read_binary(value.param_cast(), _file_name);
         if (status) {
             value.param_init();
             parametrization_widget->set_value(value);

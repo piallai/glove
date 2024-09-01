@@ -1,6 +1,6 @@
 # [GlvEnumWidget](/src/src_glove_add/GlvEnumWidget.h)
 
-![sample009-1](../images/widgets/GlvEnumWidget.png)
+![GlvEnumWidget](../images/widgets/GlvEnumWidget.png)
 
 Widget designed to manage an <code>enum</code> created with <code>glvm_SlvEnum</code>.
 

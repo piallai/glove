@@ -64,28 +64,32 @@ typedef std::pair<int, double> Tpair;
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "param/SlvParametrizationMacro.h"
 #endif
-glvm_parametrization(ClassW, "ClassW", paramA, std::string, "paramA", "comment parameterA", "default")
-glvm_parametrization(ClassX, "ClassX", paramA, ClassW, "paramA", "comment parameterA", ClassW(),
+glvm_parametrization(ClassW, "ClassW",	paramA, std::string, "paramA", "comment parameterA", "default")
+glvm_parametrization(ClassX, "ClassX",
+										paramA, ClassW, "paramA", "comment parameterA", ClassW(),
 										paramB, Tpair, "paramB", "comment parameter B", Tpair())
-glvm_parametrization(ClassT, "ClassT", paramA, ClassW, "paramA", "comment parameterA", ClassW(),
-										 paramB, std::vector<double>, "paramB", "comment parameter B", {},
-										 paramC, std::string, "paramC", "comment parameter C", "default",
-										 paramD, EnumTest, "paramD", "comment parameter D", EnumTest::a,
-										 paramE, std::string, "paramE", "comment parameter E", "default",
-										 paramF, double, "paramF", "comment parameter F", 0.,
-										 paramG, std::string, "paramG", "comment parameter G", "default",
-										 paramH, double, "paramH", "comment parameter H", 0.,
-										 paramI, std::string, "paramI", "comment parameter I", "default",
-										 paramJ, int, "paramJ", "comment parameter J", 0,
-										 paramK, double, "paramK", "comment parameter K", 0.,
-										 paramL, ClassX, "paramL", "comment parameter L", ClassX(),
-										 paramM, std::string, "paramM", "comment parameter M", "default",
-										 paramN, std::string, "paramN", "comment parameter N", "default")
+glvm_parametrization(ClassT, "ClassT",
+										paramA, ClassW, "paramA", "comment parameterA", ClassW(),
+										paramB, std::vector<double>, "paramB", "comment parameter B", {},
+										paramC, std::string, "paramC", "comment parameter C", "default",
+										paramD, EnumTest, "paramD", "comment parameter D", EnumTest::a,
+										paramE, std::string, "paramE", "comment parameter E", "default",
+										paramF, double, "paramF", "comment parameter F", 0.,
+										paramG, std::string, "paramG", "comment parameter G", "default",
+										paramH, double, "paramH", "comment parameter H", 0.,
+										paramI, std::string, "paramI", "comment parameter I", "default",
+										paramJ, int, "paramJ", "comment parameter J", 0,
+										paramK, double, "paramK", "comment parameter K", 0.,
+										paramL, ClassX, "paramL", "comment parameter L", ClassX(),
+										paramM, std::string, "paramM", "comment parameter M", "default",
+										paramN, std::string, "paramN", "comment parameter N", "default")
 
-glvm_parametrization(ClassK, "ClassK", paramA, ClassW, "paramA", "comment parameterA", ClassW())
-glvm_parametrization(ClassL, "ClassL", paramA, ClassW, "paramA", "comment parameterA", ClassW(),
-										 paramB, double, "paramB", "comment parameter B", 0.)
-glvm_parametrization(ClassM, "ClassM", paramA, ClassW, "paramA", "comment parameterA", ClassW(),
+glvm_parametrization(ClassK, "ClassK",	paramA, ClassW, "paramA", "comment parameterA", ClassW())
+glvm_parametrization(ClassL, "ClassL",
+										paramA, ClassW, "paramA", "comment parameterA", ClassW(),
+										paramB, double, "paramB", "comment parameter B", 0.)
+glvm_parametrization(ClassM, "ClassM", 
+										paramA, ClassW, "paramA", "comment parameterA", ClassW(),
 										paramB, double, "paramB", "comment parameter B", 0.,
 										paramC, double, "paramC", "comment parameter C", 0.)
 

@@ -79,6 +79,11 @@ public:
 	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
 	* If false, they are excluded (but recursivity still applies).*/
 	std::vector<const SlvParameter_base*> find(std::string _parameter_name, bool _l_parametrizations) const;
+	/*! Recursively find the frist parameter which name is \p _parameter_name.
+	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
+	* If false, they are excluded (but recursivity still applies).
+	* Returns NULL if none found.*/
+	const SlvParameter_base* find_first(std::string _parameter_name, bool _l_parametrizations) const;
 
 	/*! Set parameter values using >> operator by providing parameter name and corresponding value as string.
 	* Returns :

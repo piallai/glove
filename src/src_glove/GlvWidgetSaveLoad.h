@@ -45,10 +45,12 @@ private:
 public:
     ~GlvWidgetSaveLoad();
 
-private:
+    /*! Save data to file \p _file_name.*/
+    void save(const std::string& _file_name);
+    /*! Load data from file \p _file_name.*/
+    SlvStatus load(const std::string& _file_name);
 
-    void save();
-    SlvStatus load();
+private:
 
     /*! Friend class for specific case manaing GlvWidgetData.*/
     template <class T, typename>
@@ -85,7 +87,7 @@ GlvWidgetSaveLoad<Tdata>::~GlvWidgetSaveLoad() {
 }
 
 template <class Tdata>
-void GlvWidgetSaveLoad<Tdata>::save() {
+void GlvWidgetSaveLoad<Tdata>::save(const std::string& _file_name) {
 
     Tdata value;
     if (widget) {
@@ -93,15 +95,15 @@ void GlvWidgetSaveLoad<Tdata>::save() {
     } else if (widget_data) {
         value = widget_data->get_value();
     }
-    SlvFileMgr::write_binary(value, GlvWidgetSaveLoad_base::get_file_name());
+    SlvFileMgr::write_binary(value, _file_name);
 
 }
 
 template <class Tdata>
-SlvStatus GlvWidgetSaveLoad<Tdata>::load() {
+SlvStatus GlvWidgetSaveLoad<Tdata>::load(const std::string& _file_name) {
 
     Tdata value;
-    SlvStatus status = SlvFileMgr::read_binary(value, GlvWidgetSaveLoad_base::get_file_name());
+    SlvStatus status = SlvFileMgr::read_binary(value, _file_name);
     if (status) {
         if (widget) {
             widget->set_value(value);

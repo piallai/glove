@@ -94,6 +94,7 @@ GlvOpenFile::~GlvOpenFile() {
 SlvFile GlvOpenFile::get_file() const {
 
     SlvFile file(line_edit->text().toStdString(), io_mode);
+    file.add_allowed_extensions(allowed_extensions);
     return file;
 }
 

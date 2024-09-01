@@ -21,7 +21,7 @@
 
 #define GLOVE_VERSION_MAJOR 0
 #define GLOVE_VERSION_MINOR 7
-#define GLOVE_VERSION_PATCH 0
+#define GLOVE_VERSION_PATCH 1
 
 #ifndef GLOVE_DISABLE_QT
 #define OPTION_ENABLE_SLV_QT_PROGRESS 1
@@ -622,6 +622,9 @@ public:
     /*! Remove an extension.*/
     void remove(const SlvFileExtension& _extension);
 
+    /*! Add extensions.*/
+    void add(const SlvFileExtensions& _extensions);
+
     /*! Whether the instance contains extensions or not.*/
     bool empty() const;
 
@@ -678,6 +681,9 @@ namespace slv {
 
         /*! Remove \p _substring in \p _string.*/
         void remove_substring(const std::string& _substring, std::string& _string);
+
+        /*! Read a string from istream with space character. Replaces _is >> _string.*/
+        void istream(std::istream& _is, std::string& _string);
 
     }
 
@@ -793,6 +799,9 @@ public:
     /*! Set path of file. The extension of the file will be added to allowed extensions.*/
     SlvFile(const std::string& _path, IO _io_mode = IO::Any, std::string _description = "");
     SlvFile(const char* _string, IO _io_mode = IO::Any, std::string _description = "");
+    SlvFile(const std::string& _path, const SlvFileExtensions& _allowed_extensions, IO _io_mode = IO::Any, std::string _description = "");
+    SlvFile(const char* _string, const SlvFileExtensions& _allowed_extensions, IO _io_mode = IO::Any, std::string _description = "");
+    SlvFile(IO _io_mode, std::string _description = "");
     SlvFile(const SlvDirectory& _directory, const SlvFileName& _file_name, IO _io_mode = IO::Any, std::string _description = "");
     SlvFile(const SlvDirectory& _directory, SlvFileExtensions _allowed_extensions = SlvFileExtensions(), IO _io_mode = IO::Any);
     SlvFile(SlvFileExtensions _allowed_extensions, IO _io_mode = IO::Any, std::string _description = "");
@@ -823,6 +832,7 @@ public:
 
     /*! Add extension \p _ext in the allowed extensions for this file (format: .ext)*/
     void add_allowed_extension(const std::string& _ext);
+    void add_allowed_extensions(const SlvFileExtensions& _extensions);
 
     /*! Return true if the file exists.*/
     bool exists() const;
@@ -4300,7 +4310,7 @@ public:
     const std::string& get_message(const unsigned int i) const;
 
     /*! Check operator. Return true if the most critical status is equal to statusType::ok.*/
-    operator bool();
+    operator bool() const;
 
     SlvStatus& operator=(const SlvStatus& _status);
     /*! Sum status and reordrer them.*/
@@ -4655,10 +4665,13 @@ protected:
 	std::string get_file_name() const;
 	void delete_open_file();
 
-private:
+	/*! If \p _status is not ok, pop up a question widget to ask whether loading must be done or not.*/
+	bool interactive_load_parameters(const std::string& _file_name, const SlvStatus& _status);
 
-	virtual void save() = 0;
-	virtual SlvStatus load() = 0;
+public:
+
+	virtual void save(const std::string& _file_name) = 0;
+	virtual SlvStatus load(const std::string& _file_name) = 0;
 
 private slots:
 
@@ -4712,6 +4725,7 @@ protected:
 	GlvWidgetSaveLoad_base* save_load_widget;
 
 public:
+
 	GlvSaveLoad();
 	~GlvSaveLoad();
 
@@ -7470,6 +7484,8 @@ public:
 
 	/*! Set parameter value using >> operator.*/
 	virtual void set_stream_value(const std::string& _string, bool _l_param_only = true) = 0;
+	/*! Get parameter value using << operator.*/
+	virtual std::string get_stream_value(bool _l_param_only = true) const = 0;
 
 	/*! Get parameter name.*/
 	virtual const std::string& get_name() const = 0;
@@ -8143,7 +8159,7 @@ namespace slv {
 
 /* Types enabling << >> operators. Containers managed by the json library are excluded.
 * Such exclusion is not required for other type checkers, assuming no type managed intrisically by the json library has any method writeJson/readJson/ostream/istream/ofstream/ifstream.*/
-#define Tenable_chevrons \
+#define Tenable_chevrons(Tdat) \
 (SlvHasOstreamOperator<Tdat>::value || std::is_base_of<SlvOS, Tdat>::value || std::is_base_of<SlvOFS, Tdat>::value) &&\
 (SlvHasIstreamOperator<Tdat>::value || std::is_base_of<SlvIS, Tdat>::value || std::is_base_of<SlvIFS, Tdat>::value)\
 && (std::is_class<Tdat>::value || std::is_enum<Tdat>::value)\
@@ -8155,7 +8171,7 @@ namespace slv {
             namespace typemgr {
 
                 template <class Tdat>
-                struct JsonRW_use_chevrons<Tdat, typename std::enable_if<Tenable_chevrons>::type> {
+                struct JsonRW_use_chevrons<Tdat, typename std::enable_if<Tenable_chevrons(Tdat)>::type> {
                     static constexpr bool l_valid = true;
                     static void writeJson(const Tdat& _value, nlohmann::json& _json) {
                         std::ostringstream oss;
@@ -8165,6 +8181,21 @@ namespace slv {
                     static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
                         std::istringstream iss(_json.get<std::string>());
                         iss >> _value;
+                        return SlvStatus();
+                    }
+                };
+
+                /*! std::string specialization : otherwise chevron reads up to space character.*/
+                template <>
+                struct JsonRW_use_chevrons<std::string, typename std::enable_if<Tenable_chevrons(std::string)>::type> {
+                    static constexpr bool l_valid = true;
+                    static void writeJson(const std::string& _value, nlohmann::json& _json) {
+                        std::ostringstream oss;
+                        oss << _value;
+                        _json = oss.str();
+                    }
+                    static SlvStatus readJson(std::string& _value, const nlohmann::json& _json) {
+                        _value = _json.get<std::string>();
                         return SlvStatus();
                     }
                 };
@@ -8364,6 +8395,11 @@ public:
 	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
 	* If false, they are excluded (but recursivity still applies).*/
 	std::vector<const SlvParameter_base*> find(std::string _parameter_name, bool _l_parametrizations) const;
+	/*! Recursively find the frist parameter which name is \p _parameter_name.
+	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
+	* If false, they are excluded (but recursivity still applies).
+	* Returns NULL if none found.*/
+	const SlvParameter_base* find_first(std::string _parameter_name, bool _l_parametrizations) const;
 
 	/*! Set parameter values using >> operator by providing parameter name and corresponding value as string.
 	* Returns :
@@ -10148,11 +10184,12 @@ public:
 #define glvm_pv_SlvParametrization_readJson(N)\
 nlohmann::json::const_iterator it = _json[this->get_name()].find(parameter##N->get_name());\
 if (it != _json[this->get_name()].end()) {\
-    T##N value;\
-    status += slv::rw::json::readJson(value, *it);\
-    if (status) {\
+    T##N value = parameter##N->get_default_value();\
+    SlvStatus status_json = slv::rw::json::readJson(value, *it);\
+    if (status_json) {\
         const_cast<SlvParameter<T##N>*>(parameter##N)->set_value(value);\
     } else {\
+		status += status_json;\
         status += SlvStatus(SlvStatus::statusType::warning, "Problem reading parameter : " + parameter##N->get_name());\
     }\
 } else {\
@@ -10189,7 +10226,7 @@ protected:
 public:
     ~SlvParameter();
 
-    virtual SlvParameter<Tparam>* clone() const = 0;
+    virtual SlvParameter<Tparam>* clone(SlvParametrization_base* _parametrization) const = 0;
 
     /*! Assign parameter value. In case Tparam derives from SlvParametrization, only the parameters are set.*/
     void operator=(const SlvParameter<Tparam>& _parameter);
@@ -10198,6 +10235,8 @@ public:
     const Tparam& get_value() const;
     /*! Set parameter value. In case Tparam derives from SlvParametrization, if \p _l_param_only is true, then only the parameters are set.*/
     void set_value(const Tparam& _value, bool _l_param_only = true);
+    /*! Get default value as set by the static parameter.*/
+    virtual const Tparam& get_default_value() const = 0;
 
     /*! Check if rules are abided for this parameter. Rules can either depend only the parameter or either depend on other ones.*/
     SlvStatus check_rules() const;
@@ -10241,6 +10280,21 @@ struct SlvParameterSpecSerialization {
 template <>
 struct SlvParameterSpecSerialization<bool>;
 
+template <class Tparam>
+struct SlvParameterSpecIstream {
+    static void istream(Tparam& _parameter_value, std::istream& _is) {
+        _is >> _parameter_value;
+    }
+};
+
+/*! std::string specialization because _is >> _parameter_value does not manage space.*/
+template <>
+struct SlvParameterSpecIstream<std::string> {
+    static void istream(std::string& _parameter_value, std::istream& _is) {
+        slv::string::istream(_is, _parameter_value);
+    }
+};
+
 template <class Tparam, typename = void>
 struct SlvParameterSpec {
     static void assign(Tparam& _parameter_value1, const Tparam& _parameter_value2, bool _l_param_only) {
@@ -10253,7 +10307,7 @@ struct SlvParameterSpec {
         slv::rw::writeB(_parameter_value, _output_file);
     }
     static void istream(Tparam& _parameter_value, std::istream& _is) {
-        _is >> _parameter_value;
+        SlvParameterSpecIstream<Tparam>::istream(_parameter_value, _is);
     }
     static void ostream(const Tparam& _parameter_value, std::ostream& _os) {
         _os << _parameter_value;
@@ -10477,7 +10531,11 @@ class SlvPvClassParam_##class_name : public SlvParameter<class_type> {\
 public:\
 SlvPvClassParam_##class_name(SlvParametrization_base* _parametrization, class_type _value = default_value()):SlvParameter<class_type>(_parametrization, _value){ this->abide_rules();}\
 ~SlvPvClassParam_##class_name(){}\
-virtual SlvPvClassParam_##class_name* clone() const {return new SlvPvClassParam_##class_name(*this);}\
+virtual SlvPvClassParam_##class_name* clone(SlvParametrization_base* _parametrization) const {\
+SlvPvClassParam_##class_name* clone_parameter = new SlvPvClassParam_##class_name(*this);\
+clone_parameter->parametrization = _parametrization;\
+return clone_parameter;\
+}\
 glvm_staticVariable_const_get(std::string, name, parameter_name)\
 glvm_staticVariable_const_get(std::string, description, parameter_description)\
 glvm_staticVariable_const_get(class_type, default_value, _default_value)\
@@ -10489,6 +10547,9 @@ private:\
 void set_stream_value(const std::string& _string, bool _l_param_only) {\
 class_type value_tmp(default_value()); std::istringstream iss(_string); SlvParameterSpec<class_type>::istream(value_tmp, iss);\
 this->set_value(value_tmp, _l_param_only);\
+}\
+std::string get_stream_value(bool _l_param_only) const {\
+std::ostringstream oss; oss << this->get_value(); return oss.str();\
 }\
 static std::vector< SlvParameterRuleT<class_type> > create_rules() {\
 std::vector< SlvParameterRuleT<class_type> > rules;\
@@ -10545,7 +10606,11 @@ class SlvPvClassParam_##class_name : public SlvParameter<class_type> {\
 public:\
 SlvPvClassParam_##class_name(SlvParametrization_base* _parametrization, class_type _value = default_value()):SlvParameter<class_type>(_parametrization, _value){}\
 ~SlvPvClassParam_##class_name(){}\
-virtual SlvPvClassParam_##class_name* clone() const {return new SlvPvClassParam_##class_name(*this);}\
+virtual SlvPvClassParam_##class_name* clone(SlvParametrization_base* _parametrization) const {\
+SlvPvClassParam_##class_name* clone_parameter = new SlvPvClassParam_##class_name(*this);\
+clone_parameter->parametrization = _parametrization;\
+return clone_parameter;\
+}\
 glvm_staticVariable_const_get(std::string, name, parameter_name)\
 glvm_staticVariable_const_get(std::string, description, parameter_description)\
 glvm_staticVariable_const_get(class_type, default_value, _default_value)\
@@ -10558,6 +10623,9 @@ private:\
 void set_stream_value(const std::string& _string, bool _l_param_only) {\
 class_type value_tmp(default_value()); std::istringstream iss(_string); SlvParameterSpec<class_type>::istream(value_tmp, iss);\
 this->set_value(value_tmp, _l_param_only);\
+}\
+std::string get_stream_value(bool _l_param_only) const {\
+std::ostringstream oss; oss << this->get_value(); return oss.str();\
 }\
 static std::vector< SlvParameterRuleT<class_type> > create_rules() {\
 std::vector< SlvParameterRuleT<class_type> > rules;\
@@ -10591,7 +10659,7 @@ protected:
 	}
 
 	SlvParametrization1(const SlvParametrization1& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter1 =  _parametrization.get_parameter1().clone();
+		parameter1 =  _parametrization.get_parameter1().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter1);
 	}
 
@@ -10769,7 +10837,7 @@ protected:
 	}
 
 	SlvParametrization2(const SlvParametrization2& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter2 =  _parametrization.get_parameter2().clone();
+		parameter2 =  _parametrization.get_parameter2().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter2);
 	}
 
@@ -10947,7 +11015,7 @@ protected:
 	}
 
 	SlvParametrization3(const SlvParametrization3& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter3 =  _parametrization.get_parameter3().clone();
+		parameter3 =  _parametrization.get_parameter3().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter3);
 	}
 
@@ -11125,7 +11193,7 @@ protected:
 	}
 
 	SlvParametrization4(const SlvParametrization4& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter4 =  _parametrization.get_parameter4().clone();
+		parameter4 =  _parametrization.get_parameter4().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter4);
 	}
 
@@ -11303,7 +11371,7 @@ protected:
 	}
 
 	SlvParametrization5(const SlvParametrization5& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter5 =  _parametrization.get_parameter5().clone();
+		parameter5 =  _parametrization.get_parameter5().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter5);
 	}
 
@@ -11481,7 +11549,7 @@ protected:
 	}
 
 	SlvParametrization6(const SlvParametrization6& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter6 =  _parametrization.get_parameter6().clone();
+		parameter6 =  _parametrization.get_parameter6().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter6);
 	}
 
@@ -11659,7 +11727,7 @@ protected:
 	}
 
 	SlvParametrization7(const SlvParametrization7& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter7 =  _parametrization.get_parameter7().clone();
+		parameter7 =  _parametrization.get_parameter7().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter7);
 	}
 
@@ -11837,7 +11905,7 @@ protected:
 	}
 
 	SlvParametrization8(const SlvParametrization8& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter8 =  _parametrization.get_parameter8().clone();
+		parameter8 =  _parametrization.get_parameter8().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter8);
 	}
 
@@ -12015,7 +12083,7 @@ protected:
 	}
 
 	SlvParametrization9(const SlvParametrization9& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter9 =  _parametrization.get_parameter9().clone();
+		parameter9 =  _parametrization.get_parameter9().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter9);
 	}
 
@@ -12193,7 +12261,7 @@ protected:
 	}
 
 	SlvParametrization10(const SlvParametrization10& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter10 =  _parametrization.get_parameter10().clone();
+		parameter10 =  _parametrization.get_parameter10().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter10);
 	}
 
@@ -12371,7 +12439,7 @@ protected:
 	}
 
 	SlvParametrization11(const SlvParametrization11& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter11 =  _parametrization.get_parameter11().clone();
+		parameter11 =  _parametrization.get_parameter11().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter11);
 	}
 
@@ -12549,7 +12617,7 @@ protected:
 	}
 
 	SlvParametrization12(const SlvParametrization12& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter12 =  _parametrization.get_parameter12().clone();
+		parameter12 =  _parametrization.get_parameter12().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter12);
 	}
 
@@ -12727,7 +12795,7 @@ protected:
 	}
 
 	SlvParametrization13(const SlvParametrization13& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter13 =  _parametrization.get_parameter13().clone();
+		parameter13 =  _parametrization.get_parameter13().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter13);
 	}
 
@@ -12905,7 +12973,7 @@ protected:
 	}
 
 	SlvParametrization14(const SlvParametrization14& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter14 =  _parametrization.get_parameter14().clone();
+		parameter14 =  _parametrization.get_parameter14().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter14);
 	}
 
@@ -13083,7 +13151,7 @@ protected:
 	}
 
 	SlvParametrization15(const SlvParametrization15& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter15 =  _parametrization.get_parameter15().clone();
+		parameter15 =  _parametrization.get_parameter15().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter15);
 	}
 
@@ -13261,7 +13329,7 @@ protected:
 	}
 
 	SlvParametrization16(const SlvParametrization16& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter16 =  _parametrization.get_parameter16().clone();
+		parameter16 =  _parametrization.get_parameter16().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter16);
 	}
 
@@ -13439,7 +13507,7 @@ protected:
 	}
 
 	SlvParametrization17(const SlvParametrization17& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter17 =  _parametrization.get_parameter17().clone();
+		parameter17 =  _parametrization.get_parameter17().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter17);
 	}
 
@@ -13617,7 +13685,7 @@ protected:
 	}
 
 	SlvParametrization18(const SlvParametrization18& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter18 =  _parametrization.get_parameter18().clone();
+		parameter18 =  _parametrization.get_parameter18().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter18);
 	}
 
@@ -13795,7 +13863,7 @@ protected:
 	}
 
 	SlvParametrization19(const SlvParametrization19& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter19 =  _parametrization.get_parameter19().clone();
+		parameter19 =  _parametrization.get_parameter19().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter19);
 	}
 
@@ -13973,7 +14041,7 @@ protected:
 	}
 
 	SlvParametrization20(const SlvParametrization20& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter20 =  _parametrization.get_parameter20().clone();
+		parameter20 =  _parametrization.get_parameter20().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter20);
 	}
 
@@ -14151,7 +14219,7 @@ protected:
 	}
 
 	SlvParametrization21(const SlvParametrization21& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter21 =  _parametrization.get_parameter21().clone();
+		parameter21 =  _parametrization.get_parameter21().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter21);
 	}
 
@@ -14329,7 +14397,7 @@ protected:
 	}
 
 	SlvParametrization22(const SlvParametrization22& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter22 =  _parametrization.get_parameter22().clone();
+		parameter22 =  _parametrization.get_parameter22().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter22);
 	}
 
@@ -14507,7 +14575,7 @@ protected:
 	}
 
 	SlvParametrization23(const SlvParametrization23& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter23 =  _parametrization.get_parameter23().clone();
+		parameter23 =  _parametrization.get_parameter23().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter23);
 	}
 
@@ -14685,7 +14753,7 @@ protected:
 	}
 
 	SlvParametrization24(const SlvParametrization24& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter24 =  _parametrization.get_parameter24().clone();
+		parameter24 =  _parametrization.get_parameter24().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter24);
 	}
 
@@ -14863,7 +14931,7 @@ protected:
 	}
 
 	SlvParametrization25(const SlvParametrization25& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter25 =  _parametrization.get_parameter25().clone();
+		parameter25 =  _parametrization.get_parameter25().clone(this);
 		SlvParametrization_base::parameters.push_back(parameter25);
 	}
 
@@ -16335,10 +16403,11 @@ protected:
     QDialogButtonBox* button_box;
     QPushButton* abide_rules_button;
     bool l_dialog;//whether has buttons. if so, parent's activation depends on "this" state. Also QDialog::accept/reject is activated
+    bool l_deny_invalid_parameters;
     SlvParametrization_base* parametrization_base;//usefull to cast to correct child type (see macros)
     QVBoxLayout* m_layout;
 
-    GlvParametrizationDialog_base(bool _l_dialog, QWidget* _parent);
+    GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent);
 public:
     virtual ~GlvParametrizationDialog_base();
 
@@ -16381,9 +16450,17 @@ class QWidget;
 namespace glv {
 	/*! Flag functions for Glv*/
 	namespace flag {
-		/*! Calls QMessageBox according to \p _status most crittical type.
+
+		/*! Get string corresponding to the status messages.
+		* \p _l_show_all : if false get only most critical message (if any). If true get all messages.*/
+		QString toQString(const SlvStatus& _status, bool _l_show_all);
+		/*! Calls QMessageBox according to \p _status most critical type.
 		* \p _l_show_all : if false displays only most critical message (if any). If true displays all messages.*/
 		void showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent);
+		/*! Calls QMessageBox according to \p _status most critical type.
+		* \p _message : preceding message.
+		* \p _l_show_all : if false displays only most critical message (if any). If true displays all messages.*/
+		void showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent);
 		/*! Calls QMessageBox::critical with message \p _message and breaks.*/
 		void BREAK(std::string warning_message, QWidget* _parent);
 		/*! Calls QMessageBox::information with message \p _message.*/
@@ -16408,13 +16485,15 @@ private:
 public:
 
     /*! \p _parametrization : Initial parametrization.
-    * \p _l_dialog: Whether the widget enables QDialog properties or not, such as button box, and related signals.*/
-    GlvParametrizationDialog(Tparametrization _parametrization = Tparametrization(), bool _l_dialog = true, QWidget* _parent = NULL);
+    * \p _l_dialog: Whether the widget enables QDialog properties or not, such as button box, and related signals.
+    * \p _l_deny_invalid_parameters : if true, acceptance of the parametrization is not possible if one of the parameters is invalid.*/
+    GlvParametrizationDialog(Tparametrization _parametrization = Tparametrization(), bool _l_dialog = true, bool _l_deny_invalid_parameters = true, QWidget* _parent = NULL);
+    GlvParametrizationDialog(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent = NULL);
     GlvParametrizationDialog(bool _l_dialog, QWidget* _parent = NULL);
     GlvParametrizationDialog(QWidget* _parent);
     ~GlvParametrizationDialog();
 
-    /*! Get current parametrization.*/
+    /*! Get current parametrization in memory. Does not return the parametrization currently displayed in the parametrization widget.*/
     const Tparametrization& get_parametrization() const;
     /*! Set parameterization. If \p _l_param_only is true, then only the parameters are set. If false, the whole instance is assigned (not recommended, must be a special case).*/
     void set_parametrization(const Tparametrization& _parametrization, bool _l_param_only = true);
@@ -16447,7 +16526,7 @@ private:
 };
 
 template <class Tparametrization>
-GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(Tparametrization _parametrization, bool _l_dialog, QWidget* _parent) :GlvParametrizationDialog_base(_l_dialog, _parent) {
+GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(Tparametrization _parametrization, bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :GlvParametrizationDialog_base(_l_dialog, _l_deny_invalid_parameters, _parent) {
 
     parametrization_base = new Tparametrization;
     parametrization_widget = new GlvParametrizationWidget<Tparametrization>;
@@ -16462,8 +16541,13 @@ GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(Tparametriz
 }
 
 template <class Tparametrization>
-GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(bool _l_dialog, QWidget* _parent) :GlvParametrizationDialog(Tparametrization(), _l_dialog, _parent) {
+GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :GlvParametrizationDialog(Tparametrization(), _l_dialog, _l_deny_invalid_parameters, _parent) {
+    
+}
 
+template <class Tparametrization>
+GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(bool _l_dialog, QWidget* _parent) :GlvParametrizationDialog(Tparametrization(), _l_dialog, true, _parent) {
+    
 }
 
 template <class Tparametrization>
@@ -16548,7 +16632,7 @@ void GlvParametrizationDialog<Tparametrization>::accept() {
 
     SlvStatus status = apply();
 
-    if (status) {
+    if (status || !l_deny_invalid_parameters) {
 
         if (l_dialog) {
             QDialog::accept();
@@ -16572,7 +16656,7 @@ SlvStatus GlvParametrizationDialog<Tparametrization>::apply() {
     update_parametrization();
 
     SlvStatus status = parametrization_base->check_parameters();
-    if (!status) {
+    if (!status && l_deny_invalid_parameters) {
         glv::flag::showQMessageBox(status, false, this);
     }
     return status;
@@ -16605,10 +16689,12 @@ public:
     GlvParametrizationSaveLoad(GlvParametrizationWidget<Tparametrization>* _parametrization_widget, SlvFileExtensions _allowed_extensions = {}, Qt::Orientation _orientation = Qt::Orientation::Horizontal);
     ~GlvParametrizationSaveLoad();
 
-private:
+    /*! Save parametrization to file \p _file_name.*/
+    void save(const std::string& _file_name);
+    /*! Load parametrization from file \p _file_name.*/
+    SlvStatus load(const std::string& _file_name);
 
-    void save();
-    SlvStatus load();
+private :
 
     static SlvFileExtensions allowed_extensions_constructor(SlvFileExtensions _allowed_extensions);
 
@@ -16631,23 +16717,20 @@ GlvParametrizationSaveLoad<Tparametrization>::~GlvParametrizationSaveLoad() {
 }
 
 template <class Tparametrization>
-void GlvParametrizationSaveLoad<Tparametrization>::save() {
+void GlvParametrizationSaveLoad<Tparametrization>::save(const std::string& _file_name) {
 
     bool l_write_default_binary = true;
 
-    std::string file_name = GlvWidgetSaveLoad_base::get_file_name();
-
 #if OPTION_USE_THIRDPARTY_JSON==1
-    if (SlvFileMgr::get_extension(file_name) == ".json") {
+    if (SlvFileMgr::get_extension(_file_name) == ".json") {
         if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
 
             l_write_default_binary = false;
 
             std::ofstream file_stream;
-            SlvStatus status = SlvFileMgr::open_file(file_stream, file_name);
+            SlvStatus status = SlvFileMgr::open_file(file_stream, _file_name);
             if (status) {
                 nlohmann::json json_value;
-                //parametrization_widget->get_value().writeJson(json_value);
                 slv::rw::json::ReadWrite<Tparametrization>::writeJson(parametrization_widget->get_value(), json_value);
                 file_stream << json_value.dump(4);
                 file_stream.close();
@@ -16661,36 +16744,35 @@ void GlvParametrizationSaveLoad<Tparametrization>::save() {
 #endif
 
     if (l_write_default_binary) {
-        SlvFileMgr::write_binary(parametrization_widget->get_value().param_cast(), file_name);
+        SlvFileMgr::write_binary(parametrization_widget->get_value().param_cast(), _file_name);
     }
 
 }
 
 template <class Tparametrization>
-SlvStatus GlvParametrizationSaveLoad<Tparametrization>::load() {
+SlvStatus GlvParametrizationSaveLoad<Tparametrization>::load(const std::string& _file_name) {
 
     SlvStatus status;
     Tparametrization value;
-    std::string file_name = GlvWidgetSaveLoad_base::get_file_name();
 
     bool l_read_default_binary = true;
 
 #if OPTION_USE_THIRDPARTY_JSON==1
-    if (SlvFileMgr::get_extension(file_name) == ".json") {
+    if (SlvFileMgr::get_extension(_file_name) == ".json") {
         if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
 
             l_read_default_binary = false;
 
             std::ifstream file_stream;
-            status = SlvFileMgr::open_file(file_stream, file_name);
+            status = SlvFileMgr::open_file(file_stream, _file_name);
             if (status) {
 
                 nlohmann::json json_value;
                 file_stream >> json_value;
                 if (!json_value.empty()) {
-                    //status = value.readJson(json_value);
                     status = slv::rw::json::ReadWrite<Tparametrization>::readJson(value, json_value);
-                    if (status) {
+                    bool l_set_parameters = interactive_load_parameters(_file_name, status);
+                    if (l_set_parameters) {
                         value.param_init();
                         parametrization_widget->set_value(value);
                     }
@@ -16708,7 +16790,7 @@ SlvStatus GlvParametrizationSaveLoad<Tparametrization>::load() {
 
     if (l_read_default_binary) {
 
-        status = SlvFileMgr::read_binary(value.param_cast(), GlvWidgetSaveLoad_base::get_file_name());
+        status = SlvFileMgr::read_binary(value.param_cast(), _file_name);
         if (status) {
             value.param_init();
             parametrization_widget->set_value(value);
@@ -16733,6 +16815,67 @@ SlvFileExtensions GlvParametrizationSaveLoad<Tparametrization>::allowed_extensio
 
 }
 
+/*! Use a parameter named \p parameter_name of the CLI parametrization as a location where to save the configuration file.
+* If such a parameter does not exist, return empty string.*/
+#define GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(Tparametrization, parameter_name)\
+template <>\
+struct GlvCLI::ParamOutput<Tparametrization> {\
+		static std::string get_path(const Tparametrization& _parametrization) {\
+			const SlvParameter_base* parameter = _parametrization.find_first(parameter_name, false);\
+			if (parameter) {\
+				return parameter->get_stream_value();\
+			} else {\
+				return std::string();\
+			}\
+	}\
+};
+
+/*! Use a parameter of the CLI parametrization as a location where to save the configuration file.
+* The parameter is defined by its declaration name.
+* The parameter can be nested into other parameters. Can accept parameter nested up to 3 levels (ie: 4 parameter declarations specification).*/
+#define GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(Tparametrization, ...) EXPAND( glvm_pv_get_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(__VA_ARGS__, glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4, glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3, glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2, glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1)(Tparametrization, __VA_ARGS__))
+#define EXPAND(arg) arg
+#define glvm_pv_get_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(_1, _2, _3, _4, macro_arg, ...) macro_arg
+#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1(Tparametrization, parameter_name)\
+template <>\
+struct GlvCLI::ParamOutput<Tparametrization> {\
+		static std::string get_path(const Tparametrization& _parametrization) {\
+			std::ostringstream stream;\
+			stream << _parametrization.get_##parameter_name();\
+			return stream.str();\
+	}\
+};
+
+#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2(Tparametrization, parameter_name1, parameter_name2)\
+template <>\
+struct GlvCLI::ParamOutput<Tparametrization> {\
+		static std::string get_path(const Tparametrization& _parametrization) {\
+			std::ostringstream stream;\
+			stream << _parametrization.get_##parameter_name1().get_##parameter_name2();\
+			return stream.str();\
+	}\
+};
+
+#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3(Tparametrization, parameter_name1, parameter_name2, parameter_name3)\
+template <>\
+struct GlvCLI::ParamOutput<Tparametrization> {\
+		static std::string get_path(const Tparametrization& _parametrization) {\
+			std::ostringstream stream;\
+			stream << _parametrization.get_##parameter_name1().get_##parameter_name2().get_##parameter_name3();\
+			return stream.str();\
+	}\
+};
+
+#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4(Tparametrization, parameter_name1, parameter_name2, parameter_name3, parameter_name4)\
+template <>\
+struct GlvCLI::ParamOutput<Tparametrization> {\
+		static std::string get_path(const Tparametrization& _parametrization) {\
+			std::ostringstream stream;\
+			stream << _parametrization.get_##parameter_name1().get_##parameter_name2().get_##parameter_name3().get_##parameter_name4();\
+			return stream.str();\
+	}\
+};
+
 #define GLOVE_CLI(Tparametrization) \
 return GlvCLI::main<Tparametrization>(argc, argv);\
 }\
@@ -16743,66 +16886,106 @@ int glv_cli_main(int argc, char* argv[]);//forward declare for gcc
 struct GlvCLI {
 
 public:
-	template <class Tparam>
+
+	template <class Tparametrization>
 	static int main(int _argc, char* _argv[]);
 
 private:
 
+	/*! Class to specialize to provide output path for parameters file.*/
+	template <class Tparametrization>
+	struct ParamOutput {
+		static std::string get_path(const Tparametrization& _parametrization) {
+			return "";
+		}
+	};
+
 	/*! Returns true if \p _argv contains "-glove".*/
 	static bool has_glove(int _argc, char* _argv[]);
 	struct Arguments {
-		Arguments(int _argc, char* _argv[]) { parse(_argc, _argv); }
+		Arguments(int _argc, char* _argv[]);
 		/*! Parameter identifier (starting with '-') and corresponding value.*/
 		typedef std::map<std::string, std::vector<std::string> > Tparameters;
 		Tparameters parameter_arguments;
 		/*! Arguments that are not parameters.*/
 		std::vector<std::string> solo_arguments;
+		/*! Single argument of the -glove cli input. Used for loading a parametrization.*/
+		std::string glove_argument;
 		/*! Parse arguments.*/
 		void parse(int _argc, char* _argv[]);
 		/*! Remove all arguments except those which name is in \p _arguments_remaining.*/
 		void filter(const std::vector<std::string>& _arguments_remaining);
+		/*! Return true if the instance does not store any parameter.*/
+		bool is_empty() const;
 	};
 	/*! Create argc/argv based on provided arguments.*/
 	static std::pair<int, char**> get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments);
 
 };
 
-template <class Tparam>
+template <class Tparametrization>
 int GlvCLI::main(int _argc, char* _argv[]) {
 
 	if (has_glove(_argc, _argv)) {
 
 		QApplication app(_argc, _argv);
 
-		GlvParametrizationDialog<Tparam> dialog;
-		GlvParametrizationSaveLoad<Tparam>* save_load_widget = new GlvParametrizationSaveLoad<Tparam>(dialog.get_parametrization_widget());
+		std::string autosave_file_name = SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true);
+#if OPTION_USE_THIRDPARTY_JSON==1
+		autosave_file_name += ".json";
+#endif
 
-		Tparam parametrization;
+		GlvParametrizationDialog<Tparametrization> dialog;
+		GlvParametrizationSaveLoad<Tparametrization>* save_load_widget = new GlvParametrizationSaveLoad<Tparametrization>(dialog.get_parametrization_widget());
+
 		Arguments arguments(_argc, _argv);
 
-		std::map<std::string, std::string> stream_values;
-		for (Arguments::Tparameters::const_iterator it = arguments.parameter_arguments.begin(); it != arguments.parameter_arguments.end(); ++it) {
-			stream_values[it->first] =  it->second[0];
+		if (!arguments.glove_argument.empty()) {
+
+			save_load_widget->load(arguments.glove_argument);
+
 		}
 
-		for (std::vector<std::string>::const_iterator it = arguments.solo_arguments.begin(); it != arguments.solo_arguments.end(); ++it) {
-			stream_values[*it] = "1";
-		}
+		if (!arguments.is_empty()) {
 
-		std::pair< std::map<std::string, int>, std::vector<std::string> > conflicts_missing = parametrization.set_stream_values(stream_values, false);
-		if (!conflicts_missing.first.empty()) {
-			QString message(QObject::tr("Multiple parameter correspondences in parametrization."));
-			for (std::map<std::string, int>::const_iterator it = conflicts_missing.first.begin(); it != conflicts_missing.first.end(); ++it) {
-				message += QString("\n") + it->first.c_str() + " : " + QString::number(it->second) + QObject::tr(" correspondences");
+			Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
+
+			std::map<std::string, std::string> stream_values;
+			for (Arguments::Tparameters::const_iterator it = arguments.parameter_arguments.begin(); it != arguments.parameter_arguments.end(); ++it) {
+				stream_values[it->first] = it->second[0];
 			}
-			QMessageBox::warning(&dialog, QObject::tr("Arguments conflict"), message);
-		}
-		arguments.filter(conflicts_missing.second);
 
-		dialog.set_parametrization(parametrization);
+			for (std::vector<std::string>::const_iterator it = arguments.solo_arguments.begin(); it != arguments.solo_arguments.end(); ++it) {
+				stream_values[*it] = "1";
+			}
+
+			std::pair< std::map<std::string, int>, std::vector<std::string> > conflicts_missing = parametrization.set_stream_values(stream_values, false);
+			if (!conflicts_missing.first.empty()) {
+				QString message(QObject::tr("Multiple parameter correspondences in parametrization."));
+				for (std::map<std::string, int>::const_iterator it = conflicts_missing.first.begin(); it != conflicts_missing.first.end(); ++it) {
+					message += QString("\n") + it->first.c_str() + " : " + QString::number(it->second) + QObject::tr(" correspondences");
+				}
+				QMessageBox::warning(&dialog, QObject::tr("Arguments conflict"), message);
+			}
+			arguments.filter(conflicts_missing.second);
+
+			dialog.set_parametrization(parametrization);
+
+		} else if (SlvFile(autosave_file_name).exists() && arguments.glove_argument.empty()) {
+
+			save_load_widget->load(autosave_file_name);
+
+		}
 
 		int result = dialog.exec();
 		if (result == QDialog::Accepted) {
+
+			save_load_widget->save(autosave_file_name);
+			
+			SlvDirectory directory(ParamOutput<Tparametrization>::get_path(dialog.get_parametrization()));
+			if (directory.exists()) {
+				save_load_widget->save(SlvFile(directory, autosave_file_name).get_path());
+			}
 
 			std::vector< std::pair<std::string, std::string> > parameter_arguments = dialog.get_parametrization().get_string_serialization_bool().first;
 			for (Arguments::Tparameters::const_iterator it = arguments.parameter_arguments.begin(); it != arguments.parameter_arguments.end(); ++it) {
@@ -17637,10 +17820,12 @@ private:
 public:
     ~GlvWidgetSaveLoad();
 
-private:
+    /*! Save data to file \p _file_name.*/
+    void save(const std::string& _file_name);
+    /*! Load data from file \p _file_name.*/
+    SlvStatus load(const std::string& _file_name);
 
-    void save();
-    SlvStatus load();
+private:
 
     /*! Friend class for specific case manaing GlvWidgetData.*/
     template <class T, typename>
@@ -17673,7 +17858,7 @@ GlvWidgetSaveLoad<Tdata>::~GlvWidgetSaveLoad() {
 }
 
 template <class Tdata>
-void GlvWidgetSaveLoad<Tdata>::save() {
+void GlvWidgetSaveLoad<Tdata>::save(const std::string& _file_name) {
 
     Tdata value;
     if (widget) {
@@ -17681,15 +17866,15 @@ void GlvWidgetSaveLoad<Tdata>::save() {
     } else if (widget_data) {
         value = widget_data->get_value();
     }
-    SlvFileMgr::write_binary(value, GlvWidgetSaveLoad_base::get_file_name());
+    SlvFileMgr::write_binary(value, _file_name);
 
 }
 
 template <class Tdata>
-SlvStatus GlvWidgetSaveLoad<Tdata>::load() {
+SlvStatus GlvWidgetSaveLoad<Tdata>::load(const std::string& _file_name) {
 
     Tdata value;
-    SlvStatus status = SlvFileMgr::read_binary(value, GlvWidgetSaveLoad_base::get_file_name());
+    SlvStatus status = SlvFileMgr::read_binary(value, _file_name);
     if (status) {
         if (widget) {
             widget->set_value(value);
@@ -21352,16 +21537,15 @@ inline bool SlvDirectory::operator!=(const SlvDirectory& _directory) const {
 
 inline void SlvDirectory::istream(std::istream& _is) {
 
-    std::cout << "Enter path : ";
     std::string tmp_path;
-    _is >> tmp_path;
+    slv::string::istream(_is, tmp_path);
     *this = SlvDirectory(tmp_path);
 
 }
 
 inline void SlvDirectory::ostream(std::ostream& _os) const {
 
-    _os << path << ", is_relative: " << l_relative;
+    _os << path;
 
 }
 
@@ -21429,6 +21613,14 @@ inline void SlvFileExtensions::remove(const SlvFileExtension& _extension) {
 inline bool SlvFileExtensions::exists(const SlvFileExtension& _extension) const {
 
     return slv::vector::find(_extension, extensions);
+
+}
+
+inline void SlvFileExtensions::add(const SlvFileExtensions& _extensions) {
+
+    for (std::vector<SlvFileExtension>::const_iterator it = _extensions.extensions.begin(); it != _extensions.extensions.end(); ++it) {
+        add(*it);
+    }
 
 }
 
@@ -21512,6 +21704,12 @@ inline void slv::string::remove_substring(const std::string& _substring, std::st
 
 }
 
+inline void slv::string::istream(std::istream& _is, std::string& _string) {
+
+    std::getline(_is, _string);
+
+}
+
 inline SlvFile::SlvFile() {
 
 }
@@ -21522,6 +21720,21 @@ inline SlvFile::SlvFile(const std::string& _path, IO _io_mode, std::string _desc
 }
 
 inline SlvFile::SlvFile(const char* _string, IO _io_mode, std::string _description) :SlvFile((_string) ? (std::string(_string)) : std::string(""), _io_mode, _description) {
+
+}
+
+inline SlvFile::SlvFile(const std::string& _path, const SlvFileExtensions& _allowed_extensions, IO _io_mode, std::string _description)
+    :SlvFile(_path, _io_mode, _description) {
+
+    add_allowed_extensions(_allowed_extensions);
+
+}
+
+inline SlvFile::SlvFile(const char* _string, const SlvFileExtensions& _allowed_extensions, IO _io_mode, std::string _description) :SlvFile((_string) ? (std::string(_string)) : std::string(""), _allowed_extensions, _io_mode, _description) {
+
+}
+
+inline SlvFile::SlvFile(IO _io_mode, std::string _description) :SlvFile("", _io_mode, _description) {
 
 }
 
@@ -21613,6 +21826,12 @@ inline void SlvFile::add_allowed_extension(const std::string& _ext) {
 
 }
 
+inline void SlvFile::add_allowed_extensions(const SlvFileExtensions& _extensions) {
+
+    allowed_extensions.add(_extensions);
+
+}
+
 inline bool SlvFile::exists() const {
 
 #if __cplusplus > 201402L
@@ -21620,9 +21839,16 @@ inline bool SlvFile::exists() const {
 #else
     if (file_name.get_total_name().empty()) {
         return false;
+    } else if (file_name.get_total_name().find_first_not_of('.') == std::string::npos) {// stat recognize "." path as existing file
+        return false;
     } else {
-        struct stat info;
-        return (stat(get_path().c_str(), &info) == 0);
+#ifdef COMPILER_MSVC
+#define glvm_pv_stat _stat64
+#else
+#define glvm_pv_stat stat64
+#endif
+        struct glvm_pv_stat info;
+        return (glvm_pv_stat(get_path().c_str(), &info) == 0);
     }
 #endif
 
@@ -21660,7 +21886,7 @@ inline void SlvFile::writeB(std::ofstream& _output_file) const {
 inline void SlvFile::istream(std::istream& _is) {
 
     std::string path;
-    _is >> path;
+    slv::string::istream(_is, path);
     directory = SlvDirectory(path);
     file_name = SlvFileName(path);
 
@@ -22012,13 +22238,15 @@ inline bool SlvStatus::sortStatus(SlvStatusSignal _signal1, SlvStatusSignal _sig
 inline void SlvStatus::push(const statusType& _type, const std::string& _message) {
 
     SlvStatusSignal signal(_message, _type);
-    if (status_signals->empty() || _type != statusType::ok) {//do not add multiple 'ok' status
-        status_signals->push_back(signal);
-    }
-    std::sort(status_signals->begin(), status_signals->end(), SlvStatus::sortStatus);
-    // Remove 'ok' if more relevant signals exist
-    if (status_signals->size() > 1 && status_signals->back().value == statusType::ok) {
-        status_signals->pop_back();
+    if (!slv::vector::find(signal, *status_signals)) {
+        if (status_signals->empty() || _type != statusType::ok) {//do not add multiple 'ok' status
+            status_signals->push_back(signal);
+        }
+        std::sort(status_signals->begin(), status_signals->end(), SlvStatus::sortStatus);
+        // Remove 'ok' if more relevant signals exist
+        if (status_signals->size() > 1 && status_signals->back().value == statusType::ok) {
+            status_signals->pop_back();
+        }
     }
 
 }
@@ -22055,7 +22283,7 @@ inline const std::string& SlvStatus::get_message(const unsigned int i) const {
     return (*status_signals)[i].data;
 }
 
-inline SlvStatus::operator bool() {
+inline SlvStatus::operator bool() const {
 
     return (get_type() == statusType::ok);
 }
@@ -22397,7 +22625,7 @@ inline void GlvWidgetSaveLoad_base::save_slot() {
 
 	GlvWidgetSaveLoad_base::open_file_save();
 	if (GlvWidgetSaveLoad_base::is_ready(QIODevice::WriteOnly)) {
-		save();
+		save(get_file_name());
 	}
 	GlvWidgetSaveLoad_base::delete_open_file();
 
@@ -22407,11 +22635,33 @@ inline void GlvWidgetSaveLoad_base::load_slot() {
 
 	if (GlvWidgetSaveLoad_base::open_file_load()) {
 		if (GlvWidgetSaveLoad_base::is_ready(QIODevice::ReadOnly)) {
-			SlvStatus status = load();
+			SlvStatus status = load(get_file_name());
 			glv::flag::showQMessageBox(status, true, this);
 		}
 	}
 	GlvWidgetSaveLoad_base::delete_open_file();
+
+}
+
+inline bool GlvWidgetSaveLoad_base::interactive_load_parameters(const std::string& _file_name, const SlvStatus& _status) {
+
+	if (!_status) {
+
+		QString message = tr("When loading file:") + "\n";
+		message += glv::toQString(_file_name) + "\n";
+		message += glv::flag::toQString(_status, true);
+		message += "\n\n" + tr("Do you want to load the parameters anyway ?");
+
+		QMessageBox::StandardButton result = QMessageBox::question(this, "Load json parametrization", message, QMessageBox::Ok | QMessageBox::Cancel);
+		if (result == QMessageBox::Cancel) {
+			return false;
+		} else {
+			return true;
+		}
+
+	} else {
+		return true;
+	}
 
 }
 
@@ -23026,20 +23276,24 @@ inline QString glv::toQString<unsigned long>(const unsigned long& _value) {
 #endif
 
 inline SlvStatus SlvParameterRuleValidation<SlvFile>::is_valid(const SlvParameter<SlvFile>* _parameter) {
-	SlvFile::IO io_mode = _parameter->get_value().get_io_mode();
-	if (io_mode == SlvFile::IO::Read && SlvFileMgr::test_file(_parameter->get_value(), std::ios::in)) {
-		return SlvStatus();
-	} else if (io_mode == SlvFile::IO::Write && SlvFileMgr::test_file(_parameter->get_value(), std::ios::out)) {
-		return SlvStatus();
-	} else if (io_mode == SlvFile::IO::Any) {// No test for Any
-		return SlvStatus();
+	if (!_parameter->get_value().get_path().empty()) {//if file is 'empty' then invalid status is being ignored. Assumption: the file was net at all.
+		SlvFile::IO io_mode = _parameter->get_value().get_io_mode();
+		if (io_mode == SlvFile::IO::Read && SlvFileMgr::test_file(_parameter->get_value(), std::ios::in)) {
+			return SlvStatus();
+		} else if (io_mode == SlvFile::IO::Write && SlvFileMgr::test_file(_parameter->get_value(), std::ios::out)) {
+			return SlvStatus();
+		} else if (io_mode == SlvFile::IO::Any) {// No test for Any
+			return SlvStatus();
+		} else {
+			return SlvStatus(SlvStatus::statusType::warning, _parameter->get_name() + " : can't open file  " + SlvFileMgr::get_path(_parameter->get_value()));
+		}
 	} else {
-		return SlvStatus(SlvStatus::statusType::warning, _parameter->get_name() + " : can't open file  " + SlvFileMgr::get_path(_parameter->get_value()));
+		return SlvStatus();
 	}
 }
 
 inline SlvStatus SlvParameterRuleValidation<SlvDirectory>::is_valid(const SlvParameter<SlvDirectory>* _parameter) {
-	if (_parameter->get_value().exists()) {
+	if (_parameter->get_value().exists() || _parameter->get_value().get_path().empty()) {//if directory is 'empty' then invalid status is being ignored.  Assumption: the directory was not set at all.
 		return SlvStatus();
 	} else {
 		return SlvStatus(SlvStatus::statusType::warning, _parameter->get_name() + " : no such directory " + slv::string::to_string(_parameter->get_value()));
@@ -23116,6 +23370,7 @@ inline GlvOpenFile::~GlvOpenFile() {
 inline SlvFile GlvOpenFile::get_file() const {
 
     SlvFile file(line_edit->text().toStdString(), io_mode);
+    file.add_allowed_extensions(allowed_extensions);
     return file;
 }
 
@@ -23996,6 +24251,17 @@ inline std::vector<const SlvParameter_base*> SlvParametrization_base::find(std::
 	return parameters_found;
 }
 
+inline const SlvParameter_base* SlvParametrization_base::find_first(std::string _parameter_name, bool _l_parametrizations) const {
+
+	std::vector<const SlvParameter_base*> parameters = find(_parameter_name, _l_parametrizations);
+	if (!parameters.empty()) {
+		return parameters.front();
+	} else {
+		return NULL;
+	}
+
+}
+
 inline std::pair< std::map<std::string, int>, std::vector<std::string> > SlvParametrization_base::set_stream_values(const std::map<std::string, std::string>& _stream_values, bool _l_parametrizations) {
 
 	std::pair< std::map<std::string, int>, std::vector<std::string> > conflicts_missing;
@@ -24251,13 +24517,14 @@ inline void GlvParametersWidget_base::show_parameters(bool _l_show) {
 
 }
 
-inline GlvParametrizationDialog_base::GlvParametrizationDialog_base(bool _l_dialog, QWidget* _parent) :QDialog(_parent) {
+inline GlvParametrizationDialog_base::GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :QDialog(_parent, Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint) {
 
     if (_parent) this->setModal(true);
     //setWindowFlags(Qt::Dialog);
     //setWindowModality(Qt::ApplicationModal);
 
     l_dialog = _l_dialog;
+    l_deny_invalid_parameters =_l_deny_invalid_parameters;
     parametrization_base = NULL;
 
     // To avoid sending message "setGeometry: Unable to set geometry"
@@ -24345,7 +24612,7 @@ inline void GlvParametrizationDialog_base::check_parameters_slot() {
     
 }
 
-inline void glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
+inline QString glv::flag::toQString(const SlvStatus& _status, bool _l_show_all) {
 
 	QString message;
 	if (!_l_show_all) {
@@ -24360,16 +24627,33 @@ inline void glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_al
 			}
 		}
 	}
+	return message;
+}
 
-	if (_status.get_type() == SlvStatus::statusType::ok) {
+inline void glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
 
-	} else if (_status.get_type() == SlvStatus::statusType::information) {
+	showQMessageBox("", _status, _l_show_all, _parent);
+}
+
+inline void glv::flag::showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
+
+	QString message;
+	if (_status.get_type() != SlvStatus::statusType::ok) {
+		if (!_message.isEmpty()) {
+			message = _message;
+			message += "\n";
+		}
+		message += toQString(_status, _l_show_all);
+	}
+
+	if (_status.get_type() == SlvStatus::statusType::information) {
 		QMessageBox::information(_parent, "", message);
 	} else if (_status.get_type() == SlvStatus::statusType::warning) {
 		QMessageBox::warning(_parent, "", message);
 	} else if (_status.get_type() == SlvStatus::statusType::critical) {
 		QMessageBox::critical(_parent, "", message);
 	}
+
 }
 
 inline void glv::flag::BREAK(std::string warning_message, QWidget* _parent) {
@@ -24385,6 +24669,12 @@ inline void glv::flag::INFO(std::string warning_message, QWidget* _parent) {
 
 }
 
+inline GlvCLI::Arguments::Arguments(int _argc, char* _argv[]) {
+
+	parse(_argc, _argv);
+
+}
+
 inline bool GlvCLI::has_glove(int _argc, char* _argv[]) {
 
 	bool l_found = false;
@@ -24396,6 +24686,12 @@ inline bool GlvCLI::has_glove(int _argc, char* _argv[]) {
 	return l_found;
 }
 
+inline bool GlvCLI::Arguments::is_empty() const {
+
+	return parameter_arguments.empty() && solo_arguments.empty();
+
+}
+
 inline void GlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 
 	parameter_arguments.clear();
@@ -24405,7 +24701,11 @@ inline void GlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 		bool l_parameter = false;
 		if (_argv[i][0] == '-') {
 			if (i < _argc - 1 && _argv[i + 1][0] != '-') {
-				parameter_arguments[_argv[i]].push_back(_argv[i + 1]);
+				if (std::strcmp(_argv[i], "-glove")) {
+					parameter_arguments[_argv[i]].push_back(_argv[i + 1]);
+				} else {
+					glove_argument = _argv[i + 1];
+				}
 				l_parameter = true;
 			}
 		}

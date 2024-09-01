@@ -26,6 +26,7 @@ add_custom_target(_Readme_md ALL
     GlvMapWidget.md
     GlvVectorWidget.md
     GlvPairWidget.md
+	GlvSize2dWidget.md
     Parametrization/Parametrization_basic.md
     Parametrization/Parametrization_nested.md
     Parametrization/Parametrization_rules.md

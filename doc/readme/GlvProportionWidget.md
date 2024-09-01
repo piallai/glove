@@ -1,6 +1,6 @@
 # [GlvProportionWidget](/src/src_glove_add/GlvProportionWidget.h)
 
-![sample009-1](../images/widgets/GlvProportionWidget.png)
+![GlvProportionWidget](../images/widgets/GlvProportionWidget.png)
 
 Widget designed to manage a [SlvProportion](/src/src_sleeve/SlvProportion.h) in the range [0,1]. The interface controls the value as a percentage.
 

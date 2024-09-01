@@ -25,12 +25,14 @@
 #define GLOVE_ENABLE_JSON
 #include "glove.h"
 #endif
-glvm_parametrization(ClassB, "ClassB", paramA, int, "paramA", "comment about parameterA", 0,
+glvm_parametrization(ClassB, "ClassB",
+                                        paramA, int, "paramA", "comment about parameterA", 0,
                                         paramB, float, "paramB", "comment about parameter B", 0.f,
                                         paramC, bool, "paramC", "comment about parameter C", true,
                                         paramD, std::vector<double>, "paramD", "comment about parameter D", {7.},
                                         paramE, std::string, "paramE", "comment about parameter E", "default")
-glvm_parametrization(ClassA, "ClassA", paramA, int, "paramA", "comment about parameterA", 0,
+glvm_parametrization(ClassA, "ClassA",
+                                        paramA, int, "paramA", "comment about parameterA", 0,
                                         paramB, float, "paramB", "comment about parameter B", 0.f,
                                         paramC, bool, "paramC", "comment about parameter C", true,
                                         paramD, std::vector<double>, "paramD", "comment about parameter D", std::vector<double>({5., 9.}),

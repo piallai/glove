@@ -127,12 +127,13 @@ struct GlvWidgetMakerConnect<ClassTest> {
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "param/SlvParametrizationMacro.h"
 #endif
-glvm_parametrization(ClassA, "ClassA", paramA, int, "paramA", "comment about parameterA", 0,
-                                        paramB, float, "paramB", "comment about parameter B", 0.f,
+glvm_parametrization(ClassA, "ClassA",
+										paramA, int, "paramA", "comment about parameterA", 0,
+										paramB, float, "paramB", "comment about parameter B", 0.f,
                                         paramC, bool, "paramC", "comment about parameter C", true,
 										paramD, std::vector<double>, "paramD", "comment about parameter D", {},
-                                        paramE, std::string, "paramE", "comment about parameter E", "default",
-                                        paramF, ClassTest, "paramF", "comment about parameter F", ClassTest())
+										paramE, std::string, "paramE", "comment about parameter E", "default",
+										paramF, ClassTest, "paramF", "comment about parameter F", ClassTest())
 
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "GlvWidgetData_spec_AT.h"

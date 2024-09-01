@@ -84,6 +84,17 @@ std::vector<const SlvParameter_base*> SlvParametrization_base::find(std::string 
 	return parameters_found;
 }
 
+const SlvParameter_base* SlvParametrization_base::find_first(std::string _parameter_name, bool _l_parametrizations) const {
+
+	std::vector<const SlvParameter_base*> parameters = find(_parameter_name, _l_parametrizations);
+	if (!parameters.empty()) {
+		return parameters.front();
+	} else {
+		return NULL;
+	}
+
+}
+
 std::pair< std::map<std::string, int>, std::vector<std::string> > SlvParametrization_base::set_stream_values(const std::map<std::string, std::string>& _stream_values, bool _l_parametrizations) {
 
 	std::pair< std::map<std::string, int>, std::vector<std::string> > conflicts_missing;

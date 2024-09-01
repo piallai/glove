@@ -71,6 +71,14 @@ bool SlvFileExtensions::exists(const SlvFileExtension& _extension) const {
 
 }
 
+void SlvFileExtensions::add(const SlvFileExtensions& _extensions) {
+
+    for (std::vector<SlvFileExtension>::const_iterator it = _extensions.extensions.begin(); it != _extensions.extensions.end(); ++it) {
+        add(*it);
+    }
+
+}
+
 bool SlvFileExtensions::empty() const {
 
     return extensions.empty();

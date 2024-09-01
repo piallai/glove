@@ -39,6 +39,8 @@ public:
 
 	/*! Set parameter value using >> operator.*/
 	virtual void set_stream_value(const std::string& _string, bool _l_param_only = true) = 0;
+	/*! Get parameter value using << operator.*/
+	virtual std::string get_stream_value(bool _l_param_only = true) const = 0;
 
 	/*! Get parameter name.*/
 	virtual const std::string& get_name() const = 0;

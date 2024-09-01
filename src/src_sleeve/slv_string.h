@@ -71,6 +71,9 @@ namespace slv {
         /*! Remove \p _substring in \p _string.*/
         void remove_substring(const std::string& _substring, std::string& _string);
 
+        /*! Read a string from istream with space character. Replaces _is >> _string.*/
+        void istream(std::istream& _is, std::string& _string);
+
     }
 
 }

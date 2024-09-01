@@ -23,13 +23,14 @@
 #include "glv_widget.h"
 #include "SlvParametrization_base.h"
 
-GlvParametrizationDialog_base::GlvParametrizationDialog_base(bool _l_dialog, QWidget* _parent) :QDialog(_parent) {
+GlvParametrizationDialog_base::GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :QDialog(_parent, Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint) {
 
     if (_parent) this->setModal(true);
     //setWindowFlags(Qt::Dialog);
     //setWindowModality(Qt::ApplicationModal);
 
     l_dialog = _l_dialog;
+    l_deny_invalid_parameters =_l_deny_invalid_parameters;
     parametrization_base = NULL;
 
     // To avoid sending message "setGeometry: Unable to set geometry"

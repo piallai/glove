@@ -18,6 +18,12 @@
 #include "GlvCLI.h"
 #include "SlvMacros.h"
 
+GlvCLI::Arguments::Arguments(int _argc, char* _argv[]) {
+
+	parse(_argc, _argv);
+
+}
+
 bool GlvCLI::has_glove(int _argc, char* _argv[]) {
 
 	bool l_found = false;
@@ -29,6 +35,12 @@ bool GlvCLI::has_glove(int _argc, char* _argv[]) {
 	return l_found;
 }
 
+bool GlvCLI::Arguments::is_empty() const {
+
+	return parameter_arguments.empty() && solo_arguments.empty();
+
+}
+
 void GlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 
 	parameter_arguments.clear();
@@ -38,7 +50,11 @@ void GlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 		bool l_parameter = false;
 		if (_argv[i][0] == '-') {
 			if (i < _argc - 1 && _argv[i + 1][0] != '-') {
-				parameter_arguments[_argv[i]].push_back(_argv[i + 1]);
+				if (std::strcmp(_argv[i], "-glove")) {
+					parameter_arguments[_argv[i]].push_back(_argv[i + 1]);
+				} else {
+					glove_argument = _argv[i + 1];
+				}
 				l_parameter = true;
 			}
 		}

@@ -1,6 +1,6 @@
 # [GlvPairWidget](/src/src_glove/GlvPairWidget.h)
 
-![sample009-1](../images/widgets/GlvPairWidget.png)
+![GlvPairWidget](../images/widgets/GlvPairWidget.png)
 
 Widget designed to manage a <code>std::pair</code>.
 

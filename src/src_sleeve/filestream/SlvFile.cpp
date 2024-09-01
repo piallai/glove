@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #endif
 #include "filestream/slv_rw.h"
+#include "SlvMacros.h"
 
 SlvFile::SlvFile() {
 
@@ -36,6 +37,21 @@ SlvFile::SlvFile(const std::string& _path, IO _io_mode, std::string _description
 }
 
 SlvFile::SlvFile(const char* _string, IO _io_mode, std::string _description) :SlvFile((_string) ? (std::string(_string)) : std::string(""), _io_mode, _description) {
+
+}
+
+SlvFile::SlvFile(const std::string& _path, const SlvFileExtensions& _allowed_extensions, IO _io_mode, std::string _description)
+    :SlvFile(_path, _io_mode, _description) {
+
+    add_allowed_extensions(_allowed_extensions);
+
+}
+
+SlvFile::SlvFile(const char* _string, const SlvFileExtensions& _allowed_extensions, IO _io_mode, std::string _description) :SlvFile((_string) ? (std::string(_string)) : std::string(""), _allowed_extensions, _io_mode, _description) {
+
+}
+
+SlvFile::SlvFile(IO _io_mode, std::string _description) :SlvFile("", _io_mode, _description) {
 
 }
 
@@ -127,6 +143,12 @@ void SlvFile::add_allowed_extension(const std::string& _ext) {
 
 }
 
+void SlvFile::add_allowed_extensions(const SlvFileExtensions& _extensions) {
+
+    allowed_extensions.add(_extensions);
+
+}
+
 bool SlvFile::exists() const {
 
 #if __cplusplus > 201402L
@@ -134,9 +156,16 @@ bool SlvFile::exists() const {
 #else
     if (file_name.get_total_name().empty()) {
         return false;
+    } else if (file_name.get_total_name().find_first_not_of('.') == std::string::npos) {// stat recognize "." path as existing file
+        return false;
     } else {
-        struct stat info;
-        return (stat(get_path().c_str(), &info) == 0);
+#ifdef COMPILER_MSVC
+#define glvm_pv_stat _stat64
+#else
+#define glvm_pv_stat stat64
+#endif
+        struct glvm_pv_stat info;
+        return (glvm_pv_stat(get_path().c_str(), &info) == 0);
     }
 #endif
 
@@ -174,7 +203,7 @@ void SlvFile::writeB(std::ofstream& _output_file) const {
 void SlvFile::istream(std::istream& _is) {
 
     std::string path;
-    _is >> path;
+    slv::string::istream(_is, path);
     directory = SlvDirectory(path);
     file_name = SlvFileName(path);
 

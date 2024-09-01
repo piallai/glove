@@ -26,6 +26,7 @@ protected:
 	GlvWidgetSaveLoad_base* save_load_widget;
 
 public:
+
 	GlvSaveLoad();
 	~GlvSaveLoad();
 

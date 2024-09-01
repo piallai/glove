@@ -61,10 +61,14 @@ protected:
 	std::string get_file_name() const;
 	void delete_open_file();
 
-private:
+	/*! If \p _status is not ok, pop up a question widget to ask whether loading must be done or not.*/
+	bool interactive_load_parameters(const std::string& _file_name, const SlvStatus& _status);
 
-	virtual void save() = 0;
-	virtual SlvStatus load() = 0;
+public:
+
+	virtual void save(const std::string& _file_name) = 0;
+	virtual SlvStatus load(const std::string& _file_name) = 0;
+
 
 private slots:
 

@@ -40,7 +40,7 @@ protected:
 public:
     ~SlvParameter();
 
-    virtual SlvParameter<Tparam>* clone() const = 0;
+    virtual SlvParameter<Tparam>* clone(SlvParametrization_base* _parametrization) const = 0;
 
     /*! Assign parameter value. In case Tparam derives from SlvParametrization, only the parameters are set.*/
     void operator=(const SlvParameter<Tparam>& _parameter);
@@ -49,6 +49,8 @@ public:
     const Tparam& get_value() const;
     /*! Set parameter value. In case Tparam derives from SlvParametrization, if \p _l_param_only is true, then only the parameters are set.*/
     void set_value(const Tparam& _value, bool _l_param_only = true);
+    /*! Get default value as set by the static parameter.*/
+    virtual const Tparam& get_default_value() const = 0;
 
     /*! Check if rules are abided for this parameter. Rules can either depend only the parameter or either depend on other ones.*/
     SlvStatus check_rules() const;
@@ -95,6 +97,20 @@ struct SlvParameterSpecSerialization {
 template <>
 struct SlvParameterSpecSerialization<bool>;
 
+template <class Tparam>
+struct SlvParameterSpecIstream {
+    static void istream(Tparam& _parameter_value, std::istream& _is) {
+        _is >> _parameter_value;
+    }
+};
+
+/*! std::string specialization because _is >> _parameter_value does not manage space.*/
+template <>
+struct SlvParameterSpecIstream<std::string> {
+    static void istream(std::string& _parameter_value, std::istream& _is) {
+        slv::string::istream(_is, _parameter_value);
+    }
+};
 
 template <class Tparam, typename = void>
 struct SlvParameterSpec {
@@ -108,7 +124,7 @@ struct SlvParameterSpec {
         slv::rw::writeB(_parameter_value, _output_file);
     }
     static void istream(Tparam& _parameter_value, std::istream& _is) {
-        _is >> _parameter_value;
+        SlvParameterSpecIstream<Tparam>::istream(_parameter_value, _is);
     }
     static void ostream(const Tparam& _parameter_value, std::ostream& _os) {
         _os << _parameter_value;
@@ -336,7 +352,11 @@ class SlvPvClassParam_##class_name : public SlvParameter<class_type> {\
 public:\
 SlvPvClassParam_##class_name(SlvParametrization_base* _parametrization, class_type _value = default_value()):SlvParameter<class_type>(_parametrization, _value){ this->abide_rules();}\
 ~SlvPvClassParam_##class_name(){}\
-virtual SlvPvClassParam_##class_name* clone() const {return new SlvPvClassParam_##class_name(*this);}\
+virtual SlvPvClassParam_##class_name* clone(SlvParametrization_base* _parametrization) const {\
+SlvPvClassParam_##class_name* clone_parameter = new SlvPvClassParam_##class_name(*this);\
+clone_parameter->parametrization = _parametrization;\
+return clone_parameter;\
+}\
 glvm_staticVariable_const_get(std::string, name, parameter_name)\
 glvm_staticVariable_const_get(std::string, description, parameter_description)\
 glvm_staticVariable_const_get(class_type, default_value, _default_value)\
@@ -348,6 +368,9 @@ private:\
 void set_stream_value(const std::string& _string, bool _l_param_only) {\
 class_type value_tmp(default_value()); std::istringstream iss(_string); SlvParameterSpec<class_type>::istream(value_tmp, iss);\
 this->set_value(value_tmp, _l_param_only);\
+}\
+std::string get_stream_value(bool _l_param_only) const {\
+std::ostringstream oss; oss << this->get_value(); return oss.str();\
 }\
 static std::vector< SlvParameterRuleT<class_type> > create_rules() {\
 std::vector< SlvParameterRuleT<class_type> > rules;\
@@ -405,7 +428,11 @@ class SlvPvClassParam_##class_name : public SlvParameter<class_type> {\
 public:\
 SlvPvClassParam_##class_name(SlvParametrization_base* _parametrization, class_type _value = default_value()):SlvParameter<class_type>(_parametrization, _value){}\
 ~SlvPvClassParam_##class_name(){}\
-virtual SlvPvClassParam_##class_name* clone() const {return new SlvPvClassParam_##class_name(*this);}\
+virtual SlvPvClassParam_##class_name* clone(SlvParametrization_base* _parametrization) const {\
+SlvPvClassParam_##class_name* clone_parameter = new SlvPvClassParam_##class_name(*this);\
+clone_parameter->parametrization = _parametrization;\
+return clone_parameter;\
+}\
 glvm_staticVariable_const_get(std::string, name, parameter_name)\
 glvm_staticVariable_const_get(std::string, description, parameter_description)\
 glvm_staticVariable_const_get(class_type, default_value, _default_value)\
@@ -418,6 +445,9 @@ private:\
 void set_stream_value(const std::string& _string, bool _l_param_only) {\
 class_type value_tmp(default_value()); std::istringstream iss(_string); SlvParameterSpec<class_type>::istream(value_tmp, iss);\
 this->set_value(value_tmp, _l_param_only);\
+}\
+std::string get_stream_value(bool _l_param_only) const {\
+std::ostringstream oss; oss << this->get_value(); return oss.str();\
 }\
 static std::vector< SlvParameterRuleT<class_type> > create_rules() {\
 std::vector< SlvParameterRuleT<class_type> > rules;\

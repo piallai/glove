@@ -1,6 +1,6 @@
 # [GlvMapWidget](/src/src_glove/GlvMapWidget.h)
 
-![sample009-1](../images/widgets/GlvMapWidget.png)
+![GlvEnumWidget](../images/widgets/GlvMapWidget.png)
 
 Widget designed to manage a <code>std::map</code>.
 

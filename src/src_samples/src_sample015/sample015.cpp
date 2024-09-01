@@ -30,15 +30,19 @@
 #include "glove.h"
 #endif
 
-glvm_parametrization(FooBar, "Foo Bar Size", foo, float, "-foo", "Foo value", 2.f,
+glvm_parametrization(FooBar, "Foo Bar Size",
+										foo, float, "-foo", "Foo value", 2.f,
 										bar, int, "-bar", "Bar value", 7,
 										size, SlvSize2d<int>, "-size", "Size of processing", SlvSize2d<int>(- 1, -1))
 
-glvm_parametrization(ParametersCLI, "CLI parameters", input_file, SlvFile, "-I", "Input file", SlvFile(SlvFileExtensions({ ".txt", ".bla"}), SlvFile::IO::Read),
+glvm_parametrization(ParametersCLI, "CLI parameters",
+										input_file, SlvFile, "-I", "Input file", SlvFile(SlvFileExtensions({ ".txt", ".bla"}), SlvFile::IO::Read),
 										output_file, SlvFile, "-O", "Output file", SlvFile(SlvFileExtensions({ ".txt", ".bla"}), SlvFile::IO::Write),
 										k, float, "-k", "K value", 2.f,
 										enable, bool, "-enable", "Enable something", false,
 										advanced, FooBar, "Advanced", "Advanced parameters", FooBar());
+
+GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(ParametersCLI, "-O")
 
 // Program supposed to manage 7 command line arguments
 // -I : input path of a .txt file

@@ -70,7 +70,7 @@ public:
     const std::string& get_message(const unsigned int i) const;
 
     /*! Check operator. Return true if the most critical status is equal to statusType::ok.*/
-    operator bool();
+    operator bool() const;
 
     SlvStatus& operator=(const SlvStatus& _status);
     /*! Sum status and reordrer them.*/

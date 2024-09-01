@@ -23,6 +23,7 @@
 #include "GlvOpenFile.h"
 #include "glv_flag.h"
 #include "glv_QString.h"
+#include <QMessageBox>
 
 GlvWidgetSaveLoad_base::GlvWidgetSaveLoad_base(const SlvFileExtensions& _allowed_extensions, Qt::Orientation _orientation, std::string _data_name) {
 
@@ -146,7 +147,7 @@ void GlvWidgetSaveLoad_base::save_slot() {
 
 	GlvWidgetSaveLoad_base::open_file_save();
 	if (GlvWidgetSaveLoad_base::is_ready(QIODevice::WriteOnly)) {
-		save();
+		save(get_file_name());
 	}
 	GlvWidgetSaveLoad_base::delete_open_file();
 
@@ -156,10 +157,32 @@ void GlvWidgetSaveLoad_base::load_slot() {
 
 	if (GlvWidgetSaveLoad_base::open_file_load()) {
 		if (GlvWidgetSaveLoad_base::is_ready(QIODevice::ReadOnly)) {
-			SlvStatus status = load();
+			SlvStatus status = load(get_file_name());
 			glv::flag::showQMessageBox(status, true, this);
 		}
 	}
 	GlvWidgetSaveLoad_base::delete_open_file();
+
+}
+
+bool GlvWidgetSaveLoad_base::interactive_load_parameters(const std::string& _file_name, const SlvStatus& _status) {
+
+	if (!_status) {
+
+		QString message = tr("When loading file:") + "\n";
+		message += glv::toQString(_file_name) + "\n";
+		message += glv::flag::toQString(_status, true);
+		message += "\n\n" + tr("Do you want to load the parameters anyway ?");
+
+		QMessageBox::StandardButton result = QMessageBox::question(this, "Load json parametrization", message, QMessageBox::Ok | QMessageBox::Cancel);
+		if (result == QMessageBox::Cancel) {
+			return false;
+		} else {
+			return true;
+		}
+
+	} else {
+		return true;
+	}
 
 }

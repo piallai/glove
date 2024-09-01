@@ -38,10 +38,11 @@ glvm_parametrization(ParamArg, "ParamArg", paramA, int, "paramA", "comment about
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "GlvWidgetData_spec_SlvParametrization.h"
 #endif
-glvm_parametrization(ParamTest, "ParamTest", paramA, int, "paramA", "comment about parameterA", 0,
-                                              paramB, bool, "paramB", "comment about parameterB", true,
-                                              paramC, std::string, "paramC", "comment about parameterC", "default",
-                                              paramD, ParamArg, "paramD", "comment about parameterD", ParamArg())
+glvm_parametrization(ParamTest, "ParamTest",
+                                            paramA, int, "paramA", "comment about parameterA", 0,
+                                            paramB, bool, "paramB", "comment about parameterB", true,
+                                            paramC, std::string, "paramC", "comment about parameterC", "default",
+                                            paramD, ParamArg, "paramD", "comment about parameterD", ParamArg())
 
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "GlvParametrizationWidget.h"
