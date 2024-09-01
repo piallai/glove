@@ -4,7 +4,7 @@ var searchData=
   ['open_1',['open',['../struct_glv_param_list_dialog___open.html#a982ae43fce70082b1d15004611c02301',1,'GlvParamListDialog_Open::open()'],['../struct_glv_param_list_dialog___open___templated.html#ac52424d7f38510c28f09b5e6098fe359',1,'GlvParamListDialog_Open_Templated::open()'],['../struct_glv_param_list_dialog___open___templated_templated.html#aba21bc2c7c0a6d4674525a7bbce5c8a9',1,'GlvParamListDialog_Open_TemplatedTemplated::open()']]],
   ['open_5ffile_5fload_2',['open_file_load',['../class_glv_widget_save_load__base.html#a8efaf6993b9666139d9f6911e8666aa5',1,'GlvWidgetSaveLoad_base']]],
   ['open_5ffile_5fsave_3',['open_file_save',['../class_glv_widget_save_load__base.html#aa556302553949858dfddc7705f6fff94',1,'GlvWidgetSaveLoad_base']]],
-  ['operator_20bool_4',['operator bool',['../class_slv_status.html#a3244c4733bfe418d6d73b895c1d50eaf',1,'SlvStatus']]],
+  ['operator_20bool_4',['operator bool',['../class_slv_status.html#aa8f634b85fda9dc53ac116e9b08408ef',1,'SlvStatus']]],
   ['operator_20tvalue_5',['operator Tvalue',['../class_slv_proportion.html#a1e851011bb9e37c471ade59b9843c33e',1,'SlvProportion']]],
   ['operator_21_3d_6',['operator!=',['../class_slv_directory.html#a6014f8e7af615c02e8f1f80529e82fd8',1,'SlvDirectory::operator!=()'],['../class_slv_file.html#a2998709bbf661dae2cb5446f2a70363a',1,'SlvFile::operator!=()'],['../class_slv_parametrization0.html#a2a30e030232a0fcaa8caa3fd9cfb5acd',1,'SlvParametrization0::operator!=()'],['../class_slv_combo.html#a22d8326d224246ef4c4067feab228e16',1,'SlvCombo::operator!=()'],['../class_slv_parameter.html#af4f622e0057f1095362e7ae82bf583a5',1,'SlvParameter::operator!=()']]],
   ['operator_2b_7',['operator+',['../class_slv_combo.html#a0df3ba6bdb707568cc7e6cf0c85f7a54',1,'SlvCombo']]],

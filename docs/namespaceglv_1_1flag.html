@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.0</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.1</span>
    </div>
   </td>
  </tr>
@@ -81,8 +81,12 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ab3893c72ca93b58a4c09410dd3429554"><td class="memItemLeft" align="right" valign="top">QString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#ab3893c72ca93b58a4c09410dd3429554">toQString</a> (const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;_status, bool _l_show_all)</td></tr>
+<tr class="separator:ab3893c72ca93b58a4c09410dd3429554"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae11596f30b627ea89919a51d7ddf948"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#aae11596f30b627ea89919a51d7ddf948">showQMessageBox</a> (const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;_status, bool _l_show_all, QWidget *_parent)</td></tr>
 <tr class="separator:aae11596f30b627ea89919a51d7ddf948"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a764ed9015e6d33190286cd87af4e1f92"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#a764ed9015e6d33190286cd87af4e1f92">showQMessageBox</a> (const QString &amp;_message, const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;_status, bool _l_show_all, QWidget *_parent)</td></tr>
+<tr class="separator:a764ed9015e6d33190286cd87af4e1f92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3280a3f56bcf3cc3d7f54fdaccd9ab4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#af3280a3f56bcf3cc3d7f54fdaccd9ab4">BREAK</a> (std::string warning_message, QWidget *_parent)</td></tr>
 <tr class="separator:af3280a3f56bcf3cc3d7f54fdaccd9ab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97fddc8ae2335472e361680db7068fdf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#a97fddc8ae2335472e361680db7068fdf">INFO</a> (std::string warning_message, QWidget *_parent)</td></tr>
@@ -149,8 +153,49 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a764ed9015e6d33190286cd87af4e1f92" name="a764ed9015e6d33190286cd87af4e1f92"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a764ed9015e6d33190286cd87af4e1f92">&#9670;&#160;</a></span>showQMessageBox() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void glv::flag::showQMessageBox </td>
+          <td>(</td>
+          <td class="paramtype">const QString &amp;&#160;</td>
+          <td class="paramname"><em>_message</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;&#160;</td>
+          <td class="paramname"><em>_status</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_show_all</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">QWidget *&#160;</td>
+          <td class="paramname"><em>_parent</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Calls QMessageBox according to <code>_status</code> most critical type. <code>_message</code> : preceding message. <code>_l_show_all</code> : if false displays only most critical message (if any). If true displays all messages. </p>
+
+</div>
+</div>
 <a id="aae11596f30b627ea89919a51d7ddf948" name="aae11596f30b627ea89919a51d7ddf948"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae11596f30b627ea89919a51d7ddf948">&#9670;&#160;</a></span>showQMessageBox()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aae11596f30b627ea89919a51d7ddf948">&#9670;&#160;</a></span>showQMessageBox() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -180,7 +225,36 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Calls QMessageBox according to <code>_status</code> most crittical type. <code>_l_show_all</code> : if false displays only most critical message (if any). If true displays all messages. </p>
+<p>Calls QMessageBox according to <code>_status</code> most critical type. <code>_l_show_all</code> : if false displays only most critical message (if any). If true displays all messages. </p>
+
+</div>
+</div>
+<a id="ab3893c72ca93b58a4c09410dd3429554" name="ab3893c72ca93b58a4c09410dd3429554"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3893c72ca93b58a4c09410dd3429554">&#9670;&#160;</a></span>toQString()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">QString glv::flag::toQString </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;&#160;</td>
+          <td class="paramname"><em>_status</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_show_all</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get string corresponding to the status messages. <code>_l_show_all</code> : if false get only most critical message (if any). If true get all messages. </p>
 
 </div>
 </div>

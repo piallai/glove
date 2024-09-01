@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.0</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.1</span>
    </div>
   </td>
  </tr>
@@ -124,8 +124,8 @@ Protected Slots</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a6c6c3c23388b0ad33fe0eed91fe2e5ea"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parametrization_dialog__base.html#a6c6c3c23388b0ad33fe0eed91fe2e5ea">GlvParametrizationDialog_base</a> (bool _l_dialog, QWidget *_parent)</td></tr>
-<tr class="separator:a6c6c3c23388b0ad33fe0eed91fe2e5ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e173d28fb1095f2fda9e5d384b0d0d9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parametrization_dialog__base.html#a4e173d28fb1095f2fda9e5d384b0d0d9">GlvParametrizationDialog_base</a> (bool _l_dialog, bool _l_deny_invalid_parameters, QWidget *_parent)</td></tr>
+<tr class="separator:a4e173d28fb1095f2fda9e5d384b0d0d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -135,6 +135,8 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a3c3b9ec5159aefe7b9d2328b649c5542"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3aa49319639455b1ca41296a625cbd5d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parametrization_dialog__base.html#a3aa49319639455b1ca41296a625cbd5d">l_dialog</a></td></tr>
 <tr class="separator:a3aa49319639455b1ca41296a625cbd5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3e8b41c419ff98cfabe6da717e7be96"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parametrization_dialog__base.html#aa3e8b41c419ff98cfabe6da717e7be96">l_deny_invalid_parameters</a></td></tr>
+<tr class="separator:aa3e8b41c419ff98cfabe6da717e7be96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f922f504821770372e22cac40fbc66e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_slv_parametrization__base.html">SlvParametrization_base</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parametrization_dialog__base.html#a2f922f504821770372e22cac40fbc66e">parametrization_base</a></td></tr>
 <tr class="separator:a2f922f504821770372e22cac40fbc66e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a454c2ba4d0851be74010141f30e73e4b"><td class="memItemLeft" align="right" valign="top">QVBoxLayout *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parametrization_dialog__base.html#a454c2ba4d0851be74010141f30e73e4b">m_layout</a></td></tr>
@@ -143,8 +145,8 @@ Protected Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Dialog widget managing parametrization widget. This is the main widget (with <a class="el" href="class_glv_parametrization_widget.html">GlvParametrizationWidget</a>) to use for parametrization management in the framework. Accept : set the parametrization has the one configured by the widget. Reject : does not modify the parametrization. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a6c6c3c23388b0ad33fe0eed91fe2e5ea" name="a6c6c3c23388b0ad33fe0eed91fe2e5ea"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6c6c3c23388b0ad33fe0eed91fe2e5ea">&#9670;&#160;</a></span>GlvParametrizationDialog_base()</h2>
+<a id="a4e173d28fb1095f2fda9e5d384b0d0d9" name="a4e173d28fb1095f2fda9e5d384b0d0d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4e173d28fb1095f2fda9e5d384b0d0d9">&#9670;&#160;</a></span>GlvParametrizationDialog_base()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -157,6 +159,12 @@ Protected Attributes</h2></td></tr>
           <td>(</td>
           <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>_l_dialog</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_deny_invalid_parameters</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -429,6 +437,28 @@ Protected Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">QDialogButtonBox* GlvParametrizationDialog_base::button_box</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa3e8b41c419ff98cfabe6da717e7be96" name="aa3e8b41c419ff98cfabe6da717e7be96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3e8b41c419ff98cfabe6da717e7be96">&#9670;&#160;</a></span>l_deny_invalid_parameters</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool GlvParametrizationDialog_base::l_deny_invalid_parameters</td>
         </tr>
       </table>
   </td>

@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.0</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.1</span>
    </div>
   </td>
  </tr>
@@ -120,6 +120,8 @@ Functions</h2></td></tr>
 <tr class="separator:a3da0a84ef944a137196c7034cf603095"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad5e9e1762b0709b9cd863aecca944cde"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceslv_1_1string.html#ad5e9e1762b0709b9cd863aecca944cde">remove_substring</a> (const std::string &amp;_substring, std::string &amp;_string)</td></tr>
 <tr class="separator:ad5e9e1762b0709b9cd863aecca944cde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd25c7994541c81d00d87206e62e8ced"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceslv_1_1string.html#afd25c7994541c81d00d87206e62e8ced">istream</a> (std::istream &amp;_is, std::string &amp;_string)</td></tr>
+<tr class="separator:afd25c7994541c81d00d87206e62e8ced"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>String functions. </p>
@@ -152,6 +154,35 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 <p>Get first part of <code>_string</code> (substring) up to <code>_stop</code>. </p>
+
+</div>
+</div>
+<a id="afd25c7994541c81d00d87206e62e8ced" name="afd25c7994541c81d00d87206e62e8ced"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd25c7994541c81d00d87206e62e8ced">&#9670;&#160;</a></span>istream()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void slv::string::istream </td>
+          <td>(</td>
+          <td class="paramtype">std::istream &amp;&#160;</td>
+          <td class="paramname"><em>_is</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string &amp;&#160;</td>
+          <td class="paramname"><em>_string</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Read a string from istream with space character. Replaces _is &gt;&gt; _string. </p>
 
 </div>
 </div>

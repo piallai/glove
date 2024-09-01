@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.0</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.1</span>
    </div>
   </td>
  </tr>
@@ -99,6 +99,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a47ed232b2f3549ba8d6c32d84034139d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97bdd630fb40a901c39064c3c2adbee2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_widget_save_load__base.html#a97bdd630fb40a901c39064c3c2adbee2">set_allowed_extensions</a> (const <a class="el" href="class_slv_file_extensions.html">SlvFileExtensions</a> &amp;_allowed_extensions)</td></tr>
 <tr class="separator:a97bdd630fb40a901c39064c3c2adbee2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7eea708750c56efc17f0ac1ba67a3209"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_widget_save_load__base.html#a7eea708750c56efc17f0ac1ba67a3209">save</a> (const std::string &amp;_file_name)=0</td></tr>
+<tr class="separator:a7eea708750c56efc17f0ac1ba67a3209"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ca5229bcf59154bfdd26ad1566c4bbf"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="class_slv_status.html">SlvStatus</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_widget_save_load__base.html#a4ca5229bcf59154bfdd26ad1566c4bbf">load</a> (const std::string &amp;_file_name)=0</td></tr>
+<tr class="separator:a4ca5229bcf59154bfdd26ad1566c4bbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -114,6 +118,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:af8a715d6c0710a93d0c36e31a4aa715a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a60df3590a5fae65b4e961cb428a97a20"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_widget_save_load__base.html#a60df3590a5fae65b4e961cb428a97a20">delete_open_file</a> ()</td></tr>
 <tr class="separator:a60df3590a5fae65b4e961cb428a97a20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada0331272b2ecb0a43a72879ba123d1e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_widget_save_load__base.html#ada0331272b2ecb0a43a72879ba123d1e">interactive_load_parameters</a> (const std::string &amp;_file_name, const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;_status)</td></tr>
+<tr class="separator:ada0331272b2ecb0a43a72879ba123d1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base widget managing save/load (pure virtual). </p>
@@ -254,6 +260,43 @@ Protected Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ada0331272b2ecb0a43a72879ba123d1e" name="ada0331272b2ecb0a43a72879ba123d1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada0331272b2ecb0a43a72879ba123d1e">&#9670;&#160;</a></span>interactive_load_parameters()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool GlvWidgetSaveLoad_base::interactive_load_parameters </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>_file_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;&#160;</td>
+          <td class="paramname"><em>_status</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>If <code>_status</code> is not ok, pop up a question widget to ask whether loading must be done or not. </p>
+
+</div>
+</div>
 <a id="ace638dd784ddf163a08f5694f0a7180c" name="ace638dd784ddf163a08f5694f0a7180c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ace638dd784ddf163a08f5694f0a7180c">&#9670;&#160;</a></span>is_ready()</h2>
 
@@ -278,6 +321,34 @@ Protected Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>open_file should be null is is_ready is called.</p>
+
+</div>
+</div>
+<a id="a4ca5229bcf59154bfdd26ad1566c4bbf" name="a4ca5229bcf59154bfdd26ad1566c4bbf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ca5229bcf59154bfdd26ad1566c4bbf">&#9670;&#160;</a></span>load()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="class_slv_status.html">SlvStatus</a> GlvWidgetSaveLoad_base::load </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>_file_name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_glv_parametrization_save_load.html#aa2d1b711d1206e0beff5a5e9fe7a5cb8">GlvParametrizationSaveLoad&lt; Tparametrization &gt;</a>, and <a class="el" href="class_glv_widget_save_load.html#abc8983315bef4914bf8330429e1e25bc">GlvWidgetSaveLoad&lt; Tdata &gt;</a>.</p>
 
 </div>
 </div>
@@ -329,6 +400,34 @@ Protected Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Methods to avoid template <a class="el" href="class_glv_widget_save_load.html">GlvWidgetSaveLoad</a> class to include <a class="el" href="class_glv_open_file.html">GlvOpenFile</a>. </p>
+
+</div>
+</div>
+<a id="a7eea708750c56efc17f0ac1ba67a3209" name="a7eea708750c56efc17f0ac1ba67a3209"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7eea708750c56efc17f0ac1ba67a3209">&#9670;&#160;</a></span>save()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void GlvWidgetSaveLoad_base::save </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>_file_name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="class_glv_parametrization_save_load.html#ad6de3716758d4eb93ef5454d30328a67">GlvParametrizationSaveLoad&lt; Tparametrization &gt;</a>, and <a class="el" href="class_glv_widget_save_load.html#a024c763f13b27171f33f9cdfc96536e7">GlvWidgetSaveLoad&lt; Tdata &gt;</a>.</p>
 
 </div>
 </div>

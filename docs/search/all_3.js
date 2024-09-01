@@ -11,7 +11,7 @@ var searchData=
   ['check_5frange_8',['check_range',['../class_slv_sort.html#ad473bd24037612e5ddb8d92ad8eac250',1,'SlvSort']]],
   ['check_5frules_9',['check_rules',['../class_slv_parameter__base.html#a5139f8efbf58d3da3ed6b2260936a53d',1,'SlvParameter_base::check_rules()'],['../class_slv_parameter.html#a0a28d23a50f592b1ba27a0aa593f28e4',1,'SlvParameter::check_rules()']]],
   ['clear_10',['clear',['../class_glv_progress_mgr.html#a52714337c824e8d13aca4ff1f4fce062',1,'GlvProgressMgr::clear()'],['../class_slv_pool.html#a483e4c38f7d7263bd4d572230da08645',1,'SlvPool::clear()'],['../class_slv_sort.html#a9fd6df58a8bac3f6c235d71d347ba0d4',1,'SlvSort::clear()'],['../namespaceglv_1_1widget.html#a5c958b86980b1560ba746b31f114706c',1,'glv::widget::clear(QLayout *_layout, unsigned int _start_index=0, bool _l_recursive=false)'],['../namespaceglv_1_1widget.html#adf1846cf801f6cee50188e82a1e935e1',1,'glv::widget::clear(QWidget *_widget)']]],
-  ['clone_11',['clone',['../class_slv_parameter.html#aa219f9a6f70af98920cfaa6703dd7599',1,'SlvParameter']]],
+  ['clone_11',['clone',['../class_slv_parameter.html#a69a462667b289ada130a80585f14543c',1,'SlvParameter']]],
   ['closeevent_12',['closeEvent',['../class_glv_parametrization_dialog.html#addce4d481b8495d0e6d3257a31d3bad4',1,'GlvParametrizationDialog']]],
   ['combo_5flist_13',['combo_list',['../class_glv_list_dialog__base.html#a4892fd78987f00f84cd6b0f40befdd4e',1,'GlvListDialog_base']]],
   ['comma_14',['COMMA',['../_slv_macros_8h.html#aa2f49001be13949a16a57e6c99ab00ad',1,'SlvMacros.h']]],

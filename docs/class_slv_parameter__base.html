@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.0</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.1</span>
    </div>
   </td>
  </tr>
@@ -124,6 +124,8 @@ Inheritance diagram for SlvParameter_base:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a466d4f80812ee91218d65ac418ccca00"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_parameter__base.html#a466d4f80812ee91218d65ac418ccca00">set_stream_value</a> (const std::string &amp;_string, bool _l_param_only=true)=0</td></tr>
 <tr class="separator:a466d4f80812ee91218d65ac418ccca00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a680c3f244b2e6eaf731ffb69e29cfacb"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_parameter__base.html#a680c3f244b2e6eaf731ffb69e29cfacb">get_stream_value</a> (bool _l_param_only=true) const =0</td></tr>
+<tr class="separator:a680c3f244b2e6eaf731ffb69e29cfacb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a08a46e2d715701613df7b1b4357eeb92"><td class="memItemLeft" align="right" valign="top">virtual const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_parameter__base.html#a08a46e2d715701613df7b1b4357eeb92">get_name</a> () const =0</td></tr>
 <tr class="separator:a08a46e2d715701613df7b1b4357eeb92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace1e2096a02929d7f50a4fb20176e541"><td class="memItemLeft" align="right" valign="top">virtual const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_parameter__base.html#ace1e2096a02929d7f50a4fb20176e541">get_description</a> () const =0</td></tr>
@@ -333,6 +335,33 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Get parameter name. </p>
+
+</div>
+</div>
+<a id="a680c3f244b2e6eaf731ffb69e29cfacb" name="a680c3f244b2e6eaf731ffb69e29cfacb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a680c3f244b2e6eaf731ffb69e29cfacb">&#9670;&#160;</a></span>get_stream_value()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::string SlvParameter_base::get_stream_value </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_param_only</em> = <code>true</code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get parameter value using &lt;&lt; operator. </p>
 
 </div>
 </div>

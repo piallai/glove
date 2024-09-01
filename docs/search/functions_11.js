@@ -7,7 +7,7 @@ var searchData=
   ['toqcombobox_4',['toQComboBox',['../namespaceglv.html#a320645250f49cd96f6fa9b8a7a5b0dae',1,'glv::toQComboBox(const Tdata &amp;_data, QString _name=&quot;&quot;, QWidget *_parent=0)'],['../namespaceglv.html#aecf1f1761e7d19fcfe87a53797b0fdf7',1,'glv::toQComboBox(QComboBox *_combo_box, const Tdata &amp;_data, QString _name=&quot;&quot;)']]],
   ['toqstandarditem_5',['toQStandardItem',['../namespaceglv_1_1tdata.html#a08d9e15792f81186e90c67f37c19e417',1,'glv::tdata']]],
   ['toqstandarditemmodel_6',['toQStandardItemModel',['../namespaceglv_1_1tdata.html#a3e5073fb2590efe9e703daa91f004678',1,'glv::tdata::toQStandardItemModel(const Tdata &amp;_data)'],['../namespaceglv_1_1tdata.html#a0e6aa7da27e0fe6d5c9f31e65bef1c36',1,'glv::tdata::toQStandardItemModel(const Tdata &amp;_data, QStandardItemModel *_model, const QModelIndex _index=QModelIndex(), const Qt::ItemFlag _flag_additional=Qt::NoItemFlags)']]],
-  ['toqstring_7',['toQString',['../namespaceglv.html#a9af29a213fe2989683796e1bf339d561',1,'glv']]],
+  ['toqstring_7',['toQString',['../namespaceglv_1_1flag.html#ab3893c72ca93b58a4c09410dd3429554',1,'glv::flag::toQString()'],['../namespaceglv.html#a9af29a213fe2989683796e1bf339d561',1,'glv::toQString(const T &amp;_value)']]],
   ['toqstringlistmodel_8',['toQStringListModel',['../namespaceglv.html#a57ef94bc723da8fa32b223e14a2fac4e',1,'glv']]],
   ['toqtreeview_9',['toQTreeView',['../namespaceglv_1_1view.html#a12acf106b9892eb3e5f7771bec8b0246',1,'glv::view::toQTreeView(QStandardItemModel *_model)'],['../namespaceglv_1_1view.html#a26f64d37f9f6b8cde5fca99f85fdc9ea',1,'glv::view::toQTreeView(const Tdata &amp;_data)']]]
 ];
