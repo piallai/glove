@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.1</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
    </div>
   </td>
  </tr>
@@ -70,6 +70,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#signals">Signals</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
@@ -92,6 +93,11 @@ Inheritance diagram for GlvParametersWidget_base:</div>
   </map>
 </div></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base_1_1_scroll_area.html">ScrollArea</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:a703b7f11a9b165ef85fbb7688762cfed"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#a703b7f11a9b165ef85fbb7688762cfed">LayoutType</a> { <a class="el" href="class_glv_parameters_widget__base.html#a703b7f11a9b165ef85fbb7688762cfeda74bf1583e8479eea5b5b5d8a9ce57481">Vertical</a>
@@ -103,6 +109,8 @@ Public Types</h2></td></tr>
 Signals</h2></td></tr>
 <tr class="memitem:ad8b3cc9bc4a52423ec83733ddfdf2225"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#ad8b3cc9bc4a52423ec83733ddfdf2225">parameterChanged</a> (std::string _parameter_name)</td></tr>
 <tr class="separator:ad8b3cc9bc4a52423ec83733ddfdf2225"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62c9153ad34e5dbc0b599713b4f438cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#a62c9153ad34e5dbc0b599713b4f438cc">heightChanged</a> ()</td></tr>
+<tr class="separator:a62c9153ad34e5dbc0b599713b4f438cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -114,6 +122,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a40e44c5a6b83187ca414afe6c5576110"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:affd7ec9afcdcc096a9551d376d5177f7"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#affd7ec9afcdcc096a9551d376d5177f7">enable_data_type_info</a> (bool _l_enable)=0</td></tr>
 <tr class="separator:affd7ec9afcdcc096a9551d376d5177f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab72ce255337a317d31e647a6b880f398"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#ab72ce255337a317d31e647a6b880f398">is_fully_visible</a> () const</td></tr>
+<tr class="separator:ab72ce255337a317d31e647a6b880f398"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46a52dcc1c94811c6e86ba97a72a131d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#a46a52dcc1c94811c6e86ba97a72a131d">has_height_decreased</a> () const</td></tr>
+<tr class="separator:a46a52dcc1c94811c6e86ba97a72a131d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83fef981721a5c7750707e74dcf7ae0e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#a83fef981721a5c7750707e74dcf7ae0e">set_scrollable</a> (bool _l_scrollable)</td></tr>
+<tr class="separator:a83fef981721a5c7750707e74dcf7ae0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8465d050db83f18f9d5640c6a94c07e6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#a8465d050db83f18f9d5640c6a94c07e6">set_adapt_max_height</a> (bool _l_adapt)</td></tr>
+<tr class="separator:a8465d050db83f18f9d5640c6a94c07e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_glv_save_load"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_glv_save_load')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_glv_save_load.html">GlvSaveLoad</a></td></tr>
 <tr class="memitem:a0e18d80b79e089a4a0c8b0cc1c8d1374 inherit pub_methods_class_glv_save_load"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_save_load.html#a0e18d80b79e089a4a0c8b0cc1c8d1374">GlvSaveLoad</a> ()</td></tr>
 <tr class="separator:a0e18d80b79e089a4a0c8b0cc1c8d1374 inherit pub_methods_class_glv_save_load"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -133,8 +149,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a17407fb9679fa53d89cae39b1a3bb022"><td class="memTemplParams" colspan="2">template&lt;class <a class="el" href="_glv_widget_data__spec___a_t_8cpp.html#a37c8dbd2de7a0b1aa192637202c376ef">Tdata</a> &gt; </td></tr>
 <tr class="memitem:a17407fb9679fa53d89cae39b1a3bb022"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#a17407fb9679fa53d89cae39b1a3bb022">set_parameter_widget_to_grid_layout</a> (<a class="el" href="class_glv_parameter_widget.html">GlvParameterWidget</a>&lt; <a class="el" href="_glv_widget_data__spec___a_t_8cpp.html#a37c8dbd2de7a0b1aa192637202c376ef">Tdata</a> &gt; *_parameter_widget, int i)</td></tr>
 <tr class="separator:a17407fb9679fa53d89cae39b1a3bb022"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac04e6a50196b40c7a625a0eabcfdfbda"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#ac04e6a50196b40c7a625a0eabcfdfbda">set_layout_type_pv</a> (<a class="el" href="class_glv_parameters_widget__base.html#a703b7f11a9b165ef85fbb7688762cfed">LayoutType</a> _layout_type)</td></tr>
-<tr class="separator:ac04e6a50196b40c7a625a0eabcfdfbda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2dd25f029629bfbac0b76c5d567d981"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#ad2dd25f029629bfbac0b76c5d567d981">set_layout_type_protected</a> (<a class="el" href="class_glv_parameters_widget__base.html#a703b7f11a9b165ef85fbb7688762cfed">LayoutType</a> _layout_type)</td></tr>
+<tr class="separator:ad2dd25f029629bfbac0b76c5d567d981"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e2e26b40d2c1a6caea475362f415dc0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#a4e2e26b40d2c1a6caea475362f415dc0">set_save_load_widget</a> (<a class="el" href="class_glv_widget_save_load__base.html">GlvWidgetSaveLoad_base</a> *_save_load_widget)</td></tr>
 <tr class="separator:a4e2e26b40d2c1a6caea475362f415dc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8cc61ed3e883ccebe0d436b27b2c96ef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#a8cc61ed3e883ccebe0d436b27b2c96ef">set_checkable_collapse</a> (bool _l_checkable)</td></tr>
@@ -148,6 +164,10 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a9f2480058ba660ef1901b0bb4c0a95ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af62b99ba1e0c12dfa68cc34a212954f0"><td class="memItemLeft" align="right" valign="top">QGridLayout *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#af62b99ba1e0c12dfa68cc34a212954f0">grid_layout</a></td></tr>
 <tr class="separator:af62b99ba1e0c12dfa68cc34a212954f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a4432f8699c2646b8fc8cce35539c9f"><td class="memItemLeft" align="right" valign="top">QVBoxLayout *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#a6a4432f8699c2646b8fc8cce35539c9f">main_layout</a></td></tr>
+<tr class="separator:a6a4432f8699c2646b8fc8cce35539c9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d23255f6b8f316964a6e5b504c1e461"><td class="memItemLeft" align="right" valign="top">QWidget *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_parameters_widget__base.html#a3d23255f6b8f316964a6e5b504c1e461">parameters_widget</a></td></tr>
+<tr class="separator:a3d23255f6b8f316964a6e5b504c1e461"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_glv_save_load"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_glv_save_load')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_glv_save_load.html">GlvSaveLoad</a></td></tr>
 <tr class="memitem:a9e2eeca8c01e12968a5b1c124e1919e4 inherit pro_attribs_class_glv_save_load"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_glv_widget_save_load__base.html">GlvWidgetSaveLoad_base</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_save_load.html#a9e2eeca8c01e12968a5b1c124e1919e4">save_load_widget</a></td></tr>
 <tr class="separator:a9e2eeca8c01e12968a5b1c124e1919e4 inherit pro_attribs_class_glv_save_load"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -281,6 +301,68 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a46a52dcc1c94811c6e86ba97a72a131d" name="a46a52dcc1c94811c6e86ba97a72a131d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46a52dcc1c94811c6e86ba97a72a131d">&#9670;&#160;</a></span>has_height_decreased()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool GlvParametersWidget_base::has_height_decreased </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns true if the parameters widget last resize update was a height decrease. </p>
+
+</div>
+</div>
+<a id="a62c9153ad34e5dbc0b599713b4f438cc" name="a62c9153ad34e5dbc0b599713b4f438cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62c9153ad34e5dbc0b599713b4f438cc">&#9670;&#160;</a></span>heightChanged</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GlvParametersWidget_base::heightChanged </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">signal</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Emitted when the widget containing the parameters (only) is being resized vertically. </p>
+
+</div>
+</div>
+<a id="ab72ce255337a317d31e647a6b880f398" name="ab72ce255337a317d31e647a6b880f398"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab72ce255337a317d31e647a6b880f398">&#9670;&#160;</a></span>is_fully_visible()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool GlvParametersWidget_base::is_fully_visible </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns true if the parameters are fully visible (no scroll bars). </p>
+
+</div>
+</div>
 <a id="ad8b3cc9bc4a52423ec83733ddfdf2225" name="ad8b3cc9bc4a52423ec83733ddfdf2225"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad8b3cc9bc4a52423ec83733ddfdf2225">&#9670;&#160;</a></span>parameterChanged</h2>
 
@@ -305,6 +387,25 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Emitted when the parameter named <code>_parameter_name</code> has changed. </p>
+
+</div>
+</div>
+<a id="a8465d050db83f18f9d5640c6a94c07e6" name="a8465d050db83f18f9d5640c6a94c07e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8465d050db83f18f9d5640c6a94c07e6">&#9670;&#160;</a></span>set_adapt_max_height()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GlvParametersWidget_base::set_adapt_max_height </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_adapt</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Advanced setting. If true, max height will apply whenever scroll bar appears. If false (default), the widget can still be resized up to the last height before parameters size reduction. i.e.: Update height hint to fit to parameters widget. </p>
 
 </div>
 </div>
@@ -382,8 +483,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ac04e6a50196b40c7a625a0eabcfdfbda" name="ac04e6a50196b40c7a625a0eabcfdfbda"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac04e6a50196b40c7a625a0eabcfdfbda">&#9670;&#160;</a></span>set_layout_type_pv()</h2>
+<a id="ad2dd25f029629bfbac0b76c5d567d981" name="ad2dd25f029629bfbac0b76c5d567d981"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad2dd25f029629bfbac0b76c5d567d981">&#9670;&#160;</a></span>set_layout_type_protected()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -392,7 +493,7 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void GlvParametersWidget_base::set_layout_type_pv </td>
+          <td class="memname">void GlvParametersWidget_base::set_layout_type_protected </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="class_glv_parameters_widget__base.html#a703b7f11a9b165ef85fbb7688762cfed">LayoutType</a>&#160;</td>
           <td class="paramname"><em>_layout_type</em></td><td>)</td>
@@ -405,7 +506,7 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set layout type, private. </p>
+<p>Set layout type, protected. </p>
 
 </div>
 </div>
@@ -492,6 +593,25 @@ template&lt;class <a class="el" href="_glv_widget_data__spec___a_t_8cpp.html#a37
 
 </div>
 </div>
+<a id="a83fef981721a5c7750707e74dcf7ae0e" name="a83fef981721a5c7750707e74dcf7ae0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83fef981721a5c7750707e74dcf7ae0e">&#9670;&#160;</a></span>set_scrollable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GlvParametersWidget_base::set_scrollable </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_scrollable</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set parameters to be scrollable or not. Default state is true. </p>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="af62b99ba1e0c12dfa68cc34a212954f0" name="af62b99ba1e0c12dfa68cc34a212954f0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af62b99ba1e0c12dfa68cc34a212954f0">&#9670;&#160;</a></span>grid_layout</h2>
@@ -526,6 +646,50 @@ template&lt;class <a class="el" href="_glv_widget_data__spec___a_t_8cpp.html#a37
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="class_glv_parameters_widget__base.html#a703b7f11a9b165ef85fbb7688762cfed">LayoutType</a> GlvParametersWidget_base::layout_type = <a class="el" href="class_glv_parameters_widget__base.html#a703b7f11a9b165ef85fbb7688762cfeda74bf1583e8479eea5b5b5d8a9ce57481">LayoutType::Vertical</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6a4432f8699c2646b8fc8cce35539c9f" name="a6a4432f8699c2646b8fc8cce35539c9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a4432f8699c2646b8fc8cce35539c9f">&#9670;&#160;</a></span>main_layout</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QVBoxLayout* GlvParametersWidget_base::main_layout</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3d23255f6b8f316964a6e5b504c1e461" name="a3d23255f6b8f316964a6e5b504c1e461"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d23255f6b8f316964a6e5b504c1e461">&#9670;&#160;</a></span>parameters_widget</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QWidget* GlvParametersWidget_base::parameters_widget</td>
         </tr>
       </table>
   </td>

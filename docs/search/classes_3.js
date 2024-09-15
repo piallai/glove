@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['is_5farithmetic_0',['is_arithmetic',['../structslv_1_1ts_1_1is__arithmetic.html',1,'slv::ts']]]
+  ['has_5fname_5fmethod_0',['has_name_method',['../classhas__name__method.html',1,'']]]
 ];

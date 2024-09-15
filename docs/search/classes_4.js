@@ -1,9 +1,4 @@
 var searchData=
 [
-  ['qstandarditemmaker_0',['QStandardItemMaker',['../structglv_1_1tdata_1_1_q_standard_item_maker.html',1,'glv::tdata']]],
-  ['qstandarditemmaker_3c_20tdata_2c_20typename_20std_3a_3aenable_5fif_3c_20glv_3a_3atdata_3a_3aqstandarditemmodelmaker_3c_20tdata_20_3e_3a_3ais_5fspecialized_20_3e_3a_3atype_20_3e_1',['QStandardItemMaker&lt; Tdata, typename std::enable_if&lt; glv::tdata::QStandardItemModelMaker&lt; Tdata &gt;::is_specialized &gt;::type &gt;',['../structglv_1_1tdata_1_1_q_standard_item_maker_3_01_tdata_00_01typename_01std_1_1enable__if_3_01gl69909aedc07db5155d4c275cd32b0291.html',1,'glv::tdata']]],
-  ['qstandarditemmodelmaker_2',['QStandardItemModelMaker',['../structglv_1_1tdata_1_1_q_standard_item_model_maker.html',1,'glv::tdata']]],
-  ['qstandarditemmodelmaker_3c_20slvpool_3c_20tvalue_2c_20tlabel_20_3e_20_3e_3',['QStandardItemModelMaker&lt; SlvPool&lt; Tvalue, Tlabel &gt; &gt;',['../structglv_1_1tdata_1_1_q_standard_item_model_maker_3_01_slv_pool_3_01_tvalue_00_01_tlabel_01_4_01_4.html',1,'glv::tdata']]],
-  ['qstandarditemmodelmaker_3c_20std_3a_3amap_3c_20tkey_2c_20tvalue_20_3e_20_3e_4',['QStandardItemModelMaker&lt; std::map&lt; Tkey, Tvalue &gt; &gt;',['../structglv_1_1tdata_1_1_q_standard_item_model_maker_3_01std_1_1map_3_01_tkey_00_01_tvalue_01_4_01_4.html',1,'glv::tdata']]],
-  ['qstandarditemmodelmaker_3c_20tcontainer_2c_20typename_20std_3a_3aenable_5fif_3c_20slviscontainer_3c_20tcontainer_20_3e_3a_3avalue_20_26_26_21slvismap_3c_20tcontainer_20_3e_3a_3avalue_20_26_26_21std_3a_3ais_5fsame_3c_20tcontainer_2c_20std_3a_3astring_20_3e_3a_3avalue_20_3e_3a_3atype_20_3e_5',['QStandardItemModelMaker&lt; Tcontainer, typename std::enable_if&lt; SlvIsContainer&lt; Tcontainer &gt;::value &amp;&amp;!SlvIsMap&lt; Tcontainer &gt;::value &amp;&amp;!std::is_same&lt; Tcontainer, std::string &gt;::value &gt;::type &gt;',['../structglv_1_1tdata_1_1_q_standard_item_model_maker_3_01_tcontainer_00_01typename_01std_1_1enable1ed7af859c4022381e17e8ee783f0d91.html',1,'glv::tdata']]]
+  ['is_5farithmetic_0',['is_arithmetic',['../structslv_1_1ts_1_1is__arithmetic.html',1,'slv::ts']]]
 ];

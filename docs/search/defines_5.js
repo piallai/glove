@@ -692,6 +692,8 @@ var searchData=
   ['glvm_5fstaticvariable_689',['glvm_staticVariable',['../_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe',1,'SlvMacrosDeclarations.h']]],
   ['glvm_5fstaticvariable_5fbuff_690',['glvm_staticVariable_buff',['../_slv_macros_declarations_8h.html#a722064687976949c3ae608fde069f4b7',1,'SlvMacrosDeclarations.h']]],
   ['glvm_5fstaticvariable_5fconst_5fget_691',['glvm_staticVariable_const_get',['../_slv_macros_declarations_8h.html#aa059f5e6f8b9985661d623c62df6aed1',1,'SlvMacrosDeclarations.h']]],
-  ['glvm_5fstaticvariablegetset_692',['glvm_staticVariableGetSet',['../_slv_macros_declarations_8h.html#a6b1fbb89df614fe206ab41544a1a2a48',1,'SlvMacrosDeclarations.h']]],
-  ['glvm_5fstaticvariablegetset_5fbool_693',['glvm_staticVariableGetSet_bool',['../_slv_macros_declarations_8h.html#a1f176c4c02dd467eff59bf11f47a2eff',1,'SlvMacrosDeclarations.h']]]
+  ['glvm_5fstaticvariable_5fdef_692',['glvm_staticVariable_def',['../_slv_macros_declarations_8h.html#ae56d7e29680c0b5099d2b2b6ead47b44',1,'SlvMacrosDeclarations.h']]],
+  ['glvm_5fstaticvariable_5fimpl_693',['glvm_staticVariable_impl',['../_slv_macros_declarations_8h.html#ad00c5ccab1a3f9959853519cc579861e',1,'SlvMacrosDeclarations.h']]],
+  ['glvm_5fstaticvariablegetset_694',['glvm_staticVariableGetSet',['../_slv_macros_declarations_8h.html#a6b1fbb89df614fe206ab41544a1a2a48',1,'SlvMacrosDeclarations.h']]],
+  ['glvm_5fstaticvariablegetset_5fbool_695',['glvm_staticVariableGetSet_bool',['../_slv_macros_declarations_8h.html#a1f176c4c02dd467eff59bf11f47a2eff',1,'SlvMacrosDeclarations.h']]]
 ];

@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.1</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
    </div>
   </td>
  </tr>
@@ -163,32 +163,39 @@ $(function() {
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="preprocessor">#if OPTION_USE_THIRDPARTY_JSON==1</span></div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="preprocessor">#define glvm_pv_SlvParametrization_writeJson(N) slv::rw::json::writeJson(parameter##N-&gt;get_value(), _json[this-&gt;get_name()][parameter##N-&gt;get_name()]);</span></div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="preprocessor">#define glvm_pv_SlvParametrization_readJson(N)\</span></div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="preprocessor">nlohmann::json::const_iterator it = _json[this-&gt;get_name()].find(parameter##N-&gt;get_name());\</span></div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span><span class="preprocessor">if (it != _json[this-&gt;get_name()].end()) {\</span></div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="preprocessor">    T##N value = parameter##N-&gt;get_default_value();\</span></div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="preprocessor">    SlvStatus status_json = slv::rw::json::readJson(value, *it);\</span></div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="preprocessor">    if (status_json) {\</span></div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span><span class="preprocessor">        const_cast&lt;SlvParameter&lt;T##N&gt;*&gt;(parameter##N)-&gt;set_value(value);\</span></div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="preprocessor">    } else {\</span></div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span><span class="preprocessor">        status += status_json;\</span></div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span><span class="preprocessor">        status += SlvStatus(SlvStatus::statusType::warning, &quot;Problem reading parameter : &quot;</span> + parameter##N-&gt;get_name());\</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    }\</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>} else {\</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    status += SlvStatus(SlvStatus::statusType::warning, &quot;Can not find parameter : &quot; + parameter##N-&gt;get_name());\</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>}\</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>if (!status) {\</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    status += SlvStatus(SlvStatus::statusType::warning, &quot;Problem reading parametrization : &quot; + this-&gt;get_name());\</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>}</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span> </div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno"><a class="line" href="_slv_parametrization0_8h.html#a6f521772e9748236ac6601f17e01145e">  118</a></span><span class="preprocessor">#define glvm_pv_SlvParametrization_abide(current, previous_parametrization) \</span></div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span><span class="preprocessor">bool abide_rules() {\</span></div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span><span class="preprocessor">    bool l_abide_rules = previous_parametrization::abide_rules();\</span></div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span><span class="preprocessor">    l_abide_rules &amp;= const_cast&lt;SlvParameter&lt;T##current&gt;*&gt;(parameter##current)-&gt;abide_rules();\</span></div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="preprocessor">    return l_abide_rules;\</span></div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span><span class="preprocessor">}</span></div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="preprocessor">if (status.get_type() != SlvStatus::statusType::critical) {\</span></div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span><span class="preprocessor">    nlohmann::json::const_iterator it_main = _json.find(this-&gt;get_name());\</span></div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="preprocessor">    if (it_main != _json.end()) {\</span></div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="preprocessor">        nlohmann::json::const_iterator it = it_main-&gt;find(parameter##N-&gt;get_name());\</span></div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="preprocessor">        SlvStatus status_parameter;\</span></div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span><span class="preprocessor">        if (it != it_main-&gt;end()) {\</span></div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="preprocessor">            T##N value = parameter##N-&gt;get_default_value();\</span></div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span><span class="preprocessor">            SlvStatus status_json = slv::rw::json::readJson(value, *it);\</span></div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span><span class="preprocessor">            if (status_json) {\</span></div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span><span class="preprocessor">                const_cast&lt;SlvParameter&lt;T##N&gt;*&gt;(parameter##N)-&gt;set_value(value);\</span></div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span><span class="preprocessor">            } else {\</span></div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="preprocessor">                status_parameter = SlvStatus(SlvStatus::statusType::warning, &quot;Problem reading parameter : &quot;</span> + parameter##N-&gt;get_name());\</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>                status_parameter.add_sub_status(status_json);\</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>            }\</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>        } else {\</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>            status_parameter = SlvStatus(SlvStatus::statusType::warning, &quot;Can not find parameter : &quot; + parameter##N-&gt;get_name());\</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>        }\</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>        if (!status_parameter) {\</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>            status += SlvStatus(SlvStatus::statusType::warning, &quot;Problem reading parametrization : &quot; + this-&gt;get_name());\</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>            status.add_sub_status(status_parameter);\</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>        }\</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    }\</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>}</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> </div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span><span class="preprocessor">#include &quot;<a class="code" href="_slv_parametrization_constructor_macro_8h.html">param/SlvParametrizationConstructorMacro.h</a>&quot;</span></div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno"><a class="line" href="_slv_parametrization0_8h.html#a6f521772e9748236ac6601f17e01145e">  125</a></span><span class="preprocessor">#define glvm_pv_SlvParametrization_abide(current, previous_parametrization) \</span></div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span><span class="preprocessor">bool abide_rules() {\</span></div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span><span class="preprocessor">    bool l_abide_rules = previous_parametrization::abide_rules();\</span></div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span><span class="preprocessor">    l_abide_rules &amp;= const_cast&lt;SlvParameter&lt;T##current&gt;*&gt;(parameter##current)-&gt;abide_rules();\</span></div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span><span class="preprocessor">    return l_abide_rules;\</span></div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span><span class="preprocessor">}</span></div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span> </div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="preprocessor">#include &quot;<a class="code" href="_slv_parametrization_constructor_macro_8h.html">param/SlvParametrizationConstructorMacro.h</a>&quot;</span></div>
 <div class="ttc" id="a_slv_is_parametrization_8h_html"><div class="ttname"><a href="_slv_is_parametrization_8h.html">SlvIsParametrization.h</a></div></div>
 <div class="ttc" id="a_slv_parametrization__base_8h_html"><div class="ttname"><a href="_slv_parametrization__base_8h.html">SlvParametrization_base.h</a></div></div>
 <div class="ttc" id="a_slv_parametrization_constructor_macro_8h_html"><div class="ttname"><a href="_slv_parametrization_constructor_macro_8h.html">SlvParametrizationConstructorMacro.h</a></div></div>

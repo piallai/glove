@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.1</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
    </div>
   </td>
  </tr>
@@ -105,6 +105,10 @@ Macros</h2></td></tr>
 <tr class="separator:ad513a90c6260690d8d60641f3ae4cd59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89e76f8e2c844e5a4f1c23f4c9db8dbe"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe">glvm_staticVariable</a>(const,  type,  name,  value)&#160;&#160;&#160;static const type&amp; name(){static const type* name = new type(value);return *name;}</td></tr>
 <tr class="separator:a89e76f8e2c844e5a4f1c23f4c9db8dbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae56d7e29680c0b5099d2b2b6ead47b44"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_macros_declarations_8h.html#ae56d7e29680c0b5099d2b2b6ead47b44">glvm_staticVariable_def</a>(const,  type,  name)&#160;&#160;&#160;static const type&amp; name();</td></tr>
+<tr class="separator:ae56d7e29680c0b5099d2b2b6ead47b44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad00c5ccab1a3f9959853519cc579861e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_macros_declarations_8h.html#ad00c5ccab1a3f9959853519cc579861e">glvm_staticVariable_impl</a>(const,  type,  encaspulation,  name,  value)&#160;&#160;&#160;const type&amp; encaspulation::name(){static const type* name = new type(value);return *name;}</td></tr>
+<tr class="separator:ad00c5ccab1a3f9959853519cc579861e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b1fbb89df614fe206ab41544a1a2a48"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_macros_declarations_8h.html#a6b1fbb89df614fe206ab41544a1a2a48">glvm_staticVariableGetSet</a>(type,  name,  init_value)</td></tr>
 <tr class="separator:a6b1fbb89df614fe206ab41544a1a2a48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f176c4c02dd467eff59bf11f47a2eff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_macros_declarations_8h.html#a1f176c4c02dd467eff59bf11f47a2eff">glvm_staticVariableGetSet_bool</a>(name,  init_value)</td></tr>
@@ -487,6 +491,86 @@ Macros</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line"><span class="keyword">public</span>: <span class="keyword">static</span> <span class="keyword">const</span> type&amp; name(){<span class="keyword">static</span> <span class="keyword">const</span> type* name = <span class="keyword">new</span> type(value);<span class="keywordflow">return</span> *name;}\</div>
 <div class="line"><span class="keyword">public</span>: <span class="keyword">const</span> type&amp; get_##name()<span class="keyword"> const </span>{<span class="keywordflow">return</span> name();}</div>
 </div><!-- fragment --><p>Define a static variable with a non static accessor. Macros are explicitly written because of macro inclusion limitation. </p>
+
+</div>
+</div>
+<a id="ae56d7e29680c0b5099d2b2b6ead47b44" name="ae56d7e29680c0b5099d2b2b6ead47b44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae56d7e29680c0b5099d2b2b6ead47b44">&#9670;&#160;</a></span>glvm_staticVariable_def</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define glvm_staticVariable_def</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">const, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">type, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">name&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;static const type&amp; name();</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad00c5ccab1a3f9959853519cc579861e" name="ad00c5ccab1a3f9959853519cc579861e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad00c5ccab1a3f9959853519cc579861e">&#9670;&#160;</a></span>glvm_staticVariable_impl</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define glvm_staticVariable_impl</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">const, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">type, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">encaspulation, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">name, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">value&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;const type&amp; encaspulation::name(){static const type* name = new type(value);return *name;}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['containerhandler_3c_20_5ftcontainer_2c_20std_3a_3aenable_5fif_3c_20slviscontainer_3c_20_5ftcontainer_3a_3avalue_5ftype_20_3e_3a_3avalue_20_26_26_21slvismap_3c_20_5ftcontainer_3a_3avalue_5ftype_20_3e_3a_3avalue_20_26_26_21std_3a_3ais_5fsame_3c_20_5ftcontainer_3a_3avalue_5ftype_2c_20std_3a_3astring_20_3e_3a_3avalue_20_3e_3a_3atype_20_3e_0',['ContainerHandler&lt; _Tcontainer, std::enable_if&lt; SlvIsContainer&lt; _Tcontainer::value_type &gt;::value &amp;&amp;!SlvIsMap&lt; _Tcontainer::value_type &gt;::value &amp;&amp;!std::is_same&lt; _Tcontainer::value_type, std::string &gt;::value &gt;::type &gt;',['../structglv_1_1tdata_1_1_q_standard_item_model_maker_3_01_tcontainer_00_01typename_01std_1_1enable8a89cf56a4e97e71fd35ea63b27d155f.html',1,'glv::tdata::QStandardItemModelMaker&lt; Tcontainer, typename std::enable_if&lt; SlvIsContainer&lt; Tcontainer &gt;::value &amp;&amp;!SlvIsMap&lt; Tcontainer &gt;::value &amp;&amp;!std::is_same&lt; Tcontainer, std::string &gt;::value &gt;::type &gt;']]]
+  ['arguments_0',['Arguments',['../struct_slv_c_l_i_1_1_arguments.html',1,'SlvCLI']]]
 ];

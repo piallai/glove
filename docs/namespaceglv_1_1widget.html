@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.1</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
    </div>
   </td>
  </tr>
@@ -81,8 +81,8 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a0df9b18c60bfadfcdad762faa0b341fe"><td class="memItemLeft" align="right" valign="top">QScrollArea *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1widget.html#a0df9b18c60bfadfcdad762faa0b341fe">make_scrollable</a> (QWidget *_widget_scroll, QWidget *_widget_over)</td></tr>
-<tr class="separator:a0df9b18c60bfadfcdad762faa0b341fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ed9e299edcb1a17e905603c4c81ce73"><td class="memItemLeft" align="right" valign="top">QScrollArea *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1widget.html#a0ed9e299edcb1a17e905603c4c81ce73">make_scrollable</a> (QWidget *_widget_scroll, QWidget *_widget_over, int _left_m=2, int _top_m=2, int _right_m=2, int _bottom_m=2)</td></tr>
+<tr class="separator:a0ed9e299edcb1a17e905603c4c81ce73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c2ebf4107e9556a87885cf3f294d979"><td class="memItemLeft" align="right" valign="top">QScrollArea *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1widget.html#a5c2ebf4107e9556a87885cf3f294d979">make_scrollable</a> (QLayout *_layout_scroll, QWidget *_widget_over)</td></tr>
 <tr class="separator:a5c2ebf4107e9556a87885cf3f294d979"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf1846cf801f6cee50188e82a1e935e1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1widget.html#adf1846cf801f6cee50188e82a1e935e1">clear</a> (QWidget *_widget)</td></tr>
@@ -213,8 +213,8 @@ template&lt;class Tcast , class Targ &gt; </div>
 
 </div>
 </div>
-<a id="a0df9b18c60bfadfcdad762faa0b341fe" name="a0df9b18c60bfadfcdad762faa0b341fe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0df9b18c60bfadfcdad762faa0b341fe">&#9670;&#160;</a></span>make_scrollable() <span class="overload">[2/2]</span></h2>
+<a id="a0ed9e299edcb1a17e905603c4c81ce73" name="a0ed9e299edcb1a17e905603c4c81ce73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ed9e299edcb1a17e905603c4c81ce73">&#9670;&#160;</a></span>make_scrollable() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -229,7 +229,31 @@ template&lt;class Tcast , class Targ &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">QWidget *&#160;</td>
-          <td class="paramname"><em>_widget_over</em>&#160;</td>
+          <td class="paramname"><em>_widget_over</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>_left_m</em> = <code>2</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>_top_m</em> = <code>2</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>_right_m</em> = <code>2</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>_bottom_m</em> = <code>2</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -238,7 +262,7 @@ template&lt;class Tcast , class Targ &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p><code>_widget_scroll:</code> widget containing elements to be scrolled. <code>_widget_over</code> : final widget. </p>
+<p><code>_widget_scroll:</code> widget containing elements to be scrolled. <code>_widget_over</code> : final widget. Can provid margin for intermediate layout. </p>
 
 </div>
 </div>

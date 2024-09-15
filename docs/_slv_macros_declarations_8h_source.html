@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.1</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
    </div>
   </td>
  </tr>
@@ -128,25 +128,30 @@ $(function() {
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe">   66</a></span><span class="preprocessor">#define glvm_staticVariable(const, type, name, value)\</span></div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">static const type&amp; name(){static const type* name = new type(value);return *name;}</span></div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#a6b1fbb89df614fe206ab41544a1a2a48">   70</a></span><span class="preprocessor">#define glvm_staticVariableGetSet(type, name, init_value)\</span></div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="preprocessor">private: glvm_staticVariable(, type, name, init_value)\</span></div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="preprocessor">public: glvm_staticGetVariable(const, type, name)\</span></div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="preprocessor">public: glvm_staticSetVariable(type, name)</span></div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#a1f176c4c02dd467eff59bf11f47a2eff">   76</a></span><span class="preprocessor">#define glvm_staticVariableGetSet_bool(name, init_value)\</span></div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="preprocessor">private: glvm_staticVariable(, bool, l_##name, init_value)\</span></div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="preprocessor">public: glvm_staticGetVariable_bool(name)\</span></div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="preprocessor">public: glvm_staticSetVariable_bool(name)</span></div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#a722064687976949c3ae608fde069f4b7">   82</a></span><span class="preprocessor">#define glvm_staticVariable_buff(type, name, value)\</span></div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="preprocessor">glvm_staticVariable(, type, name, value)</span></div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#aa059f5e6f8b9985661d623c62df6aed1">   87</a></span><span class="preprocessor">#define glvm_staticVariable_const_get(type, name, value)\</span></div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span><span class="preprocessor">public: static const type&amp; name(){static const type* name = new type(value);return *name;}\</span></div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span><span class="preprocessor">public: const type&amp; get_##name() const {return name();}</span></div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="comment">// Equivalent to:</span></div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="comment">// public: glvm_staticVariable(, type, name, value)\</span></div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><span class="comment">// public: glvm_GetVariable(const, type, name)</span></div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#ae56d7e29680c0b5099d2b2b6ead47b44">   69</a></span><span class="preprocessor">#define glvm_staticVariable_def(const, type, name)\</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><span class="preprocessor">static const type&amp; name();</span></div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#ad00c5ccab1a3f9959853519cc579861e">   71</a></span><span class="preprocessor">#define glvm_staticVariable_impl(const, type, encaspulation, name, value)\</span></div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="preprocessor">const type&amp; encaspulation::name(){static const type* name = new type(value);return *name;}</span></div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#a6b1fbb89df614fe206ab41544a1a2a48">   75</a></span><span class="preprocessor">#define glvm_staticVariableGetSet(type, name, init_value)\</span></div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="preprocessor">private: glvm_staticVariable(, type, name, init_value)\</span></div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="preprocessor">public: glvm_staticGetVariable(const, type, name)\</span></div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="preprocessor">public: glvm_staticSetVariable(type, name)</span></div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#a1f176c4c02dd467eff59bf11f47a2eff">   81</a></span><span class="preprocessor">#define glvm_staticVariableGetSet_bool(name, init_value)\</span></div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span><span class="preprocessor">private: glvm_staticVariable(, bool, l_##name, init_value)\</span></div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="preprocessor">public: glvm_staticGetVariable_bool(name)\</span></div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="preprocessor">public: glvm_staticSetVariable_bool(name)</span></div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#a722064687976949c3ae608fde069f4b7">   87</a></span><span class="preprocessor">#define glvm_staticVariable_buff(type, name, value)\</span></div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span><span class="preprocessor">glvm_staticVariable(, type, name, value)</span></div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno"><a class="line" href="_slv_macros_declarations_8h.html#aa059f5e6f8b9985661d623c62df6aed1">   92</a></span><span class="preprocessor">#define glvm_staticVariable_const_get(type, name, value)\</span></div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span><span class="preprocessor">public: static const type&amp; name(){static const type* name = new type(value);return *name;}\</span></div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span><span class="preprocessor">public: const type&amp; get_##name() const {return name();}</span></div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="comment">// Equivalent to:</span></div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span><span class="comment">// public: glvm_staticVariable(, type, name, value)\</span></div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="comment">// public: glvm_GetVariable(const, type, name)</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
