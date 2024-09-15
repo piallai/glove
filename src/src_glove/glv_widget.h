@@ -25,8 +25,9 @@ class QScrollArea;
 namespace glv {
 	/*! Usefull functions for widget handling.*/
 	namespace widget {
-		/*! \p _widget_scroll: widget containing elements to be scrolled. \p _widget_over : final widget.*/
-		QScrollArea* make_scrollable(QWidget* _widget_scroll, QWidget* _widget_over);
+		/*! \p _widget_scroll: widget containing elements to be scrolled. \p _widget_over : final widget.
+		* Can provid margin for intermediate layout.*/
+		QScrollArea* make_scrollable(QWidget* _widget_scroll, QWidget* _widget_over, int _left_m = 2, int _top_m = 2, int _right_m = 2, int _bottom_m = 2);
 		QScrollArea* make_scrollable(QLayout* _layout_scroll, QWidget* _widget_over);
 
 		/*! Clear the layout of \p _widget.*/

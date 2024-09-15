@@ -29,32 +29,56 @@ template <>
 class GlvParametersWidget<SlvParametrization0> : public GlvParametersWidget_base {
 
 public:
-    GlvParametersWidget(const SlvParametrization0& _parametered_object, bool l_editable) {}
-    ~GlvParametersWidget() {}
+    GlvParametersWidget(const SlvParametrization0& _parametered_object, bool l_editable);
+    ~GlvParametersWidget();
     /*! Set parametrization.*/
-    void set(const SlvParametrization0& _parametered_object) {}
+    void set(const SlvParametrization0& _parametered_object);
     /*! Get parametrization. Tparametrization is the class inheriting from SlvParametrization.*/
     template <class Tparametrization>
-    Tparametrization get() const {
-        return Tparametrization();
-    }
+    Tparametrization get() const;
     /*! Set the parameters as editable or not.*/
-    void set_editable(bool l_editable) {}
+    void set_editable(bool l_editable);
 protected:
-    void assign_recursive(SlvParametrization0& _parametrization) const {}
+    void assign_recursive(SlvParametrization0& _parametrization) const;
     /*! Set the layout of parameters as either
     * Vertical : stack of widgets
     * Grid : parameters name are in the first column, their respective interaction widget on the second one.*/
-    void set_layout_type(LayoutType _layout_type) {
-        GlvParametersWidget_base::set_layout_type_pv(_layout_type);
-    }
+    void set_layout_type(LayoutType _layout_type);
     /*! Enable or not display of parameter types in WhatsThis.*/
-    void enable_data_type_info(bool _l_enable) {}
+    void enable_data_type_info(bool _l_enable);
 private:
-    int getNparameters() const {
-        return 0;
-    }
+    int get_Nparameters() const;
 };
+
+inline GlvParametersWidget<SlvParametrization0>::GlvParametersWidget(const SlvParametrization0& _parametered_object, bool l_editable) {
+
+}
+
+inline GlvParametersWidget<SlvParametrization0>::~GlvParametersWidget() {
+
+}
+
+inline void GlvParametersWidget<SlvParametrization0>::set(const SlvParametrization0& _parametered_object) {}
+
+template <class Tparametrization>
+Tparametrization GlvParametersWidget<SlvParametrization0>::get() const {
+    return Tparametrization();
+}
+
+inline void GlvParametersWidget<SlvParametrization0>::set_editable(bool l_editable) {}
+
+inline void GlvParametersWidget<SlvParametrization0>::assign_recursive(SlvParametrization0& _parametrization) const {}
+
+inline void GlvParametersWidget<SlvParametrization0>::set_layout_type(LayoutType _layout_type) {
+    GlvParametersWidget_base::set_layout_type_protected(_layout_type);
+}
+
+inline void GlvParametersWidget<SlvParametrization0>::enable_data_type_info(bool _l_enable) {}
+
+inline int GlvParametersWidget<SlvParametrization0>::get_Nparameters() const {
+    return 0;
+}
+
 
 #define glvm_pv_GlvParametersWidget_make_parameter(i) \
 parameter##i = new GlvParameterWidget<Tparam##i>(_parametered_object.get_parameter##i(), l_editable);\
@@ -118,7 +142,7 @@ class GlvParametersWidget< SlvParametrization##i<spec_Tparameters_current> > : p
         parameter##i->enable_data_type_info(_l_enable);\
     }\
 private:\
-    int getNparameters() const {\
+    int get_Nparameters() const {\
         return i;\
     }\
 };

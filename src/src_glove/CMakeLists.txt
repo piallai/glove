@@ -181,7 +181,6 @@ SET(GLOVE_SOURCES
 	GlvDialogData.h
 	
 	GlvCLI.h
-	GlvCLI.cpp
 
 )
 

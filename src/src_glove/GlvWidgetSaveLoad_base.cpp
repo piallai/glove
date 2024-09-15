@@ -30,18 +30,18 @@ GlvWidgetSaveLoad_base::GlvWidgetSaveLoad_base(const SlvFileExtensions& _allowed
 	allowed_extensions = _allowed_extensions;
 
 	if (_orientation == Qt::Orientation::Horizontal) {
-		layout = new QHBoxLayout;
+		main_layout = new QHBoxLayout;
 	} else if (_orientation == Qt::Orientation::Vertical) {
-		layout = new QVBoxLayout;
+		main_layout = new QVBoxLayout;
 	}
-	layout->setContentsMargins(0, 0, 0, 0);
+	main_layout->setContentsMargins(0, 0, 0, 0);
 	QPushButton* save_button = new QPushButton(QString(tr("Save")));
 	save_button->setToolTip(tr("Save ") + glv::toQString(_data_name) + tr(" in a file."));
-	layout->addWidget(save_button);
+	main_layout->addWidget(save_button);
 	QPushButton* load_button = new QPushButton(QString(tr("Load")));
 	load_button->setToolTip(tr("Load ") + glv::toQString(_data_name) + tr(" from a file."));
-	layout->addWidget(load_button);
-	this->setLayout(layout);
+	main_layout->addWidget(load_button);
+	this->setLayout(main_layout);
 
 	connect(save_button, SIGNAL(clicked()), this, SLOT(save_slot()));
 	connect(load_button, SIGNAL(clicked()), this, SLOT(load_slot()));
@@ -56,23 +56,23 @@ GlvWidgetSaveLoad_base::~GlvWidgetSaveLoad_base() {
 void GlvWidgetSaveLoad_base::set_orientation(Qt::Orientation _orientation) {
 
 	QBoxLayout* new_layout = NULL;
-	if (_orientation == Qt::Orientation::Vertical && dynamic_cast<QHBoxLayout*>(layout)) {
+	if (_orientation == Qt::Orientation::Vertical && dynamic_cast<QHBoxLayout*>(main_layout)) {
 		new_layout = new QVBoxLayout;
-		while (layout->count() > 0) {
-			new_layout->addWidget(layout->itemAt(0)->widget());
+		while (main_layout->count() > 0) {
+			new_layout->addWidget(main_layout->itemAt(0)->widget());
 		}
-	} else if (_orientation == Qt::Orientation::Horizontal && dynamic_cast<QVBoxLayout*>(layout)) {
+	} else if (_orientation == Qt::Orientation::Horizontal && dynamic_cast<QVBoxLayout*>(main_layout)) {
 		new_layout = new QHBoxLayout;
-		while (layout->count() > 0) {
-			new_layout->addWidget(layout->itemAt(0)->widget());
+		while (main_layout->count() > 0) {
+			new_layout->addWidget(main_layout->itemAt(0)->widget());
 		}
 	}
 	new_layout->setContentsMargins(0, 0, 0, 0);
 
 	if (new_layout) {
-		delete layout;
-		layout = new_layout;
-		setLayout(layout);
+		delete main_layout;
+		main_layout = new_layout;
+		setLayout(main_layout);
 	}
 
 }
@@ -171,10 +171,17 @@ bool GlvWidgetSaveLoad_base::interactive_load_parameters(const std::string& _fil
 
 		QString message = tr("When loading file:") + "\n";
 		message += glv::toQString(_file_name) + "\n";
-		message += glv::flag::toQString(_status, true);
-		message += "\n\n" + tr("Do you want to load the parameters anyway ?");
+		message += glv::toQString(_status.to_string(true));
 
-		QMessageBox::StandardButton result = QMessageBox::question(this, "Load json parametrization", message, QMessageBox::Ok | QMessageBox::Cancel);
+		QMessageBox::StandardButtons buttons(QMessageBox::Ok);
+		if (_status.get_type() != SlvStatus::statusType::critical) {
+			message += "\n\n" + tr("Do you want to load the parameters anyway ?");
+			buttons |= QMessageBox::Cancel;
+		} else {
+			message += "\n\n" + glv::toQString(SlvStatus::statusType::critical) + " : " + tr("Can not read file. Default parametrization will be set.");
+		}
+
+		QMessageBox::StandardButton result = QMessageBox::question(this, "Load parametrization from file", message, buttons);
 		if (result == QMessageBox::Cancel) {
 			return false;
 		} else {

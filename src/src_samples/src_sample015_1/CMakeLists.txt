@@ -15,11 +15,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-PROJECT(Sample014)
+PROJECT(Sample015_1)
 
 set(
 	${PROJECT_NAME}_PROJECT_SRCS
-    sample014.cpp
+    sample015_1.cpp
 )
 
 set(GLVSAMPLE_INCLUDE_DIR

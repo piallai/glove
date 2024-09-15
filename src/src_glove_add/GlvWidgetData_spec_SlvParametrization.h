@@ -27,6 +27,7 @@ class GlvWidgetData<Tparametrization, typename std::enable_if<std::is_base_of<Sl
 public:
     GlvWidgetData(Tparametrization _value = Tparametrization(), QWidget* _parent = 0) :GlvParametrizationWidget<Tparametrization>(_value, true, _parent) {
         this->set_checkable_collapse(true);
+        this->set_scrollable(false);
     }
     ~GlvWidgetData() {}
 

@@ -54,5 +54,6 @@ add_custom_target(_Readme_md ALL
     ReadWriteFile/ReadWriteFile_class_text.md
     ReadWriteFile/ReadWriteFile_specs.md
     Specializations.md
-    CLI/CLI.md
+    CLI/CLI_GUI.md
+    CLI/CLI_parametrization.md
 )

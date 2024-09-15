@@ -43,6 +43,9 @@ private:
     //SlvSortDescending< SlvStatusSignal, int >* status_signals;//pointer to just use forward decalaration
     std::vector<SlvStatusSignal>* status_signals;//pointer to just use forward decalaration
 
+    /*! Status that are related to this one.*/
+    std::vector<SlvStatus*> sub_status;
+
     /*! Add a status \p _type with a corresponding \p \message.*/
     void push(const statusType& _type, const std::string& _message);
 
@@ -57,6 +60,12 @@ public:
     const_iterator begin() const;
     /*! Iterator to the last element.*/
     const_iterator end() const;
+
+    typedef typename std::vector<SlvStatus*>::const_iterator const_iterator_sub;
+    /*! Iterator to the first element of sub status.*/
+    const_iterator_sub begin_sub() const;
+    /*! Iterator to the last element of sub status.*/
+    const_iterator_sub end_sub() const;
 
     /*! Number of status contained.*/
     size_t size() const;
@@ -76,10 +85,32 @@ public:
     /*! Sum status and reordrer them.*/
     SlvStatus& operator+=(const SlvStatus& _status);
 
+    /*! Number of sub status contained.*/
+    size_t size_sub() const;
+    /*! Whether the status has sub status or not.*/
+    bool has_sub_status() const;
+    /*! Get sub status number \p i.*/
+    const SlvStatus& get_sub_status(const unsigned int i) const;
+    /*! Add a \p _status which is specifically related to this status.*/
+    void add_sub_status(const SlvStatus& _status);
+    
+    /*! Get string corresponding to the status messages.
+    * \p _l_show_all : if false get only most critical message (if any). If true get all messages.*/
+    std::string to_string(bool _l_show_all) const;
+
 private:
 
-    static bool sortStatus(SlvStatusSignal _signal1, SlvStatusSignal _signal2);
+    static bool sortStatusSignal(SlvStatusSignal _signal1, SlvStatusSignal _signal2);
+    static bool sortStatus(const SlvStatus* _status1, const SlvStatus* _status2);
+    /* Recursively get the most critical status signal.*/
+    const SlvStatusSignal& get_status_signal() const;
+    /*! Delete and clear sub status.*/
+    void clear_sub_status();
     void ostream(std::ostream& _os) const;
+    /*! Get string corresponding to the status messages.
+    * \p _l_show_all : if false get only most critical message (if any). If true get all messages.*/
+    std::string to_string(bool _l_show_all, int _depth) const;
+
 };
 
 #include "SlvEnum.h"

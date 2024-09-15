@@ -21,7 +21,7 @@
 
 #define GLOVE_VERSION_MAJOR 0
 #define GLOVE_VERSION_MINOR 7
-#define GLOVE_VERSION_PATCH 1
+#define GLOVE_VERSION_PATCH 2
 
 #ifndef GLOVE_DISABLE_QT
 #define OPTION_ENABLE_SLV_QT_PROGRESS 1
@@ -120,9 +120,12 @@
 #include <QScrollArea>
 #include <QDir>
 #include <QFileDialog>
+#include <QScrollBar>
+#include <QStyle>
+#include <QScreen>
+#include <QResizeEvent>
 #include <QThread>
 #include <cstddef>
-#include <QScrollBar>
 #include <QPainter>
 #include <QSlider>
 #endif
@@ -900,6 +903,11 @@ public: glvm_SetVariable_bool(name)
 /*! Define a static variable.*/
 #define glvm_staticVariable(const, type, name, value)\
 static const type& name(){static const type* name = new type(value);return *name;}
+
+#define glvm_staticVariable_def(const, type, name)\
+static const type& name();
+#define glvm_staticVariable_impl(const, type, encaspulation, name, value)\
+const type& encaspulation::name(){static const type* name = new type(value);return *name;}
 
 /*! Define a static variable with static get/set accessors.*/
 #define glvm_staticVariableGetSet(type, name, init_value)\
@@ -4283,6 +4291,9 @@ private:
     //SlvSortDescending< SlvStatusSignal, int >* status_signals;//pointer to just use forward decalaration
     std::vector<SlvStatusSignal>* status_signals;//pointer to just use forward decalaration
 
+    /*! Status that are related to this one.*/
+    std::vector<SlvStatus*> sub_status;
+
     /*! Add a status \p _type with a corresponding \p \message.*/
     void push(const statusType& _type, const std::string& _message);
 
@@ -4297,6 +4308,12 @@ public:
     const_iterator begin() const;
     /*! Iterator to the last element.*/
     const_iterator end() const;
+
+    typedef typename std::vector<SlvStatus*>::const_iterator const_iterator_sub;
+    /*! Iterator to the first element of sub status.*/
+    const_iterator_sub begin_sub() const;
+    /*! Iterator to the last element of sub status.*/
+    const_iterator_sub end_sub() const;
 
     /*! Number of status contained.*/
     size_t size() const;
@@ -4316,10 +4333,32 @@ public:
     /*! Sum status and reordrer them.*/
     SlvStatus& operator+=(const SlvStatus& _status);
 
+    /*! Number of sub status contained.*/
+    size_t size_sub() const;
+    /*! Whether the status has sub status or not.*/
+    bool has_sub_status() const;
+    /*! Get sub status number \p i.*/
+    const SlvStatus& get_sub_status(const unsigned int i) const;
+    /*! Add a \p _status which is specifically related to this status.*/
+    void add_sub_status(const SlvStatus& _status);
+    
+    /*! Get string corresponding to the status messages.
+    * \p _l_show_all : if false get only most critical message (if any). If true get all messages.*/
+    std::string to_string(bool _l_show_all) const;
+
 private:
 
-    static bool sortStatus(SlvStatusSignal _signal1, SlvStatusSignal _signal2);
+    static bool sortStatusSignal(SlvStatusSignal _signal1, SlvStatusSignal _signal2);
+    static bool sortStatus(const SlvStatus* _status1, const SlvStatus* _status2);
+    /* Recursively get the most critical status signal.*/
+    const SlvStatusSignal& get_status_signal() const;
+    /*! Delete and clear sub status.*/
+    void clear_sub_status();
     void ostream(std::ostream& _os) const;
+    /*! Get string corresponding to the status messages.
+    * \p _l_show_all : if false get only most critical message (if any). If true get all messages.*/
+    std::string to_string(bool _l_show_all, int _depth) const;
+
 };
 
 glvm_SlvEnum_implementation(SlvStatus::statusType, ok, information, warning, critical)
@@ -4637,7 +4676,7 @@ class GlvWidgetSaveLoad_base : public QWidget {
 
 private:
 
-	QBoxLayout* layout;
+	QBoxLayout* main_layout;
 	GlvOpenFile* open_file;
 	SlvFileExtensions allowed_extensions;
 
@@ -5118,7 +5157,187 @@ std::istream& operator>>(std::istream& _is, std::pair<T1, T2>& _pair) {
     return _is;
 }
 
+struct SlvCLI {
+
+	/*! Parse \p _argc and \p _argv and return the corresponding parametrization.*/
+	template <class Tparametrization>
+	static Tparametrization parse(int _argc, char* _argv[]);
+
+	struct Arguments;
+
+	/*! Parse \p _argc and \p _argv and apply to \p _parametrization.*/
+	template <class Tparametrization>
+	static std::pair<Arguments, SlvStatus> parse(Tparametrization& _parametrization, int _argc, char* _argv[]);
+	/*! Apply \p _arguments to \p _parametrization.
+	* If conflicts exist in the arguments, they are being filtered out of \p _arguments. Ex: redundant multiple parameter name correspondences.*/
+	template <class Tparametrization>
+	static SlvStatus parse(Tparametrization& _parametrization, Arguments& _arguments);
+
+	/*! Returns true if \p _argv contains "-glove".*/
+	static bool has_glove(int _argc, char* _argv[]);
+
+	/*! Create argc/argv based on provided arguments.*/
+	static std::pair<int, char**> get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments);
+
+	struct Arguments {
+
+	public :
+
+		/*! Parameter identifier (starting with '-') and corresponding value.*/
+		typedef std::map<std::string, std::vector<std::string> > Tparameters;
+
+	private:
+
+		/*! Parameter identifier (starting with '-') and corresponding value.*/
+		Tparameters parameter_arguments;
+		/*! Arguments that are not parameters.*/
+		std::vector<std::string> solo_arguments;
+		/*! Single argument of the -glove cli input. Used for loading a parametrization.*/
+		std::string glove_argument;
+		/*! Parse arguments.*/
+		void parse(int _argc, char* _argv[]);
+
+	public:
+
+		Arguments(int _argc, char* _argv[]);
+		/*! Get arguments that are not parameters.*/
+		const std::vector<std::string>& get_solo_arguments() const;
+		/*! Get list of arguments and their corresponding value.*/
+		const Tparameters& get_parameter_arguments() const;
+		/*! Get single argument of the -glove cli input. Used for loading a parametrization.*/
+		const std::string& get_glove_argument() const;
+		/*! Return true if the instance does not store any parameter.*/
+		bool is_empty() const;
+		/*! Remove all arguments except those which name is in \p _arguments_remaining.*/
+		void filter(const std::vector<std::string>& _arguments_remaining);
+		
+	};
+
+};
+
+template <class Tparametrization>
+Tparametrization SlvCLI::parse(int _argc, char* _argv[]) {
+
+	Tparametrization parametrization;
+	parse(parametrization, _argc, _argv);
+
+	return parametrization;
+}
+
+template <class Tparametrization>
+std::pair<SlvCLI::Arguments, SlvStatus> SlvCLI::parse(Tparametrization& _parametrization, int _argc, char* _argv[]) {
+
+	Arguments arguments(_argc, _argv);
+
+	SlvStatus status = parse(_parametrization, arguments);
+
+	return { arguments, status };
+}
+
+template <class Tparametrization>
+SlvStatus SlvCLI::parse(Tparametrization& _parametrization, Arguments& _arguments) {
+
+	SlvStatus status;
+
+	if (!_arguments.is_empty()) {
+
+		std::map<std::string, std::string> stream_values;
+		for (Arguments::Tparameters::const_iterator it = _arguments.get_parameter_arguments().begin(); it != _arguments.get_parameter_arguments().end(); ++it) {
+			stream_values[it->first] = it->second[0];
+		}
+
+		for (std::vector<std::string>::const_iterator it = _arguments.get_solo_arguments().begin(); it != _arguments.get_solo_arguments().end(); ++it) {
+			stream_values[*it] = "1";
+		}
+
+		std::pair< std::map<std::string, int>, std::vector<std::string> > conflicts_missing = _parametrization.set_stream_values(stream_values, false);
+		if (!conflicts_missing.first.empty()) {
+			status += SlvStatus(SlvStatus::statusType::warning, "Multiple parameter correspondences in parametrization.");
+
+			for (std::map<std::string, int>::const_iterator it = conflicts_missing.first.begin(); it != conflicts_missing.first.end(); ++it) {
+
+				status.add_sub_status(SlvStatus(SlvStatus::statusType::warning, it->first + " : " + slv::string::to_string(it->second) + " correspondences"));
+
+			}
+
+		}
+
+		_arguments.filter(conflicts_missing.second);
+
+	}
+
+	return status;
+}
+
 #ifndef GLOVE_DISABLE_QT
+
+class SlvParametrization_base;
+class QDialogButtonBox;
+class QVBoxLayout;
+class GlvParametersWidget_base;
+class QPushButton;
+
+/*! Dialog widget managing parametrization widget.
+* This is the main widget (with GlvParametrizationWidget) to use for parametrization management in the framework.
+* Accept : set the parametrization has the one configured by the widget.
+* Reject : does not modify the parametrization. */
+class GlvParametrizationDialog_base : public QDialog {
+
+    Q_OBJECT
+
+protected:
+
+    QDialogButtonBox* button_box;
+    QPushButton* abide_rules_button;
+    bool l_dialog;//whether has buttons. if so, parent's activation depends on "this" state. Also QDialog::accept/reject is activated
+    bool l_deny_invalid_parameters;
+    SlvParametrization_base* parametrization_base;//usefull to cast to correct child type (see macros)
+    /*! Base pointer to manage dialog's size depending on parameters visibility.*/
+    GlvParametersWidget_base* parameters_widget_base;
+    QVBoxLayout* m_layout;
+
+    GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent);
+public:
+    virtual ~GlvParametrizationDialog_base();
+
+    /*! Returns base pointer to the stored parameterization, so it can be casted to the real parametrization provided its type is known.*/
+    const SlvParametrization_base* get_parametrization_base() const;
+    void addWidget(QWidget* _widget);
+
+    /*! Show or hide the button controlling rules complying, next to 'Ok' and 'Cancel'.*/
+    void enable_abide_rules_button(bool _l_enable);
+
+protected :
+    void set_parameters_widget_base(GlvParametersWidget_base* _parameters_widget_base);
+    void resizeEvent(QResizeEvent* _event);
+public slots:
+    /*! Apply parametrization widget. QDialog's accept slot only if l_dialog is true.*/
+    virtual void accept() = 0;
+    /*! Reset parametrization widget with current parametrization value. QDialog's reject slot only if l_dialog is true.*/
+    virtual void reject() = 0;
+    /*! Apply parametrization widget and check parameters.*/
+    virtual SlvStatus apply() = 0;
+
+private slots:
+    /*! Update parametrization according to current values contained in parametrization_widget*/
+    virtual void update_parametrization() = 0;
+    void parametrizationChanged_slot(std::string _parameter_name);
+    void abide_slot();
+    /*! Set free maximum height depending on parameters visibility.*/
+    void maximum_height_slot();
+protected slots:
+    // Check parameters by updating parametrization before
+    void check_parameters_slot();
+signals:
+    void parametrizationChanged(std::string _parameter_name);
+
+private:
+    /*! Returns true if the parametrization has rules.*/
+    virtual bool has_rules() = 0;
+    virtual bool abide_rules() = 0;
+    virtual const SlvParametrization_base* new_parametrization_base() const = 0;
+
+};
 
 /*! First layer of template specialization possibility.
 * GlvWidgetMaker is also in charge of signals connection through GlvWidgetMakerConnect provided corresponding specialization is defined.
@@ -7948,8 +8167,13 @@ namespace slv {
                         _json = _value;
                     }
                     static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
-                        _value = _json.get<Tdat>();
-                        return SlvStatus();
+                        SlvStatus status;
+                        try {
+                            _value = _json.get<Tdat>();
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<Tdat>::name());
+                        }
+                        return status;
                     }
                 };
             }
@@ -8049,9 +8273,14 @@ namespace slv {
                         _json = oss.str();
                     }
                     static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
-                        std::istringstream iss(_json.get<std::string>());
-                        _value.ifstream(iss);
-                        return SlvStatus();
+                        SlvStatus status;
+                        try {
+                            std::istringstream iss(_json.get<std::string>());
+                            _value.ifstream(iss);
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<Tdat>::name());
+                        }
+                        return status;
                     }
                 };
 
@@ -8084,9 +8313,14 @@ namespace slv {
                         _json = oss.str();
                     }
                     static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
-                        std::istringstream iss(_json.get<std::string>());
-                        _value.istream(iss);
-                        return SlvStatus();
+                        SlvStatus status;
+                        try {
+                            std::istringstream iss(_json.get<std::string>());
+                            _value.istream(iss);
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<Tdat>::name());
+                        }
+                        return status;
                     }
                 };
 
@@ -8179,9 +8413,14 @@ namespace slv {
                         _json = oss.str();
                     }
                     static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
-                        std::istringstream iss(_json.get<std::string>());
-                        iss >> _value;
-                        return SlvStatus();
+                        SlvStatus status;
+                        try {
+                            std::istringstream iss(_json.get<std::string>());
+                            iss >> _value;
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<Tdat>::name());
+                        }
+                        return status;
                     }
                 };
 
@@ -8195,8 +8434,13 @@ namespace slv {
                         _json = oss.str();
                     }
                     static SlvStatus readJson(std::string& _value, const nlohmann::json& _json) {
-                        _value = _json.get<std::string>();
-                        return SlvStatus();
+                        SlvStatus status;
+                        try {
+                            _value = _json.get<std::string>();
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<std::string>::name());
+                        }
+                        return status;
                     }
                 };
 
@@ -10182,21 +10426,28 @@ public:
 #if OPTION_USE_THIRDPARTY_JSON==1
 #define glvm_pv_SlvParametrization_writeJson(N) slv::rw::json::writeJson(parameter##N->get_value(), _json[this->get_name()][parameter##N->get_name()]);
 #define glvm_pv_SlvParametrization_readJson(N)\
-nlohmann::json::const_iterator it = _json[this->get_name()].find(parameter##N->get_name());\
-if (it != _json[this->get_name()].end()) {\
-    T##N value = parameter##N->get_default_value();\
-    SlvStatus status_json = slv::rw::json::readJson(value, *it);\
-    if (status_json) {\
-        const_cast<SlvParameter<T##N>*>(parameter##N)->set_value(value);\
-    } else {\
-		status += status_json;\
-        status += SlvStatus(SlvStatus::statusType::warning, "Problem reading parameter : " + parameter##N->get_name());\
-    }\
-} else {\
-    status += SlvStatus(SlvStatus::statusType::warning, "Can not find parameter : " + parameter##N->get_name());\
-}\
-if (!status) {\
-    status += SlvStatus(SlvStatus::statusType::warning, "Problem reading parametrization : " + this->get_name());\
+if (status.get_type() != SlvStatus::statusType::critical) {\
+	nlohmann::json::const_iterator it_main = _json.find(this->get_name());\
+	if (it_main != _json.end()) {\
+		nlohmann::json::const_iterator it = it_main->find(parameter##N->get_name());\
+		SlvStatus status_parameter;\
+		if (it != it_main->end()) {\
+			T##N value = parameter##N->get_default_value();\
+			SlvStatus status_json = slv::rw::json::readJson(value, *it);\
+			if (status_json) {\
+				const_cast<SlvParameter<T##N>*>(parameter##N)->set_value(value);\
+			} else {\
+				status_parameter = SlvStatus(SlvStatus::statusType::warning, "Problem reading parameter : " + parameter##N->get_name());\
+				status_parameter.add_sub_status(status_json);\
+			}\
+		} else {\
+			status_parameter = SlvStatus(SlvStatus::statusType::warning, "Can not find parameter : " + parameter##N->get_name());\
+		}\
+		if (!status_parameter) {\
+			status += SlvStatus(SlvStatus::statusType::warning, "Problem reading parametrization : " + this->get_name());\
+			status.add_sub_status(status_parameter);\
+		}\
+	}\
 }
 #endif
 
@@ -16075,13 +16326,27 @@ class GlvParametersWidget_base : public QGroupBox, public GlvSaveLoad {
 
 private:
 	glvm_staticVariable(const, int, grid_horizontal_spacing, 10);
-
+	glvm_staticVariable_def(const, int, layout_margin);
+private :
+	/*! Whether the parameters are set in a scroll area or not.*/
+	bool l_scrollable;
+	class ScrollArea;
+	/*! Scroll area of parameters.*/
+	ScrollArea* scroll_area;
+	/*! Whether last resize update was a height decrease.*/
+	bool l_height_decreased;
+	/*! If true, max height will apply whenever scroll bar appears.
+	* If false (default), the widget can still be resized up to the last height before parameters size reduction.
+	* i.e.: Update height hint to fit to parameters widget.*/
+	bool l_adapt_max_height;
 public:
 	enum LayoutType { Vertical, Grid };
 protected:
 	LayoutType layout_type = LayoutType::Vertical;
 	QVBoxLayout* vertical_layout;
 	QGridLayout* grid_layout;
+	QVBoxLayout* main_layout;
+	QWidget* parameters_widget;
 
 	GlvParametersWidget_base();
 	virtual ~GlvParametersWidget_base();
@@ -16099,17 +16364,31 @@ public:
 	/*! Display or hide data type information in 'whatsthis'.*/
 	virtual void enable_data_type_info(bool _l_enable) = 0;
 
+	/*! Returns true if the parameters are fully visible (no scroll bars).*/
+	bool is_fully_visible() const;
+	/*! Returns true if the parameters widget last resize update was a height decrease.*/
+	bool has_height_decreased() const;
+	/*! Set parameters to be scrollable or not.
+	* Default state is true.*/
+	void set_scrollable(bool _l_scrollable);
+	/*! Advanced setting.
+	* If true, max height will apply whenever scroll bar appears.
+	* If false (default), the widget can still be resized up to the last height before parameters size reduction.
+	* i.e.: Update height hint to fit to parameters widget.*/
+	void set_adapt_max_height(bool _l_adapt);
+
 protected:
 	/*! Add the parameter widget to the parameters.*/
 	void add_parameter_widget_to_vertical_layout(QWidget* _parameter_widget);
 	template <class Tdata>
 	void set_parameter_widget_to_grid_layout(GlvParameterWidget<Tdata>* _parameter_widget, int i);
-	/*! Set layout type, private.*/
-	void set_layout_type_pv(LayoutType _layout_type);
+	/*! Set layout type, protected.*/
+	void set_layout_type_protected(LayoutType _layout_type);
 	/*! Set save/load widget. Called in GlvParametrizationSaveLoad.*/
 	void set_save_load_widget(GlvWidgetSaveLoad_base* _save_load_widget);
 	/*! Enable/disable possibility to show/hide parameters.*/
 	void set_checkable_collapse(bool _l_checkable);
+	
 private:
 	/*! Add to row \p i :
 	* Column 0 : \p _dataname_label.
@@ -16117,14 +16396,16 @@ private:
 	* Column 2 : \p _optional_text.*/
 	void add_parameter_widget_to_grid_layout(QWidget* _dataname_label, QWidget* _data_widget, QWidget* _optional_text_label, int i);
 	/*! Get number of parameters.*/
-	virtual int getNparameters() const = 0;
+	virtual int get_Nparameters() const = 0;
+	bool eventFilter(QObject* object, QEvent* _event);
 private slots:
 	/*! Show parameters or not.*/
 	void show_parameters(bool _l_show);
 signals:
 	/*! Emitted when the parameter named \p _parameter_name has changed.*/
 	void parameterChanged(std::string _parameter_name);
-
+	/*! Emitted when the widget containing the parameters (only) is being resized vertically.*/
+	void heightChanged();
 };
 
 template <class Tdata>
@@ -16144,32 +16425,55 @@ template <>
 class GlvParametersWidget<SlvParametrization0> : public GlvParametersWidget_base {
 
 public:
-    GlvParametersWidget(const SlvParametrization0& _parametered_object, bool l_editable) {}
-    ~GlvParametersWidget() {}
+    GlvParametersWidget(const SlvParametrization0& _parametered_object, bool l_editable);
+    ~GlvParametersWidget();
     /*! Set parametrization.*/
-    void set(const SlvParametrization0& _parametered_object) {}
+    void set(const SlvParametrization0& _parametered_object);
     /*! Get parametrization. Tparametrization is the class inheriting from SlvParametrization.*/
     template <class Tparametrization>
-    Tparametrization get() const {
-        return Tparametrization();
-    }
+    Tparametrization get() const;
     /*! Set the parameters as editable or not.*/
-    void set_editable(bool l_editable) {}
+    void set_editable(bool l_editable);
 protected:
-    void assign_recursive(SlvParametrization0& _parametrization) const {}
+    void assign_recursive(SlvParametrization0& _parametrization) const;
     /*! Set the layout of parameters as either
     * Vertical : stack of widgets
     * Grid : parameters name are in the first column, their respective interaction widget on the second one.*/
-    void set_layout_type(LayoutType _layout_type) {
-        GlvParametersWidget_base::set_layout_type_pv(_layout_type);
-    }
+    void set_layout_type(LayoutType _layout_type);
     /*! Enable or not display of parameter types in WhatsThis.*/
-    void enable_data_type_info(bool _l_enable) {}
+    void enable_data_type_info(bool _l_enable);
 private:
-    int getNparameters() const {
-        return 0;
-    }
+    int get_Nparameters() const;
 };
+
+inline GlvParametersWidget<SlvParametrization0>::GlvParametersWidget(const SlvParametrization0& _parametered_object, bool l_editable) {
+
+}
+
+inline GlvParametersWidget<SlvParametrization0>::~GlvParametersWidget() {
+
+}
+
+inline void GlvParametersWidget<SlvParametrization0>::set(const SlvParametrization0& _parametered_object) {}
+
+template <class Tparametrization>
+Tparametrization GlvParametersWidget<SlvParametrization0>::get() const {
+    return Tparametrization();
+}
+
+inline void GlvParametersWidget<SlvParametrization0>::set_editable(bool l_editable) {}
+
+inline void GlvParametersWidget<SlvParametrization0>::assign_recursive(SlvParametrization0& _parametrization) const {}
+
+inline void GlvParametersWidget<SlvParametrization0>::set_layout_type(LayoutType _layout_type) {
+    GlvParametersWidget_base::set_layout_type_protected(_layout_type);
+}
+
+inline void GlvParametersWidget<SlvParametrization0>::enable_data_type_info(bool _l_enable) {}
+
+inline int GlvParametersWidget<SlvParametrization0>::get_Nparameters() const {
+    return 0;
+}
 
 #define glvm_pv_GlvParametersWidget_make_parameter(i) \
 parameter##i = new GlvParameterWidget<Tparam##i>(_parametered_object.get_parameter##i(), l_editable);\
@@ -16233,7 +16537,7 @@ class GlvParametersWidget< SlvParametrization##i<spec_Tparameters_current> > : p
         parameter##i->enable_data_type_info(_l_enable);\
     }\
 private:\
-    int getNparameters() const {\
+    int get_Nparameters() const {\
         return i;\
     }\
 };
@@ -16384,87 +16688,22 @@ void GlvParametrizationWidget<Tparametrization>::set_value(const Tparametrizatio
     set_parametrization(_parametrization);
 }
 
-class SlvParametrization_base;
-class QDialogButtonBox;
-class QVBoxLayout;
-class GlvParametersWidget_base;
-class QPushButton;
-
-/*! Dialog widget managing parametrization widget.
-* This is the main widget (with GlvParametrizationWidget) to use for parametrization management in the framework.
-* Accept : set the parametrization has the one configured by the widget.
-* Reject : does not modify the parametrization. */
-class GlvParametrizationDialog_base : public QDialog {
-
-    Q_OBJECT
-
-protected:
-
-    QDialogButtonBox* button_box;
-    QPushButton* abide_rules_button;
-    bool l_dialog;//whether has buttons. if so, parent's activation depends on "this" state. Also QDialog::accept/reject is activated
-    bool l_deny_invalid_parameters;
-    SlvParametrization_base* parametrization_base;//usefull to cast to correct child type (see macros)
-    QVBoxLayout* m_layout;
-
-    GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent);
-public:
-    virtual ~GlvParametrizationDialog_base();
-
-    /*! Returns base pointer to the stored parameterization, so it can be casted to the real parametrization provided its type is known.*/
-    const SlvParametrization_base* get_parametrization_base() const;
-    void addWidget(QWidget* _widget);
-
-    /*! Show or hide the button controlling rules complying, next to 'Ok' and 'Cancel'.*/
-    void enable_abide_rules_button(bool _l_enable);
-
-public slots:
-    /*! Apply parametrization widget. QDialog's accept slot only if l_dialog is true.*/
-    virtual void accept() = 0;
-    /*! Reset parametrization widget with current parametrization value. QDialog's reject slot only if l_dialog is true.*/
-    virtual void reject() = 0;
-    /*! Apply parametrization widget and check parameters.*/
-    virtual SlvStatus apply() = 0;
-
-private slots:
-    /*! Update parametrization according to current values contained in parametrization_widget*/
-    virtual void update_parametrization() = 0;
-    void parametrizationChanged_slot(std::string _parameter_name);
-    void abide_slot();
-protected slots:
-    // Check parameters by updating parametrization before
-    void check_parameters_slot();
-signals:
-    void parametrizationChanged(std::string _parameter_name);
-
-private:
-    /*! Returns true if the parametrization has rules.*/
-    virtual bool has_rules() = 0;
-    virtual bool abide_rules() = 0;
-    virtual const SlvParametrization_base* new_parametrization_base() const = 0;
-
-};
-
 class QWidget;
 
 namespace glv {
 	/*! Flag functions for Glv*/
 	namespace flag {
-
-		/*! Get string corresponding to the status messages.
-		* \p _l_show_all : if false get only most critical message (if any). If true get all messages.*/
-		QString toQString(const SlvStatus& _status, bool _l_show_all);
 		/*! Calls QMessageBox according to \p _status most critical type.
 		* \p _l_show_all : if false displays only most critical message (if any). If true displays all messages.*/
-		void showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent);
+		void showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent = NULL);
 		/*! Calls QMessageBox according to \p _status most critical type.
 		* \p _message : preceding message.
 		* \p _l_show_all : if false displays only most critical message (if any). If true displays all messages.*/
-		void showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent);
+		void showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent = NULL);
 		/*! Calls QMessageBox::critical with message \p _message and breaks.*/
-		void BREAK(std::string warning_message, QWidget* _parent);
+		void BREAK(std::string warning_message, QWidget* _parent = NULL);
 		/*! Calls QMessageBox::information with message \p _message.*/
-		void INFO(std::string warning_message, QWidget* _parent);
+		void INFO(std::string warning_message, QWidget* _parent = NULL);
 	}
 }
 
@@ -16530,6 +16769,7 @@ GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(Tparametriz
 
     parametrization_base = new Tparametrization;
     parametrization_widget = new GlvParametrizationWidget<Tparametrization>;
+    set_parameters_widget_base(parametrization_widget);
     set_parametrization(_parametrization);
 
     connect(parametrization_widget, SIGNAL(parameterChanged(std::string)), this, SLOT(parametrizationChanged_slot(std::string)));
@@ -16900,33 +17140,12 @@ private:
 		}
 	};
 
-	/*! Returns true if \p _argv contains "-glove".*/
-	static bool has_glove(int _argc, char* _argv[]);
-	struct Arguments {
-		Arguments(int _argc, char* _argv[]);
-		/*! Parameter identifier (starting with '-') and corresponding value.*/
-		typedef std::map<std::string, std::vector<std::string> > Tparameters;
-		Tparameters parameter_arguments;
-		/*! Arguments that are not parameters.*/
-		std::vector<std::string> solo_arguments;
-		/*! Single argument of the -glove cli input. Used for loading a parametrization.*/
-		std::string glove_argument;
-		/*! Parse arguments.*/
-		void parse(int _argc, char* _argv[]);
-		/*! Remove all arguments except those which name is in \p _arguments_remaining.*/
-		void filter(const std::vector<std::string>& _arguments_remaining);
-		/*! Return true if the instance does not store any parameter.*/
-		bool is_empty() const;
-	};
-	/*! Create argc/argv based on provided arguments.*/
-	static std::pair<int, char**> get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments);
-
 };
 
 template <class Tparametrization>
 int GlvCLI::main(int _argc, char* _argv[]) {
 
-	if (has_glove(_argc, _argv)) {
+	if (SlvCLI::has_glove(_argc, _argv)) {
 
 		QApplication app(_argc, _argv);
 
@@ -16938,40 +17157,26 @@ int GlvCLI::main(int _argc, char* _argv[]) {
 		GlvParametrizationDialog<Tparametrization> dialog;
 		GlvParametrizationSaveLoad<Tparametrization>* save_load_widget = new GlvParametrizationSaveLoad<Tparametrization>(dialog.get_parametrization_widget());
 
-		Arguments arguments(_argc, _argv);
+		SlvCLI::Arguments arguments(_argc, _argv);
 
-		if (!arguments.glove_argument.empty()) {
+		if (!arguments.get_glove_argument().empty()) {
 
-			save_load_widget->load(arguments.glove_argument);
+			save_load_widget->load(arguments.get_glove_argument());
 
 		}
 
+		Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
+		SlvStatus status;
+
 		if (!arguments.is_empty()) {
 
-			Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
+			status = SlvCLI::parse(parametrization, arguments);
 
-			std::map<std::string, std::string> stream_values;
-			for (Arguments::Tparameters::const_iterator it = arguments.parameter_arguments.begin(); it != arguments.parameter_arguments.end(); ++it) {
-				stream_values[it->first] = it->second[0];
-			}
-
-			for (std::vector<std::string>::const_iterator it = arguments.solo_arguments.begin(); it != arguments.solo_arguments.end(); ++it) {
-				stream_values[*it] = "1";
-			}
-
-			std::pair< std::map<std::string, int>, std::vector<std::string> > conflicts_missing = parametrization.set_stream_values(stream_values, false);
-			if (!conflicts_missing.first.empty()) {
-				QString message(QObject::tr("Multiple parameter correspondences in parametrization."));
-				for (std::map<std::string, int>::const_iterator it = conflicts_missing.first.begin(); it != conflicts_missing.first.end(); ++it) {
-					message += QString("\n") + it->first.c_str() + " : " + QString::number(it->second) + QObject::tr(" correspondences");
-				}
-				QMessageBox::warning(&dialog, QObject::tr("Arguments conflict"), message);
-			}
-			arguments.filter(conflicts_missing.second);
+			glv::flag::showQMessageBox(QObject::tr("Arguments conflict"), status, true);
 
 			dialog.set_parametrization(parametrization);
 
-		} else if (SlvFile(autosave_file_name).exists() && arguments.glove_argument.empty()) {
+		} else if (SlvFile(autosave_file_name).exists() && arguments.get_glove_argument().empty()) {
 
 			save_load_widget->load(autosave_file_name);
 
@@ -16988,14 +17193,14 @@ int GlvCLI::main(int _argc, char* _argv[]) {
 			}
 
 			std::vector< std::pair<std::string, std::string> > parameter_arguments = dialog.get_parametrization().get_string_serialization_bool().first;
-			for (Arguments::Tparameters::const_iterator it = arguments.parameter_arguments.begin(); it != arguments.parameter_arguments.end(); ++it) {
+			for (SlvCLI::Arguments::Tparameters::const_iterator it = arguments.get_parameter_arguments().begin(); it != arguments.get_parameter_arguments().end(); ++it) {
 				parameter_arguments.push_back({ it->first, it->second[0] });
 			}
 
 			std::vector<std::string> solo_arguments = dialog.get_parametrization().get_string_serialization_bool().second;
-			slv::vector::add(solo_arguments, arguments.solo_arguments);
+			slv::vector::add(solo_arguments, arguments.get_solo_arguments());
 
-			std::pair<int, char**> cli_arguments = get_arguments(parameter_arguments, solo_arguments);
+			std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(parameter_arguments, solo_arguments);
 			cli_arguments.second[0] = _argv[0];
 
 			return glv_cli_main(cli_arguments.first, cli_arguments.second);
@@ -17780,6 +17985,7 @@ class GlvWidgetData<Tparametrization, typename std::enable_if<std::is_base_of<Sl
 public:
     GlvWidgetData(Tparametrization _value = Tparametrization(), QWidget* _parent = 0) :GlvParametrizationWidget<Tparametrization>(_value, true, _parent) {
         this->set_checkable_collapse(true);
+        this->set_scrollable(false);
     }
     ~GlvWidgetData() {}
 
@@ -21243,8 +21449,9 @@ class QScrollArea;
 namespace glv {
 	/*! Usefull functions for widget handling.*/
 	namespace widget {
-		/*! \p _widget_scroll: widget containing elements to be scrolled. \p _widget_over : final widget.*/
-		QScrollArea* make_scrollable(QWidget* _widget_scroll, QWidget* _widget_over);
+		/*! \p _widget_scroll: widget containing elements to be scrolled. \p _widget_over : final widget.
+		* Can provid margin for intermediate layout.*/
+		QScrollArea* make_scrollable(QWidget* _widget_scroll, QWidget* _widget_over, int _left_m = 2, int _top_m = 2, int _right_m = 2, int _bottom_m = 2);
 		QScrollArea* make_scrollable(QLayout* _layout_scroll, QWidget* _widget_over);
 
 		/*! Clear the layout of \p _widget.*/
@@ -21508,7 +21715,7 @@ inline bool SlvDirectory::is_relative() const {
 inline bool SlvDirectory::exists() const {
 
 #if __cplusplus > 201402L
-    return std::filesystem::exists(path);
+    return std::filesystem::is_directory(path);
 #else
     struct stat info;
     if (stat(path.c_str(), &info) != 0) {
@@ -21835,7 +22042,7 @@ inline void SlvFile::add_allowed_extensions(const SlvFileExtensions& _extensions
 inline bool SlvFile::exists() const {
 
 #if __cplusplus > 201402L
-    return std::filesystem::exists(get_path());
+    return std::filesystem::is_regular_file(get_path());
 #else
     if (file_name.get_total_name().empty()) {
         return false;
@@ -22223,15 +22430,29 @@ inline SlvStatus::SlvStatus(const SlvStatus& _status) {
 
     status_signals = new std::vector<SlvStatusSignal>(*_status.status_signals);
 
+    for (const_iterator_sub it = _status.begin_sub(); it != _status.end_sub(); ++it) {
+        add_sub_status(**it);
+    }
+
 }
 
 inline SlvStatus::~SlvStatus() {
 
     delete status_signals;
+    clear_sub_status();
 
 }
 
-inline bool SlvStatus::sortStatus(SlvStatusSignal _signal1, SlvStatusSignal _signal2) {
+inline void SlvStatus::clear_sub_status() {
+
+    for (const_iterator_sub it = begin_sub(); it != end_sub(); ++it) {
+        delete* it;
+    }
+    sub_status.clear();
+
+}
+
+inline bool SlvStatus::sortStatusSignal(SlvStatusSignal _signal1, SlvStatusSignal _signal2) {
     return _signal1.value > _signal2.value;
 }
 
@@ -22242,8 +22463,8 @@ inline void SlvStatus::push(const statusType& _type, const std::string& _message
         if (status_signals->empty() || _type != statusType::ok) {//do not add multiple 'ok' status
             status_signals->push_back(signal);
         }
-        std::sort(status_signals->begin(), status_signals->end(), SlvStatus::sortStatus);
-        // Remove 'ok' if more relevant signals exist
+        std::sort(status_signals->begin(), status_signals->end(), SlvStatus::sortStatusSignal);
+        // Remove 'ok' if more critical signals exist
         if (status_signals->size() > 1 && status_signals->back().value == statusType::ok) {
             status_signals->pop_back();
         }
@@ -22263,16 +22484,47 @@ inline SlvStatus::const_iterator SlvStatus::end() const {
 
 }
 
+inline SlvStatus::const_iterator_sub SlvStatus::begin_sub() const {
+
+    return sub_status.begin();
+
+}
+
+inline SlvStatus::const_iterator_sub SlvStatus::end_sub() const {
+
+    return sub_status.end();
+
+}
+
 inline size_t SlvStatus::size() const {
+
     return status_signals->size();
+
 }
 
 inline const SlvStatus::statusType& SlvStatus::get_type() const {
-    return (*status_signals)[0].value;
+
+    return get_status_signal().value;
 }
 
 inline const std::string& SlvStatus::get_message() const {
-    return (*status_signals)[0].data;
+
+    return get_status_signal().data;
+
+}
+
+inline const SlvStatus::SlvStatusSignal& SlvStatus::get_status_signal() const {
+
+    if (!has_sub_status()) {
+        return (*status_signals)[0];
+    } else {
+        if ((*status_signals)[0].value > sub_status[0]->get_status_signal().value) {
+            return (*status_signals)[0];
+        } else {
+            return sub_status[0]->get_status_signal();
+        }
+    }
+
 }
 
 inline const SlvStatus::statusType& SlvStatus::get_type(const unsigned int i) const {
@@ -22291,6 +22543,12 @@ inline SlvStatus::operator bool() const {
 inline SlvStatus& SlvStatus::operator=(const SlvStatus& _status) {
 
     *status_signals = *_status.status_signals;
+    clear_sub_status();
+
+    for (const_iterator_sub it = _status.begin_sub(); it != _status.end_sub(); ++it) {
+        add_sub_status(**it);
+    }
+
     return *this;
 }
 
@@ -22299,17 +22557,96 @@ inline SlvStatus& SlvStatus::operator+=(const SlvStatus& _status) {
     for (unsigned int i = 0; i < _status.size(); i++) {
         push(_status.get_type(i), _status.get_message(i));
     }
+
+    for (const_iterator_sub it = _status.begin_sub(); it != _status.end_sub(); ++it) {
+        add_sub_status(**it);
+    }
+
     return *this;
+}
+
+inline size_t SlvStatus::size_sub() const {
+
+    return sub_status.size();
+
+}
+
+inline bool SlvStatus::has_sub_status() const {
+
+    return !sub_status.empty();
+
+}
+
+inline const SlvStatus& SlvStatus::get_sub_status(const unsigned int i) const {
+
+    return *sub_status[i];
+
+}
+
+inline bool SlvStatus::sortStatus(const SlvStatus* _status1, const SlvStatus* _status2) {
+
+    return _status1->get_type() > _status2->get_type();
+
+}
+
+inline void SlvStatus::add_sub_status(const SlvStatus& _status) {
+
+    if (!_status) {
+        sub_status.push_back(new SlvStatus(_status));
+    }
+
+    std::sort(sub_status.begin(), sub_status.end(), SlvStatus::sortStatus);
+
 }
 
 inline void SlvStatus::ostream(std::ostream& _os) const {
 
-    for (unsigned int s = 0; s < size(); s++) {
-        _os << (*status_signals)[s];
-        if (s < size() - 1) {
-            _os << std::endl;
+    _os << to_string(true);
+
+}
+
+inline std::string SlvStatus::to_string(bool _l_show_all) const {
+
+    return to_string(_l_show_all, 0);
+
+}
+
+inline std::string SlvStatus::to_string(bool _l_show_all, int _depth) const {
+
+    std::string message;
+    if (!_l_show_all) {
+        message = get_message();
+    } else {
+
+        std::string indent;
+        if (_depth > 0) {
+            if (_depth % 2 == 1) indent = "- ";
+            else if (_depth % 2 == 0) indent = "* ";
         }
+
+        for (SlvStatus::const_iterator it = begin(); it != end(); ++it) {
+            if (it->value != SlvStatus::statusType::ok) {
+                message += std::string(_depth * 4, ' ') + indent + slv::string::to_string(it->value) + " : " + it->data.c_str();
+                if (std::next(it) != end()) {
+                    message += "\n";
+                }
+            }
+        }
+
+        if (has_sub_status()) {
+            message += "\n";
+        }
+
+        for (SlvStatus::const_iterator_sub it = begin_sub(); it != end_sub(); ++it) {
+            message += (*it)->to_string(_l_show_all, _depth + 1);
+            if (std::next(it) != end_sub()) {
+                message += "\n";
+            }
+        }
+
     }
+
+    return message;
 
 }
 
@@ -22508,18 +22845,18 @@ inline GlvWidgetSaveLoad_base::GlvWidgetSaveLoad_base(const SlvFileExtensions& _
 	allowed_extensions = _allowed_extensions;
 
 	if (_orientation == Qt::Orientation::Horizontal) {
-		layout = new QHBoxLayout;
+		main_layout = new QHBoxLayout;
 	} else if (_orientation == Qt::Orientation::Vertical) {
-		layout = new QVBoxLayout;
+		main_layout = new QVBoxLayout;
 	}
-	layout->setContentsMargins(0, 0, 0, 0);
+	main_layout->setContentsMargins(0, 0, 0, 0);
 	QPushButton* save_button = new QPushButton(QString(tr("Save")));
 	save_button->setToolTip(tr("Save ") + glv::toQString(_data_name) + tr(" in a file."));
-	layout->addWidget(save_button);
+	main_layout->addWidget(save_button);
 	QPushButton* load_button = new QPushButton(QString(tr("Load")));
 	load_button->setToolTip(tr("Load ") + glv::toQString(_data_name) + tr(" from a file."));
-	layout->addWidget(load_button);
-	this->setLayout(layout);
+	main_layout->addWidget(load_button);
+	this->setLayout(main_layout);
 
 	connect(save_button, SIGNAL(clicked()), this, SLOT(save_slot()));
 	connect(load_button, SIGNAL(clicked()), this, SLOT(load_slot()));
@@ -22534,23 +22871,23 @@ inline GlvWidgetSaveLoad_base::~GlvWidgetSaveLoad_base() {
 inline void GlvWidgetSaveLoad_base::set_orientation(Qt::Orientation _orientation) {
 
 	QBoxLayout* new_layout = NULL;
-	if (_orientation == Qt::Orientation::Vertical && dynamic_cast<QHBoxLayout*>(layout)) {
+	if (_orientation == Qt::Orientation::Vertical && dynamic_cast<QHBoxLayout*>(main_layout)) {
 		new_layout = new QVBoxLayout;
-		while (layout->count() > 0) {
-			new_layout->addWidget(layout->itemAt(0)->widget());
+		while (main_layout->count() > 0) {
+			new_layout->addWidget(main_layout->itemAt(0)->widget());
 		}
-	} else if (_orientation == Qt::Orientation::Horizontal && dynamic_cast<QVBoxLayout*>(layout)) {
+	} else if (_orientation == Qt::Orientation::Horizontal && dynamic_cast<QVBoxLayout*>(main_layout)) {
 		new_layout = new QHBoxLayout;
-		while (layout->count() > 0) {
-			new_layout->addWidget(layout->itemAt(0)->widget());
+		while (main_layout->count() > 0) {
+			new_layout->addWidget(main_layout->itemAt(0)->widget());
 		}
 	}
 	new_layout->setContentsMargins(0, 0, 0, 0);
 
 	if (new_layout) {
-		delete layout;
-		layout = new_layout;
-		setLayout(layout);
+		delete main_layout;
+		main_layout = new_layout;
+		setLayout(main_layout);
 	}
 
 }
@@ -22649,10 +22986,17 @@ inline bool GlvWidgetSaveLoad_base::interactive_load_parameters(const std::strin
 
 		QString message = tr("When loading file:") + "\n";
 		message += glv::toQString(_file_name) + "\n";
-		message += glv::flag::toQString(_status, true);
-		message += "\n\n" + tr("Do you want to load the parameters anyway ?");
+		message += glv::toQString(_status.to_string(true));
 
-		QMessageBox::StandardButton result = QMessageBox::question(this, "Load json parametrization", message, QMessageBox::Ok | QMessageBox::Cancel);
+		QMessageBox::StandardButtons buttons(QMessageBox::Ok);
+		if (_status.get_type() != SlvStatus::statusType::critical) {
+			message += "\n\n" + tr("Do you want to load the parameters anyway ?");
+			buttons |= QMessageBox::Cancel;
+		} else {
+			message += "\n\n" + glv::toQString(SlvStatus::statusType::critical) + " : " + tr("Can not read file. Default parametrization will be set.");
+		}
+
+		QMessageBox::StandardButton result = QMessageBox::question(this, "Load parametrization from file", message, buttons);
 		if (result == QMessageBox::Cancel) {
 			return false;
 		} else {
@@ -22855,6 +23199,7 @@ inline void GlvWidget_base::GlvWidgetConnector::valueChanged_slot(const std::vec
 
 #define Tdata int
 inline GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QSpinBox(_parent) {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     setMaximum(std::numeric_limits<int>::max());
     setMinimum(std::numeric_limits<int>::lowest());
 }
@@ -22877,6 +23222,7 @@ inline void GlvWidgetData<Tdata>::set_value(const Tdata& _value) {
 #undef Tdata
 #define Tdata unsigned int
 inline GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QSpinBox(_parent) {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     setMaximum(std::numeric_limits<int>::max());
     setMinimum(0);
 }
@@ -22904,6 +23250,7 @@ inline void GlvWidgetData<Tdata>::set_value(const Tdata& _value) {
 #undef Tdata
 #define Tdata float
 inline GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QDoubleSpinBox(_parent) {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     setMaximum(std::numeric_limits<float>::max());
     setMinimum(std::numeric_limits<float>::lowest());
 }
@@ -22929,6 +23276,7 @@ inline void GlvWidgetData<Tdata>::set_value(const Tdata& _value) {
 #undef Tdata
 #define Tdata double
 inline GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QDoubleSpinBox(_parent) {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     setMaximum(std::numeric_limits<double>::max());
     setMinimum(std::numeric_limits<double>::lowest());
 }
@@ -23144,6 +23492,277 @@ inline void GlvWidgetData<Tdata>::set_value(const Tdata& _value) {
 }
 
 #undef Tdata
+
+#endif
+
+inline SlvCLI::Arguments::Arguments(int _argc, char* _argv[]) {
+
+	parse(_argc, _argv);
+
+}
+
+inline bool SlvCLI::has_glove(int _argc, char* _argv[]) {
+
+	bool l_found = false;
+	int i;
+	for (i = 1; i < _argc && !l_found; i++) {
+		l_found = !std::strcmp(_argv[i], "-glove");
+	}
+
+	return l_found;
+}
+
+inline bool SlvCLI::Arguments::is_empty() const {
+
+	return parameter_arguments.empty() && solo_arguments.empty();
+
+}
+
+inline const std::vector<std::string>& SlvCLI::Arguments::get_solo_arguments() const {
+
+	return solo_arguments;
+
+}
+
+inline const SlvCLI::Arguments::Tparameters& SlvCLI::Arguments::get_parameter_arguments() const {
+
+	return parameter_arguments;
+
+}
+
+inline const std::string& SlvCLI::Arguments::get_glove_argument() const {
+
+	return glove_argument;
+
+}
+
+inline void SlvCLI::Arguments::parse(int _argc, char* _argv[]) {
+
+	parameter_arguments.clear();
+	solo_arguments.clear();
+
+	for (int i = 1; i < _argc; i++) {
+		bool l_parameter = false;
+		if (_argv[i][0] == '-') {
+			if (i < _argc - 1 && _argv[i + 1][0] != '-') {
+				if (std::strcmp(_argv[i], "-glove")) {
+					parameter_arguments[_argv[i]].push_back(_argv[i + 1]);
+				} else {
+					glove_argument = _argv[i + 1];
+				}
+				l_parameter = true;
+			}
+		}
+
+		if (!l_parameter) {
+			if (std::strcmp(_argv[i], "-glove")) {
+				solo_arguments.push_back(_argv[i]);
+			}
+		} else {
+			i++;
+		}
+	}
+
+}
+
+inline void SlvCLI::Arguments::filter(const std::vector<std::string>& _arguments_remaining) {
+
+	for (Tparameters::const_iterator it = parameter_arguments.begin(); it != parameter_arguments.end();) {
+
+		if (!slv::vector::find(it->first, _arguments_remaining)) {
+			it = parameter_arguments.erase(it);
+		} else {
+			++it;
+		}
+
+	}
+
+	for (std::vector<std::string>::const_iterator it = solo_arguments.begin(); it != solo_arguments.end();) {
+
+		if (!slv::vector::find(*it, _arguments_remaining)) {
+			it = solo_arguments.erase(it);
+		} else {
+			++it;
+		}
+
+	}
+
+}
+
+inline std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments) {
+
+	int Nfilled_parameters = 0;
+	for (int i = 0; i < _parameter_arguments.size(); i++) {
+		if (!_parameter_arguments[i].second.empty()) {
+			Nfilled_parameters++;
+		}
+	}
+
+	int argc = 2 * Nfilled_parameters + (int)_solo_arguments.size() + 1;
+	char** argv = new char* [argc];
+
+	int k_arg = 0;
+	for (int i = 0; i < _parameter_arguments.size(); i++) {
+
+		if (!_parameter_arguments[i].second.empty()) {
+
+			argv[1 + k_arg] = new char[_parameter_arguments[i].first.size() + 1];
+#ifdef COMPILER_GCC
+			strcpy(argv[1 + k_arg], _parameter_arguments[i].first.c_str());
+#else
+			strcpy_s(argv[1 + k_arg], _parameter_arguments[i].first.size() + 1, _parameter_arguments[i].first.c_str());
+#endif
+			k_arg++;
+
+			argv[1 + k_arg] = new char[_parameter_arguments[i].second.size() + 1];
+#ifdef COMPILER_GCC
+			strcpy(argv[1 + k_arg], _parameter_arguments[i].second.c_str());
+#else
+			strcpy_s(argv[1 + k_arg], _parameter_arguments[i].second.size() + 1, _parameter_arguments[i].second.c_str());
+#endif
+			k_arg++;
+
+		}
+
+	}
+
+	for (int i = 0; i < _solo_arguments.size(); i++) {
+		argv[1 + 2 * Nfilled_parameters + i] = new char[_solo_arguments[i].size() + 1];
+#ifdef COMPILER_GCC
+		strcpy(argv[1 + 2 * Nfilled_parameters + i], _solo_arguments[i].c_str());
+#else
+		strcpy_s(argv[1 + 2 * Nfilled_parameters + i], _solo_arguments[i].size() + 1, _solo_arguments[i].c_str());
+#endif
+	}
+
+	return { argc, argv };
+
+}
+
+#ifndef GLOVE_DISABLE_QT
+
+inline GlvParametrizationDialog_base::GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :QDialog(_parent, Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint) {
+
+    if (_parent) this->setModal(true);
+    //setWindowFlags(Qt::Dialog);
+    //setWindowModality(Qt::ApplicationModal);
+
+    l_dialog = _l_dialog;
+    l_deny_invalid_parameters =_l_deny_invalid_parameters;
+    parametrization_base = NULL;
+
+    // To avoid sending message "setGeometry: Unable to set geometry"
+    setMinimumSize(10, 10);
+
+    m_layout = new QVBoxLayout;
+    m_layout->setSizeConstraint(QLayout::SetMinimumSize);
+
+    if (l_dialog) {
+        button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+        connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
+        connect(button_box, SIGNAL(rejected()), this, SLOT(reject()));
+
+        abide_rules_button = button_box->addButton(tr("Abide rules"), QDialogButtonBox::ButtonRole::ApplyRole);
+        connect(abide_rules_button, SIGNAL(clicked(bool)), this, SLOT(abide_slot()));
+
+        connect(this, SIGNAL(parametrizationChanged(std::string)), this, SLOT(check_parameters_slot()));
+
+        m_layout->addWidget(button_box);
+    } else {
+        button_box = NULL;
+        abide_rules_button = NULL;
+    }
+
+    this->setLayout(m_layout);
+}
+
+inline GlvParametrizationDialog_base::~GlvParametrizationDialog_base() {
+
+    delete parametrization_base;
+
+}
+
+inline void GlvParametrizationDialog_base::enable_abide_rules_button(bool _l_enable) {
+
+    if (abide_rules_button) {
+        if (_l_enable) {
+            abide_rules_button->show();
+        } else {
+            abide_rules_button->hide();
+        }
+    }
+
+}
+
+inline void GlvParametrizationDialog_base::set_parameters_widget_base(GlvParametersWidget_base* _parameters_widget_base) {
+
+    parameters_widget_base = _parameters_widget_base;
+    connect(parameters_widget_base, SIGNAL(heightChanged()), this, SLOT(maximum_height_slot()));
+
+}
+
+inline void GlvParametrizationDialog_base::parametrizationChanged_slot(std::string _parameter_name) {
+    emit parametrizationChanged(_parameter_name);
+}
+
+inline const SlvParametrization_base* GlvParametrizationDialog_base::get_parametrization_base() const {
+
+    return parametrization_base;
+
+}
+
+inline void GlvParametrizationDialog_base::addWidget(QWidget* _widget) {
+    m_layout->insertWidget(m_layout->count() - 1, _widget);
+}
+
+inline void GlvParametrizationDialog_base::abide_slot() {
+
+    bool l_abide_rules = abide_rules();
+
+    if (!l_abide_rules) {
+        QMessageBox::warning(this, tr("Abide rules"), tr("Rules have been abided."));
+    }
+
+}
+
+inline void GlvParametrizationDialog_base::check_parameters_slot() {
+
+    if (l_dialog && has_rules()) {
+        const SlvParametrization_base* parametrization_tmp = new_parametrization_base();
+        SlvStatus status = parametrization_tmp->check_parameters();
+        if (status) {
+            abide_rules_button->setEnabled(false);
+            abide_rules_button->setToolTip(tr("Abide rules of each parameter (exceptions, dependencies..)\nDisabled if the parameterization complies with the rules."));
+        } else {
+            abide_rules_button->setEnabled(true);
+            abide_rules_button->setToolTip(glv::toQString(status.get_message()));
+        }
+
+        delete parametrization_tmp;
+    }
+    
+}
+
+inline void GlvParametrizationDialog_base::resizeEvent(QResizeEvent* _event) {
+
+    if (parameters_widget_base->is_fully_visible() && !parameters_widget_base->has_height_decreased()) {
+
+        int height = parameters_widget_base->size().height();
+        height += button_box->size().height();
+        height += this->layout()->contentsMargins().top() + this->layout()->contentsMargins().bottom();
+        height += m_layout->spacing();
+        setMaximumHeight(height);
+
+    }
+}
+
+inline void GlvParametrizationDialog_base::maximum_height_slot() {
+
+    if (!parameters_widget_base->is_fully_visible()) {
+        setMaximumHeight(QWIDGETSIZE_MAX);
+    }
+
+}
 
 inline GlvVectorWidget_base::GlvVectorWidget_base(QWidget* _parent) : QWidget(_parent) {
 
@@ -24387,7 +25006,7 @@ inline SlvStatus SlvParametrization0::readJson(const nlohmann::json& _json) {
 	if (it != _json.end()) {
 		return SlvStatus();
 	} else {
-		return SlvStatus(SlvStatus::statusType::warning, "Can not find parametrization : " + get_name());
+		return SlvStatus(SlvStatus::statusType::critical, "Can not find parametrization : " + get_name() + "\nJson is not suited for this parametrization.");
 	}
 }
 #endif
@@ -24402,10 +25021,50 @@ inline const SlvParametrization0::Tparametrization& SlvParametrization0::param_c
 
 #ifndef GLOVE_DISABLE_QT
 
+inline glvm_staticVariable_impl(const, int, GlvParametersWidget_base, layout_margin, QApplication::style()->pixelMetric(QStyle::PM_LayoutLeftMargin));
+
+class GlvParametersWidget_base::ScrollArea : public QScrollArea {
+public:
+	bool eventFilter(QObject* object, QEvent* event) {
+		if (object == widget() && event->type() == QEvent::Resize) {
+
+			int min_width = widget()->sizeHint().width();
+			int max_width = QGuiApplication::primaryScreen()->geometry().width() - 100;
+			if (min_width > max_width) {
+				min_width = max_width;
+			}
+			if (widget()->size().height() > QScrollArea::size().height()) {
+				min_width += QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+			}
+			QScrollArea::setMinimumWidth(min_width);
+		}
+		return false;
+	}
+	bool is_expanded_vertically() const {
+		return widget()->size().height() > QScrollArea::size().height();
+	}
+};
+
 inline GlvParametersWidget_base::GlvParametersWidget_base() {
 
+	main_layout = new QVBoxLayout;
+	main_layout->setContentsMargins(layout_margin(), layout_margin(), 0, layout_margin());
+	this->setLayout(main_layout);
+
+	parameters_widget = new QWidget;
+	parameters_widget->installEventFilter(this);
 	vertical_layout = new QVBoxLayout;
-	this->setLayout(vertical_layout);
+	parameters_widget->setLayout(vertical_layout);
+	parameters_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);//here
+
+	l_scrollable = false;
+	scroll_area = NULL;
+	main_layout->addWidget(parameters_widget);
+
+	set_scrollable(true);
+
+	l_height_decreased = false;
+	l_adapt_max_height = false;
 
 	save_load_widget = NULL;
 }
@@ -24417,18 +25076,18 @@ inline GlvParametersWidget_base::~GlvParametersWidget_base() {
 inline void GlvParametersWidget_base::set_layout_vertical() {
 
 	set_layout_type(LayoutType::Vertical);
-	if (save_load_widget) {
-		this->vertical_layout->addWidget(save_load_widget);
-	}
 
 }
 
 inline void GlvParametersWidget_base::set_layout_grid() {
 
 	set_layout_type(LayoutType::Grid);
-	if (save_load_widget) {
-		grid_layout->addWidget(save_load_widget, getNparameters(), 0, 1, 2, Qt::AlignCenter);
-	}
+
+}
+
+inline bool GlvParametersWidget_base::is_fully_visible() const {
+
+	return !l_scrollable || !scroll_area->is_expanded_vertically();
 
 }
 
@@ -24436,16 +25095,13 @@ inline void GlvParametersWidget_base::set_save_load_widget(GlvWidgetSaveLoad_bas
 
 	save_load_widget = _save_load_widget;
 	if (save_load_widget) {
-		if (layout_type == LayoutType::Vertical) {
-			this->vertical_layout->addWidget(save_load_widget);
-		} else {
-			grid_layout->addWidget(save_load_widget, getNparameters(), 1, 1, 1, Qt::AlignRight);
-		}
+		save_load_widget->layout()->setContentsMargins(0, 0, layout_margin() - QApplication::style()->pixelMetric(QStyle::QStyle::PM_DefaultFrameWidth), 0);
+		main_layout->addWidget(save_load_widget, 0, Qt::AlignRight | Qt::AlignBottom);
 	}
 
 }
 
-inline void GlvParametersWidget_base::set_layout_type_pv(LayoutType _layout_type) {
+inline void GlvParametersWidget_base::set_layout_type_protected(LayoutType _layout_type) {
 
 	bool l_update_layout = false;
 	if (layout_type != _layout_type) {
@@ -24454,14 +25110,15 @@ inline void GlvParametersWidget_base::set_layout_type_pv(LayoutType _layout_type
 	layout_type = _layout_type;
 
 	if (l_update_layout) {
-		delete QWidget::layout();
+		delete parameters_widget->layout();
 		if (layout_type == LayoutType::Vertical) {
 			vertical_layout = new QVBoxLayout;
-			this->setLayout(vertical_layout);
+			parameters_widget->setLayout(vertical_layout);
 		} else if (layout_type == LayoutType::Grid) {
 			grid_layout = new QGridLayout;
+			grid_layout->setContentsMargins(0, 0, layout_margin(), 0);
 			grid_layout->setHorizontalSpacing(grid_horizontal_spacing());
-			this->setLayout(grid_layout);
+			parameters_widget->setLayout(grid_layout);
 		}
 	}
 
@@ -24469,7 +25126,7 @@ inline void GlvParametersWidget_base::set_layout_type_pv(LayoutType _layout_type
 
 inline void GlvParametersWidget_base::add_parameter_widget_to_vertical_layout(QWidget* _parameter_widget) {
 
-	this->vertical_layout->addWidget(_parameter_widget);
+	vertical_layout->addWidget(_parameter_widget);
 
 }
 
@@ -24502,132 +25159,68 @@ inline void GlvParametersWidget_base::set_checkable_collapse(bool _l_checkable) 
 
 }
 
+inline void GlvParametersWidget_base::set_scrollable(bool _l_scrollable) {
+
+	if (!_l_scrollable && l_scrollable) {
+
+		main_layout->insertWidget(0, parameters_widget);
+		delete scroll_area;
+		scroll_area = NULL;
+
+	} else if (_l_scrollable && !l_scrollable) {
+
+		scroll_area = new ScrollArea;
+		scroll_area->setWidgetResizable(true);
+		scroll_area->setWidget(parameters_widget);
+		scroll_area->setFrameShape(QFrame::NoFrame);
+		main_layout->addWidget(scroll_area, 0);
+
+	}
+
+	l_scrollable = _l_scrollable;
+
+}
+
+inline void GlvParametersWidget_base::set_adapt_max_height(bool _l_adapt) {
+
+	l_adapt_max_height = _l_adapt;
+
+}
+
 inline void GlvParametersWidget_base::show_parameters(bool _l_show) {
 
-	QLayout* layout = NULL;
-	if (layout_type == LayoutType::Vertical) {
-		layout = vertical_layout;
-	} else if (layout_type == LayoutType::Grid) {
-		layout = grid_layout;
-	}
-	for (int i = 0; i < layout->count(); i++) {
-		QWidget* widget = layout->itemAt(i)->widget();
-		widget->setVisible(_l_show);
+	parameters_widget->setVisible(_l_show);
+
+	if (save_load_widget) {
+		save_load_widget->setVisible(_l_show);
 	}
 
 }
 
-inline GlvParametrizationDialog_base::GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :QDialog(_parent, Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint) {
+inline bool GlvParametersWidget_base::has_height_decreased() const {
 
-    if (_parent) this->setModal(true);
-    //setWindowFlags(Qt::Dialog);
-    //setWindowModality(Qt::ApplicationModal);
-
-    l_dialog = _l_dialog;
-    l_deny_invalid_parameters =_l_deny_invalid_parameters;
-    parametrization_base = NULL;
-
-    // To avoid sending message "setGeometry: Unable to set geometry"
-    setMinimumSize(10, 10);
-
-    m_layout = new QVBoxLayout;
-    m_layout->setSizeConstraint(QLayout::SetMinimumSize);
-
-    if (l_dialog) {
-        button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-        connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
-        connect(button_box, SIGNAL(rejected()), this, SLOT(reject()));
-
-        abide_rules_button = button_box->addButton(tr("Abide rules"), QDialogButtonBox::ButtonRole::ApplyRole);
-        connect(abide_rules_button, SIGNAL(clicked(bool)), this, SLOT(abide_slot()));
-
-        connect(this, SIGNAL(parametrizationChanged(std::string)), this, SLOT(check_parameters_slot()));
-
-        m_layout->addWidget(button_box);
-    } else {
-        button_box = NULL;
-        abide_rules_button = NULL;
-    }
-
-    this->setLayout(m_layout);
-}
-
-inline GlvParametrizationDialog_base::~GlvParametrizationDialog_base() {
-
-    delete parametrization_base;
+	return l_height_decreased;
 
 }
 
-inline void GlvParametrizationDialog_base::enable_abide_rules_button(bool _l_enable) {
+inline bool GlvParametersWidget_base::eventFilter(QObject* object, QEvent* _event) {
 
-    if (abide_rules_button) {
-        if (_l_enable) {
-            abide_rules_button->show();
-        } else {
-            abide_rules_button->hide();
-        }
-    }
+	if (object == parameters_widget && _event->type() == QEvent::Resize) {
 
-}
-
-inline void GlvParametrizationDialog_base::parametrizationChanged_slot(std::string _parameter_name) {
-    emit parametrizationChanged(_parameter_name);
-}
-
-inline const SlvParametrization_base* GlvParametrizationDialog_base::get_parametrization_base() const {
-
-    return parametrization_base;
-
-}
-
-inline void GlvParametrizationDialog_base::addWidget(QWidget* _widget) {
-    m_layout->insertWidget(m_layout->count() - 1, _widget);
-}
-
-inline void GlvParametrizationDialog_base::abide_slot() {
-
-    bool l_abide_rules = abide_rules();
-
-    if (!l_abide_rules) {
-        QMessageBox::warning(this, tr("Abide rules"), tr("Rules have been abided."));
-    }
-
-}
-
-inline void GlvParametrizationDialog_base::check_parameters_slot() {
-
-    if (l_dialog && has_rules()) {
-        const SlvParametrization_base* parametrization_tmp = new_parametrization_base();
-        SlvStatus status = parametrization_tmp->check_parameters();
-        if (status) {
-            abide_rules_button->setEnabled(false);
-            abide_rules_button->setToolTip(tr("Abide rules of each parameter (exceptions, dependencies..)\nDisabled if the parameterization complies with the rules."));
-        } else {
-            abide_rules_button->setEnabled(true);
-            abide_rules_button->setToolTip(glv::toQString(status.get_message()));
-        }
-
-        delete parametrization_tmp;
-    }
-    
-}
-
-inline QString glv::flag::toQString(const SlvStatus& _status, bool _l_show_all) {
-
-	QString message;
-	if (!_l_show_all) {
-		message = QObject::tr(_status.get_message().c_str());
-	} else {
-		for (SlvStatus::const_iterator it = _status.begin(); it != _status.end(); ++it) {
-			if (it->value != SlvStatus::statusType::ok) {
-				message += QObject::tr(it->data.c_str());
-				if (std::next(it) != _status.end()) {
-					message += "\n";
-				}
-			}
+		QResizeEvent* resize_event = dynamic_cast<QResizeEvent*>(_event);
+		if (resize_event->size().height() < resize_event->oldSize().height()) {
+			l_height_decreased = true;
+			emit heightChanged();
+		} else if (resize_event->size().height() > resize_event->oldSize().height()) {
+			l_height_decreased = false;
+			emit heightChanged();
+		} else if (l_adapt_max_height) {
+			l_height_decreased = false;
 		}
+
 	}
-	return message;
+	return false;
+
 }
 
 inline void glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
@@ -24643,7 +25236,7 @@ inline void glv::flag::showQMessageBox(const QString& _message, const SlvStatus&
 			message = _message;
 			message += "\n";
 		}
-		message += toQString(_status, _l_show_all);
+		message += glv::toQString(_status.to_string(_l_show_all));
 	}
 
 	if (_status.get_type() == SlvStatus::statusType::information) {
@@ -24666,132 +25259,6 @@ inline void glv::flag::BREAK(std::string warning_message, QWidget* _parent) {
 inline void glv::flag::INFO(std::string warning_message, QWidget* _parent) {
 
 	showQMessageBox(SlvStatus(SlvStatus::statusType::information, warning_message), false, _parent);
-
-}
-
-inline GlvCLI::Arguments::Arguments(int _argc, char* _argv[]) {
-
-	parse(_argc, _argv);
-
-}
-
-inline bool GlvCLI::has_glove(int _argc, char* _argv[]) {
-
-	bool l_found = false;
-	int i;
-	for (i = 1; i < _argc && !l_found; i++) {
-		l_found = !std::strcmp(_argv[i], "-glove");
-	}
-
-	return l_found;
-}
-
-inline bool GlvCLI::Arguments::is_empty() const {
-
-	return parameter_arguments.empty() && solo_arguments.empty();
-
-}
-
-inline void GlvCLI::Arguments::parse(int _argc, char* _argv[]) {
-
-	parameter_arguments.clear();
-	solo_arguments.clear();
-
-	for (int i = 1; i < _argc; i++) {
-		bool l_parameter = false;
-		if (_argv[i][0] == '-') {
-			if (i < _argc - 1 && _argv[i + 1][0] != '-') {
-				if (std::strcmp(_argv[i], "-glove")) {
-					parameter_arguments[_argv[i]].push_back(_argv[i + 1]);
-				} else {
-					glove_argument = _argv[i + 1];
-				}
-				l_parameter = true;
-			}
-		}
-
-		if (!l_parameter) {
-			if (std::strcmp(_argv[i], "-glove")) {
-				solo_arguments.push_back(_argv[i]);
-			}
-		} else {
-			i++;
-		}
-	}
-
-}
-
-inline void GlvCLI::Arguments::filter(const std::vector<std::string>& _arguments_remaining) {
-
-	for (Tparameters::const_iterator it = parameter_arguments.begin(); it != parameter_arguments.end();) {
-
-		if (!slv::vector::find(it->first, _arguments_remaining)) {
-			it = parameter_arguments.erase(it);
-		} else {
-			++it;
-		}
-
-	}
-
-	for (std::vector<std::string>::const_iterator it = solo_arguments.begin(); it != solo_arguments.end();) {
-
-		if (!slv::vector::find(*it, _arguments_remaining)) {
-			it = solo_arguments.erase(it);
-		} else {
-			++it;
-		}
-
-	}
-
-}
-
-inline std::pair<int, char**> GlvCLI::get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments) {
-
-	int Nfilled_parameters = 0;
-	for (int i = 0; i < _parameter_arguments.size(); i++) {
-		if (!_parameter_arguments[i].second.empty()) {
-			Nfilled_parameters++;
-		}
-	}
-
-	int argc = 2 * Nfilled_parameters + (int)_solo_arguments.size() + 1;
-	char** argv = new char* [argc];
-
-	int k_arg = 0;
-	for (int i = 0; i < _parameter_arguments.size(); i++) {
-
-		if (!_parameter_arguments[i].second.empty()) {
-
-			argv[1 + k_arg] = new char[_parameter_arguments[i].first.size() + 1];
-#ifdef COMPILER_GCC
-			strcpy(argv[1 + k_arg], _parameter_arguments[i].first.c_str());
-#else
-			strcpy_s(argv[1 + k_arg], _parameter_arguments[i].first.size() + 1, _parameter_arguments[i].first.c_str());
-#endif
-			k_arg++;
-
-			argv[1 + k_arg] = new char[_parameter_arguments[i].second.size() + 1];
-#ifdef COMPILER_GCC
-			strcpy(argv[1 + k_arg], _parameter_arguments[i].second.c_str());
-#else
-			strcpy_s(argv[1 + k_arg], _parameter_arguments[i].second.size() + 1, _parameter_arguments[i].second.c_str());
-#endif
-			k_arg++;
-
-		}
-		
-	}
-
-	for (int i = 0; i < _solo_arguments.size(); i++) {
-		argv[1 + 2 * Nfilled_parameters + i] = new char[_solo_arguments[i].size() + 1];
-#ifdef COMPILER_GCC
-		strcpy(argv[1 + 2 * Nfilled_parameters + i], _solo_arguments[i].c_str());
-#else
-		strcpy_s(argv[1 + 2 * Nfilled_parameters + i], _solo_arguments[i].size() + 1, _solo_arguments[i].c_str());
-#endif
-	}
-
-	return { argc, argv };
 
 }
 
@@ -26181,11 +26648,12 @@ inline void glv::view::set_string(GlvTableView_base* _table_view, const QString&
 	dynamic_cast<QStandardItemModel*>(_table_view->model())->item(i, j)->setText(_string);
 }
 
-inline QScrollArea* glv::widget::make_scrollable(QWidget* _widget_scroll, QWidget* _widget_over) {
+inline QScrollArea* glv::widget::make_scrollable(QWidget* _widget_scroll, QWidget* _widget_over, int _left_m, int _top_m, int _right_m, int _bottom_m) {
 
 	QScrollArea* scroll_area = new QScrollArea;
 	scroll_area->setWidgetResizable(true);
 	QBoxLayout* layout = new QHBoxLayout;
+	layout->setContentsMargins(_left_m, _top_m, _right_m, _bottom_m);
 
 	scroll_area->setWidget(_widget_scroll);
 	layout->addWidget(scroll_area);

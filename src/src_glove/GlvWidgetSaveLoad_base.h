@@ -33,7 +33,7 @@ class GlvWidgetSaveLoad_base : public QWidget {
 
 private:
 
-	QBoxLayout* layout;
+	QBoxLayout* main_layout;
 	GlvOpenFile* open_file;
 	SlvFileExtensions allowed_extensions;
 

@@ -22,6 +22,7 @@
 
 #define Tdata int
 GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QSpinBox(_parent) {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     setMaximum(std::numeric_limits<int>::max());
     setMinimum(std::numeric_limits<int>::lowest());
 }
@@ -44,6 +45,7 @@ void GlvWidgetData<Tdata>::set_value(const Tdata& _value) {
 #undef Tdata
 #define Tdata unsigned int
 GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QSpinBox(_parent) {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     setMaximum(std::numeric_limits<int>::max());
     setMinimum(0);
 }
@@ -71,6 +73,7 @@ void GlvWidgetData<Tdata>::set_value(const Tdata& _value) {
 #undef Tdata
 #define Tdata float
 GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QDoubleSpinBox(_parent) {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     setMaximum(std::numeric_limits<float>::max());
     setMinimum(std::numeric_limits<float>::lowest());
 }
@@ -96,6 +99,7 @@ void GlvWidgetData<Tdata>::set_value(const Tdata& _value) {
 #undef Tdata
 #define Tdata double
 GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QDoubleSpinBox(_parent) {
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     setMaximum(std::numeric_limits<double>::max());
     setMinimum(std::numeric_limits<double>::lowest());
 }

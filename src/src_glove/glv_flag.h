@@ -24,20 +24,16 @@ class QWidget;
 namespace glv {
 	/*! Flag functions for Glv*/
 	namespace flag {
-
-		/*! Get string corresponding to the status messages.
-		* \p _l_show_all : if false get only most critical message (if any). If true get all messages.*/
-		QString toQString(const SlvStatus& _status, bool _l_show_all);
 		/*! Calls QMessageBox according to \p _status most critical type.
 		* \p _l_show_all : if false displays only most critical message (if any). If true displays all messages.*/
-		void showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent);
+		void showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent = NULL);
 		/*! Calls QMessageBox according to \p _status most critical type.
 		* \p _message : preceding message.
 		* \p _l_show_all : if false displays only most critical message (if any). If true displays all messages.*/
-		void showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent);
+		void showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent = NULL);
 		/*! Calls QMessageBox::critical with message \p _message and breaks.*/
-		void BREAK(std::string warning_message, QWidget* _parent);
+		void BREAK(std::string warning_message, QWidget* _parent = NULL);
 		/*! Calls QMessageBox::information with message \p _message.*/
-		void INFO(std::string warning_message, QWidget* _parent);
+		void INFO(std::string warning_message, QWidget* _parent = NULL);
 	}
 }

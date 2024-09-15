@@ -20,6 +20,7 @@
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "misc/SlvTimer.h"
 #else
+#define GLOVE_DISABLE_QT // no need of Qt here
 #include "glove.h"
 #endif
 

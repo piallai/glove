@@ -48,7 +48,9 @@
       4. [Remarks](#remarks)
          1. [Widget specializations](#glvwidgetdata-specializations)
          2. [Convenient macros](#convient-macros)
-   2. [CLI to GUI](#cli-to-gui)
+   2. [CLI parsing](#cli-parsing)
+      1. [CLI to GUI](#cli-to-gui)
+      2. [Parametrization parsing](#parametrization-parsing)
    3. [Table interfacing](#table-interfacing)
       1. [Examples](#examples--2)
    4. [Progress feedback](#progress-feedback)
@@ -63,6 +65,7 @@
    3. [Usage](#usage)
       1. [Library location](#library-location)
       2. [CMake configuration of a project using Glove](#cmake-configuration-of-a-project-using-glove)
+4. [License](#license)	  
 
 # Presentation
 
@@ -173,11 +176,19 @@ List of convenient macros to handle parametrizations.
   
   - see [here](/doc/readme/SlvEnum.md) and [here](/doc/readme/GlvEnumWidget.md) for example
 
-## CLI to GUI
+## CLI parsing
+
+### CLI to GUI
 
 The framework includes a simple method to transform the command line arguments of a <code>main</code> into a basic GUI.  The framework allows a flexible CLI approach, and can manage saving and loading of the arguments as presented just above.
 
-### Example : [CLI to GUI](/doc/readme/CLI/CLI.md)
+**Example** : [CLI to GUI](/doc/readme/CLI/CLI_GUI.md)
+
+### Parametrization parsing
+
+Without relying on Qt, a simple parsing of a 'main' parametrization can be done.
+
+**Example** : [CLI parametrization](/doc/readme/CLI/CLI_parametrization.md)
 
 ## Table interfacing
 
@@ -367,3 +378,7 @@ foreach(lib ${GLOVE_LIBRARIES_DEBUG})
     target_link_libraries(${PROJECT_NAME} debug ${lib})
 endforeach()
 ```
+
+# License
+
+The library is licensed as GNU GPLv3. Dual licensing with commercial license is possible on demand.

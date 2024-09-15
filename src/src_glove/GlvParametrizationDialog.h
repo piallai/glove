@@ -84,6 +84,7 @@ GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(Tparametriz
 
     parametrization_base = new Tparametrization;
     parametrization_widget = new GlvParametrizationWidget<Tparametrization>;
+    set_parameters_widget_base(parametrization_widget);
     set_parametrization(_parametrization);
 
     connect(parametrization_widget, SIGNAL(parameterChanged(std::string)), this, SLOT(parametrizationChanged_slot(std::string)));

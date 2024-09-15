@@ -15,16 +15,18 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "GlvCLI.h"
+#include "SlvCLI.h"
 #include "SlvMacros.h"
+#include "slv_vector.h"
+#include <cstring>
 
-GlvCLI::Arguments::Arguments(int _argc, char* _argv[]) {
+SlvCLI::Arguments::Arguments(int _argc, char* _argv[]) {
 
 	parse(_argc, _argv);
 
 }
 
-bool GlvCLI::has_glove(int _argc, char* _argv[]) {
+bool SlvCLI::has_glove(int _argc, char* _argv[]) {
 
 	bool l_found = false;
 	int i;
@@ -35,13 +37,31 @@ bool GlvCLI::has_glove(int _argc, char* _argv[]) {
 	return l_found;
 }
 
-bool GlvCLI::Arguments::is_empty() const {
+bool SlvCLI::Arguments::is_empty() const {
 
 	return parameter_arguments.empty() && solo_arguments.empty();
 
 }
 
-void GlvCLI::Arguments::parse(int _argc, char* _argv[]) {
+const std::vector<std::string>& SlvCLI::Arguments::get_solo_arguments() const {
+
+	return solo_arguments;
+
+}
+
+const SlvCLI::Arguments::Tparameters& SlvCLI::Arguments::get_parameter_arguments() const {
+
+	return parameter_arguments;
+
+}
+
+const std::string& SlvCLI::Arguments::get_glove_argument() const {
+
+	return glove_argument;
+
+}
+
+void SlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 
 	parameter_arguments.clear();
 	solo_arguments.clear();
@@ -70,7 +90,7 @@ void GlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 
 }
 
-void GlvCLI::Arguments::filter(const std::vector<std::string>& _arguments_remaining) {
+void SlvCLI::Arguments::filter(const std::vector<std::string>& _arguments_remaining) {
 
 	for (Tparameters::const_iterator it = parameter_arguments.begin(); it != parameter_arguments.end();) {
 
@@ -94,7 +114,7 @@ void GlvCLI::Arguments::filter(const std::vector<std::string>& _arguments_remain
 
 }
 
-std::pair<int, char**> GlvCLI::get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments) {
+std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments) {
 
 	int Nfilled_parameters = 0;
 	for (int i = 0; i < _parameter_arguments.size(); i++) {
@@ -128,7 +148,7 @@ std::pair<int, char**> GlvCLI::get_arguments(const std::vector< std::pair<std::s
 			k_arg++;
 
 		}
-		
+
 	}
 
 

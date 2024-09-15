@@ -17,9 +17,7 @@
 
 #pragma once
 
-#include <vector>
-#include <map>
-#include <string>
+#include "SlvCLI.h"
 
 /*! Use a parameter named \p parameter_name of the CLI parametrization as a location where to save the configuration file.
 * If such a parameter does not exist, return empty string.*/
@@ -107,27 +105,6 @@ private:
 		}
 	};
 
-	/*! Returns true if \p _argv contains "-glove".*/
-	static bool has_glove(int _argc, char* _argv[]);
-	struct Arguments {
-		Arguments(int _argc, char* _argv[]);
-		/*! Parameter identifier (starting with '-') and corresponding value.*/
-		typedef std::map<std::string, std::vector<std::string> > Tparameters;
-		Tparameters parameter_arguments;
-		/*! Arguments that are not parameters.*/
-		std::vector<std::string> solo_arguments;
-		/*! Single argument of the -glove cli input. Used for loading a parametrization.*/
-		std::string glove_argument;
-		/*! Parse arguments.*/
-		void parse(int _argc, char* _argv[]);
-		/*! Remove all arguments except those which name is in \p _arguments_remaining.*/
-		void filter(const std::vector<std::string>& _arguments_remaining);
-		/*! Return true if the instance does not store any parameter.*/
-		bool is_empty() const;
-	};
-	/*! Create argc/argv based on provided arguments.*/
-	static std::pair<int, char**> get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments);
-
 };
 
 #include <QApplication>
@@ -138,7 +115,7 @@ private:
 template <class Tparametrization>
 int GlvCLI::main(int _argc, char* _argv[]) {
 
-	if (has_glove(_argc, _argv)) {
+	if (SlvCLI::has_glove(_argc, _argv)) {
 
 		QApplication app(_argc, _argv);
 
@@ -150,45 +127,31 @@ int GlvCLI::main(int _argc, char* _argv[]) {
 		GlvParametrizationDialog<Tparametrization> dialog;
 		GlvParametrizationSaveLoad<Tparametrization>* save_load_widget = new GlvParametrizationSaveLoad<Tparametrization>(dialog.get_parametrization_widget());
 
-		Arguments arguments(_argc, _argv);
+		SlvCLI::Arguments arguments(_argc, _argv);
 
-		if (!arguments.glove_argument.empty()) {
+		if (!arguments.get_glove_argument().empty()) {
 
-			save_load_widget->load(arguments.glove_argument);
+			save_load_widget->load(arguments.get_glove_argument());
 
 		}
 
+
+		Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
+		SlvStatus status;
+
 		if (!arguments.is_empty()) {
 
-			Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
+			status = SlvCLI::parse(parametrization, arguments);
 
-			std::map<std::string, std::string> stream_values;
-			for (Arguments::Tparameters::const_iterator it = arguments.parameter_arguments.begin(); it != arguments.parameter_arguments.end(); ++it) {
-				stream_values[it->first] = it->second[0];
-			}
-
-			for (std::vector<std::string>::const_iterator it = arguments.solo_arguments.begin(); it != arguments.solo_arguments.end(); ++it) {
-				stream_values[*it] = "1";
-			}
-
-			std::pair< std::map<std::string, int>, std::vector<std::string> > conflicts_missing = parametrization.set_stream_values(stream_values, false);
-			if (!conflicts_missing.first.empty()) {
-				QString message(QObject::tr("Multiple parameter correspondences in parametrization."));
-				for (std::map<std::string, int>::const_iterator it = conflicts_missing.first.begin(); it != conflicts_missing.first.end(); ++it) {
-					message += QString("\n") + it->first.c_str() + " : " + QString::number(it->second) + QObject::tr(" correspondences");
-				}
-				QMessageBox::warning(&dialog, QObject::tr("Arguments conflict"), message);
-			}
-			arguments.filter(conflicts_missing.second);
+			glv::flag::showQMessageBox(QObject::tr("Arguments conflict"), status, true);
 
 			dialog.set_parametrization(parametrization);
 
-		} else if (SlvFile(autosave_file_name).exists() && arguments.glove_argument.empty()) {
+		} else if (SlvFile(autosave_file_name).exists() && arguments.get_glove_argument().empty()) {
 
 			save_load_widget->load(autosave_file_name);
 
 		}
-
 
 		int result = dialog.exec();
 		if (result == QDialog::Accepted) {
@@ -201,15 +164,15 @@ int GlvCLI::main(int _argc, char* _argv[]) {
 			}
 
 			std::vector< std::pair<std::string, std::string> > parameter_arguments = dialog.get_parametrization().get_string_serialization_bool().first;
-			for (Arguments::Tparameters::const_iterator it = arguments.parameter_arguments.begin(); it != arguments.parameter_arguments.end(); ++it) {
+			for (SlvCLI::Arguments::Tparameters::const_iterator it = arguments.get_parameter_arguments().begin(); it != arguments.get_parameter_arguments().end(); ++it) {
 				parameter_arguments.push_back({ it->first, it->second[0] });
 			}
 
 			std::vector<std::string> solo_arguments = dialog.get_parametrization().get_string_serialization_bool().second;
-			slv::vector::add(solo_arguments, arguments.solo_arguments);
+			slv::vector::add(solo_arguments, arguments.get_solo_arguments());
 
 
-			std::pair<int, char**> cli_arguments = get_arguments(parameter_arguments, solo_arguments);
+			std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(parameter_arguments, solo_arguments);
 			cli_arguments.second[0] = _argv[0];
 
 			return glv_cli_main(cli_arguments.first, cli_arguments.second);

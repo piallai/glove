@@ -152,7 +152,7 @@ void SlvFile::add_allowed_extensions(const SlvFileExtensions& _extensions) {
 bool SlvFile::exists() const {
 
 #if __cplusplus > 201402L
-    return std::filesystem::exists(get_path());
+    return std::filesystem::is_regular_file(get_path());
 #else
     if (file_name.get_total_name().empty()) {
         return false;

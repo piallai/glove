@@ -40,6 +40,8 @@ protected:
     bool l_dialog;//whether has buttons. if so, parent's activation depends on "this" state. Also QDialog::accept/reject is activated
     bool l_deny_invalid_parameters;
     SlvParametrization_base* parametrization_base;//usefull to cast to correct child type (see macros)
+    /*! Base pointer to manage dialog's size depending on parameters visibility.*/
+    GlvParametersWidget_base* parameters_widget_base;
     QVBoxLayout* m_layout;
 
     GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent);
@@ -53,6 +55,9 @@ public:
     /*! Show or hide the button controlling rules complying, next to 'Ok' and 'Cancel'.*/
     void enable_abide_rules_button(bool _l_enable);
 
+protected :
+    void set_parameters_widget_base(GlvParametersWidget_base* _parameters_widget_base);
+    void resizeEvent(QResizeEvent* _event);
 public slots:
     /*! Apply parametrization widget. QDialog's accept slot only if l_dialog is true.*/
     virtual void accept() = 0;
@@ -66,6 +71,8 @@ private slots:
     virtual void update_parametrization() = 0;
     void parametrizationChanged_slot(std::string _parameter_name);
     void abide_slot();
+    /*! Set free maximum height depending on parameters visibility.*/
+    void maximum_height_slot();
 protected slots:
     // Check parameters by updating parametrization before
     void check_parameters_slot();

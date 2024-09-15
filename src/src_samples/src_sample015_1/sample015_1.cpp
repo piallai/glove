@@ -15,17 +15,15 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Example for automatic CLI
+// Example for automatic CLI, without Qt management
 
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "param/SlvParametrizationMacro.h"
-#include "GlvParametrizationDialog.h"
-#include "GlvWidgetData_spec_SlvFile.h"
-#include "GlvWidgetData_spec_AT.h"
-#include "GlvWidgetData_spec_SlvSize2d.h"
-#include "GlvWidgetData_spec_SlvParametrization.h"
-#include "GlvCLI.h"
+#include "filestream/SlvFile.h"
+#include "SlvSize2d.h"
+#include "SlvCLI.h"
 #else
+#define GLOVE_DISABLE_QT // no need of Qt here
 #define GLOVE_ENABLE_JSON
 #include "glove.h"
 #endif
@@ -42,8 +40,6 @@ glvm_parametrization(ParametersCLI, "CLI parameters",
 										enable, bool, "-enable", "Enable something", false,
 										advanced, FooBar, "Advanced", "Advanced parameters", FooBar());
 
-GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(ParametersCLI, "-O")
-
 // Program supposed to manage 7 command line arguments
 // -I : input path of a .txt file
 // -O : output path of a .txt file
@@ -54,12 +50,9 @@ GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(ParametersCLI, "-O")
 // -size : and advanced parameter formatted as intxint (widthxheight)
 int main(int argc, char* argv[]) {
 
-	GLOVE_CLI(ParametersCLI)
+	ParametersCLI parameters_CLI = SlvCLI::parse<ParametersCLI>(argc, argv);
 
-	std::cout << "argc = " << argc << std::endl;
-	for (int i = 1; i < argc; i++) {
-		std::cout << "argv[i] = " << argv[i] << std::endl;
-	}
+	std::cout << parameters_CLI << std::endl;
 
 	return 0;
 }

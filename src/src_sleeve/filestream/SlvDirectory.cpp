@@ -58,7 +58,7 @@ bool SlvDirectory::is_relative() const {
 bool SlvDirectory::exists() const {
 
 #if __cplusplus > 201402L
-    return std::filesystem::exists(path);
+    return std::filesystem::is_directory(path);
 #else
     struct stat info;
     if (stat(path.c_str(), &info) != 0) {

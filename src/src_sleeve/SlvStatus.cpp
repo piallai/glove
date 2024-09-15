@@ -19,6 +19,7 @@
 #include "SlvCombo.h"
 #include <algorithm>
 #include "slv_vector.h"
+#include "slv_string.h"
 
 SlvStatus::SlvStatus(statusType _type, std::string _message) {
 
@@ -32,16 +33,30 @@ SlvStatus::SlvStatus(const SlvStatus& _status) {
 
     status_signals = new std::vector<SlvStatusSignal>(*_status.status_signals);
 
+    for (const_iterator_sub it = _status.begin_sub(); it != _status.end_sub(); ++it) {
+        add_sub_status(**it);
+    }
+
 }
 
 
 SlvStatus::~SlvStatus() {
 
     delete status_signals;
+    clear_sub_status();
 
 }
 
-bool SlvStatus::sortStatus(SlvStatusSignal _signal1, SlvStatusSignal _signal2) {
+void SlvStatus::clear_sub_status() {
+
+    for (const_iterator_sub it = begin_sub(); it != end_sub(); ++it) {
+        delete* it;
+    }
+    sub_status.clear();
+
+}
+
+bool SlvStatus::sortStatusSignal(SlvStatusSignal _signal1, SlvStatusSignal _signal2) {
     return _signal1.value > _signal2.value;
 }
 
@@ -52,8 +67,8 @@ void SlvStatus::push(const statusType& _type, const std::string& _message) {
         if (status_signals->empty() || _type != statusType::ok) {//do not add multiple 'ok' status
             status_signals->push_back(signal);
         }
-        std::sort(status_signals->begin(), status_signals->end(), SlvStatus::sortStatus);
-        // Remove 'ok' if more relevant signals exist
+        std::sort(status_signals->begin(), status_signals->end(), SlvStatus::sortStatusSignal);
+        // Remove 'ok' if more critical signals exist
         if (status_signals->size() > 1 && status_signals->back().value == statusType::ok) {
             status_signals->pop_back();
         }
@@ -73,16 +88,47 @@ SlvStatus::const_iterator SlvStatus::end() const {
 
 }
 
+SlvStatus::const_iterator_sub SlvStatus::begin_sub() const {
+
+    return sub_status.begin();
+
+}
+
+SlvStatus::const_iterator_sub SlvStatus::end_sub() const {
+
+    return sub_status.end();
+
+}
+
 size_t SlvStatus::size() const {
+
     return status_signals->size();
+
 }
 
 const SlvStatus::statusType& SlvStatus::get_type() const {
-    return (*status_signals)[0].value;
+
+    return get_status_signal().value;
 }
 
 const std::string& SlvStatus::get_message() const {
-    return (*status_signals)[0].data;
+
+    return get_status_signal().data;
+
+}
+
+const SlvStatus::SlvStatusSignal& SlvStatus::get_status_signal() const {
+
+    if (!has_sub_status()) {
+        return (*status_signals)[0];
+    } else {
+        if ((*status_signals)[0].value > sub_status[0]->get_status_signal().value) {
+            return (*status_signals)[0];
+        } else {
+            return sub_status[0]->get_status_signal();
+        }
+    }
+
 }
 
 const SlvStatus::statusType& SlvStatus::get_type(const unsigned int i) const {
@@ -101,6 +147,12 @@ SlvStatus::operator bool() const {
 SlvStatus& SlvStatus::operator=(const SlvStatus& _status) {
 
     *status_signals = *_status.status_signals;
+    clear_sub_status();
+
+    for (const_iterator_sub it = _status.begin_sub(); it != _status.end_sub(); ++it) {
+        add_sub_status(**it);
+    }
+
     return *this;
 }
 
@@ -109,16 +161,95 @@ SlvStatus& SlvStatus::operator+=(const SlvStatus& _status) {
     for (unsigned int i = 0; i < _status.size(); i++) {
         push(_status.get_type(i), _status.get_message(i));
     }
+
+    for (const_iterator_sub it = _status.begin_sub(); it != _status.end_sub(); ++it) {
+        add_sub_status(**it);
+    }
+
     return *this;
+}
+
+size_t SlvStatus::size_sub() const {
+
+    return sub_status.size();
+
+}
+
+bool SlvStatus::has_sub_status() const {
+
+    return !sub_status.empty();
+
+}
+
+const SlvStatus& SlvStatus::get_sub_status(const unsigned int i) const {
+
+    return *sub_status[i];
+
+}
+
+bool SlvStatus::sortStatus(const SlvStatus* _status1, const SlvStatus* _status2) {
+
+    return _status1->get_type() > _status2->get_type();
+
+}
+
+void SlvStatus::add_sub_status(const SlvStatus& _status) {
+
+    if (!_status) {
+        sub_status.push_back(new SlvStatus(_status));
+    }
+
+    std::sort(sub_status.begin(), sub_status.end(), SlvStatus::sortStatus);
+
 }
 
 void SlvStatus::ostream(std::ostream& _os) const {
 
-    for (unsigned int s = 0; s < size(); s++) {
-        _os << (*status_signals)[s];
-        if (s < size() - 1) {
-            _os << std::endl;
+    _os << to_string(true);
+
+}
+
+std::string SlvStatus::to_string(bool _l_show_all) const {
+
+    return to_string(_l_show_all, 0);
+
+}
+
+std::string SlvStatus::to_string(bool _l_show_all, int _depth) const {
+
+    std::string message;
+    if (!_l_show_all) {
+        message = get_message();
+    } else {
+
+        std::string indent;
+        if (_depth > 0) {
+            if (_depth % 2 == 1) indent = "- ";
+            else if (_depth % 2 == 0) indent = "* ";
         }
+
+        for (SlvStatus::const_iterator it = begin(); it != end(); ++it) {
+            if (it->value != SlvStatus::statusType::ok) {
+                message += std::string(_depth * 4, ' ') + indent + slv::string::to_string(it->value) + " : " + it->data.c_str();
+                if (std::next(it) != end()) {
+                    message += "\n";
+                }
+            }
+        }
+
+        if (has_sub_status()) {
+            message += "\n";
+        }
+
+        for (SlvStatus::const_iterator_sub it = begin_sub(); it != end_sub(); ++it) {
+            message += (*it)->to_string(_l_show_all, _depth + 1);
+            if (std::next(it) != end_sub()) {
+                message += "\n";
+            }
+        }
+
     }
+
+    return message;
 
 }

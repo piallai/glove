@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-Defining a parametrization `ParametersCLI`taking into accound the properties of the command line arguments, and adding the macro <code>GLOVE_CLI(ParametersCLI)</code> , the program becomes:
+Defining a parametrization `ParametersCLI` taking into accound the properties of the command line arguments, and adding the macro <code>GLOVE_CLI(ParametersCLI)</code> , the program becomes:
 
 ```cpp
 glvm_parametrization(FooBar, "Foo Bar Size",

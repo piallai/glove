@@ -22,6 +22,7 @@
 
 #include "json.hpp"
 #include "SlvStatus.h"
+#include "misc/SlvDataName.h"
 
 namespace slv {
     namespace rw {
@@ -51,8 +52,13 @@ namespace slv {
                         _json = _value;
                     }
                     static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
-                        _value = _json.get<Tdat>();
-                        return SlvStatus();
+                        SlvStatus status;
+                        try {
+                            _value = _json.get<Tdat>();
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<Tdat>::name());
+                        }
+                        return status;
                     }
                 };
             }
@@ -154,9 +160,14 @@ namespace slv {
                         _json = oss.str();
                     }
                     static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
-                        std::istringstream iss(_json.get<std::string>());
-                        _value.ifstream(iss);
-                        return SlvStatus();
+                        SlvStatus status;
+                        try {
+                            std::istringstream iss(_json.get<std::string>());
+                            _value.ifstream(iss);
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<Tdat>::name());
+                        }
+                        return status;
                     }
                 };
 
@@ -190,9 +201,14 @@ namespace slv {
                         _json = oss.str();
                     }
                     static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
-                        std::istringstream iss(_json.get<std::string>());
-                        _value.istream(iss);
-                        return SlvStatus();
+                        SlvStatus status;
+                        try {
+                            std::istringstream iss(_json.get<std::string>());
+                            _value.istream(iss);
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<Tdat>::name());
+                        }
+                        return status;
                     }
                 };
 
@@ -290,9 +306,14 @@ namespace slv {
                         _json = oss.str();
                     }
                     static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
-                        std::istringstream iss(_json.get<std::string>());
-                        iss >> _value;
-                        return SlvStatus();
+                        SlvStatus status;
+                        try {
+                            std::istringstream iss(_json.get<std::string>());
+                            iss >> _value;
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<Tdat>::name());
+                        }
+                        return status;
                     }
                 };
 
@@ -306,8 +327,13 @@ namespace slv {
                         _json = oss.str();
                     }
                     static SlvStatus readJson(std::string& _value, const nlohmann::json& _json) {
-                        _value = _json.get<std::string>();
-                        return SlvStatus();
+                        SlvStatus status;
+                        try {
+                            _value = _json.get<std::string>();
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<std::string>::name());
+                        }
+                        return status;
                     }
                 };
 

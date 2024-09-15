@@ -250,6 +250,9 @@ SET(SLEEVE_SOURCES
 	
 	SlvProgression.h
 	SlvProgression.cpp
+	
+	SlvCLI.h
+	SlvCLI.cpp
 			
 	##### Parameter classes #########
 	SlvProportion.h

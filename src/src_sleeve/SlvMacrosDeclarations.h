@@ -66,6 +66,11 @@ public: glvm_SetVariable_bool(name)
 #define glvm_staticVariable(const, type, name, value)\
 static const type& name(){static const type* name = new type(value);return *name;}
 
+#define glvm_staticVariable_def(const, type, name)\
+static const type& name();
+#define glvm_staticVariable_impl(const, type, encaspulation, name, value)\
+const type& encaspulation::name(){static const type* name = new type(value);return *name;}
+
 /*! Define a static variable with static get/set accessors.*/
 #define glvm_staticVariableGetSet(type, name, init_value)\
 private: glvm_staticVariable(, type, name, init_value)\

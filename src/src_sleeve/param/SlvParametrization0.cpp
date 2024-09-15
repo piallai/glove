@@ -114,7 +114,7 @@ SlvStatus SlvParametrization0::readJson(const nlohmann::json& _json) {
 	if (it != _json.end()) {
 		return SlvStatus();
 	} else {
-		return SlvStatus(SlvStatus::statusType::warning, "Can not find parametrization : " + get_name());
+		return SlvStatus(SlvStatus::statusType::critical, "Can not find parametrization : " + get_name() + "\nJson is not suited for this parametrization.");
 	}
 }
 #endif

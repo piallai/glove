@@ -18,25 +18,7 @@
 #include "glv_flag.h"
 #include "slv_flag.h"
 #include <QMessageBox>
-#include "SlvCombo.h"
-
-QString glv::flag::toQString(const SlvStatus& _status, bool _l_show_all) {
-
-	QString message;
-	if (!_l_show_all) {
-		message = QObject::tr(_status.get_message().c_str());
-	} else {
-		for (SlvStatus::const_iterator it = _status.begin(); it != _status.end(); ++it) {
-			if (it->value != SlvStatus::statusType::ok) {
-				message += QObject::tr(it->data.c_str());
-				if (std::next(it) != _status.end()) {
-					message += "\n";
-				}
-			}
-		}
-	}
-	return message;
-}
+#include "glv_QString.h"
 
 void glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
 
@@ -51,7 +33,7 @@ void glv::flag::showQMessageBox(const QString& _message, const SlvStatus& _statu
 			message = _message;
 			message += "\n";
 		}
-		message += toQString(_status, _l_show_all);
+		message += glv::toQString(_status.to_string(_l_show_all));
 	}
 
 	if (_status.get_type() == SlvStatus::statusType::information) {

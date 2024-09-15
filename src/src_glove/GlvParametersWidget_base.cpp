@@ -19,11 +19,58 @@
 #include <QVBoxLayout>
 #include <QGridLayout>
 #include "GlvWidgetSaveLoad_base.h"
+#include "glv_widget.h"
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QApplication>
+#include <QStyle>
+#include <QScreen>
+#include <QResizeEvent>
+
+glvm_staticVariable_impl(const, int, GlvParametersWidget_base, layout_margin, QApplication::style()->pixelMetric(QStyle::PM_LayoutLeftMargin));
+
+class GlvParametersWidget_base::ScrollArea : public QScrollArea {
+public:
+	bool eventFilter(QObject* object, QEvent* event) {
+		if (object == widget() && event->type() == QEvent::Resize) {
+
+			int min_width = widget()->sizeHint().width();
+			int max_width = QGuiApplication::primaryScreen()->geometry().width() - 100;
+			if (min_width > max_width) {
+				min_width = max_width;
+			}
+			if (widget()->size().height() > QScrollArea::size().height()) {
+				min_width += QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+			}
+			QScrollArea::setMinimumWidth(min_width);
+		}
+		return false;
+	}
+	bool is_expanded_vertically() const {
+		return widget()->size().height() > QScrollArea::size().height();
+	}
+};
 
 GlvParametersWidget_base::GlvParametersWidget_base() {
 
+	main_layout = new QVBoxLayout;
+	main_layout->setContentsMargins(layout_margin(), layout_margin(), 0, layout_margin());
+	this->setLayout(main_layout);
+
+	parameters_widget = new QWidget;
+	parameters_widget->installEventFilter(this);
 	vertical_layout = new QVBoxLayout;
-	this->setLayout(vertical_layout);
+	parameters_widget->setLayout(vertical_layout);
+	parameters_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);//here
+
+	l_scrollable = false;
+	scroll_area = NULL;
+	main_layout->addWidget(parameters_widget);
+
+	set_scrollable(true);
+
+	l_height_decreased = false;
+	l_adapt_max_height = false;
 
 	save_load_widget = NULL;
 }
@@ -35,18 +82,18 @@ GlvParametersWidget_base::~GlvParametersWidget_base() {
 void GlvParametersWidget_base::set_layout_vertical() {
 
 	set_layout_type(LayoutType::Vertical);
-	if (save_load_widget) {
-		this->vertical_layout->addWidget(save_load_widget);
-	}
 
 }
 
 void GlvParametersWidget_base::set_layout_grid() {
 
 	set_layout_type(LayoutType::Grid);
-	if (save_load_widget) {
-		grid_layout->addWidget(save_load_widget, getNparameters(), 0, 1, 2, Qt::AlignCenter);
-	}
+
+}
+
+bool GlvParametersWidget_base::is_fully_visible() const {
+
+	return !l_scrollable || !scroll_area->is_expanded_vertically();
 
 }
 
@@ -54,16 +101,13 @@ void GlvParametersWidget_base::set_save_load_widget(GlvWidgetSaveLoad_base* _sav
 
 	save_load_widget = _save_load_widget;
 	if (save_load_widget) {
-		if (layout_type == LayoutType::Vertical) {
-			this->vertical_layout->addWidget(save_load_widget);
-		} else {
-			grid_layout->addWidget(save_load_widget, getNparameters(), 1, 1, 1, Qt::AlignRight);
-		}
+		save_load_widget->layout()->setContentsMargins(0, 0, layout_margin() - QApplication::style()->pixelMetric(QStyle::QStyle::PM_DefaultFrameWidth), 0);
+		main_layout->addWidget(save_load_widget, 0, Qt::AlignRight | Qt::AlignBottom);
 	}
 
 }
 
-void GlvParametersWidget_base::set_layout_type_pv(LayoutType _layout_type) {
+void GlvParametersWidget_base::set_layout_type_protected(LayoutType _layout_type) {
 
 	bool l_update_layout = false;
 	if (layout_type != _layout_type) {
@@ -72,14 +116,15 @@ void GlvParametersWidget_base::set_layout_type_pv(LayoutType _layout_type) {
 	layout_type = _layout_type;
 
 	if (l_update_layout) {
-		delete QWidget::layout();
+		delete parameters_widget->layout();
 		if (layout_type == LayoutType::Vertical) {
 			vertical_layout = new QVBoxLayout;
-			this->setLayout(vertical_layout);
+			parameters_widget->setLayout(vertical_layout);
 		} else if (layout_type == LayoutType::Grid) {
 			grid_layout = new QGridLayout;
+			grid_layout->setContentsMargins(0, 0, layout_margin(), 0);
 			grid_layout->setHorizontalSpacing(grid_horizontal_spacing());
-			this->setLayout(grid_layout);
+			parameters_widget->setLayout(grid_layout);
 		}
 	}
 
@@ -87,7 +132,7 @@ void GlvParametersWidget_base::set_layout_type_pv(LayoutType _layout_type) {
 
 void GlvParametersWidget_base::add_parameter_widget_to_vertical_layout(QWidget* _parameter_widget) {
 
-	this->vertical_layout->addWidget(_parameter_widget);
+	vertical_layout->addWidget(_parameter_widget);
 
 }
 
@@ -120,17 +165,67 @@ void GlvParametersWidget_base::set_checkable_collapse(bool _l_checkable) {
 
 }
 
+void GlvParametersWidget_base::set_scrollable(bool _l_scrollable) {
+
+	if (!_l_scrollable && l_scrollable) {
+
+		main_layout->insertWidget(0, parameters_widget);
+		delete scroll_area;
+		scroll_area = NULL;
+
+	} else if (_l_scrollable && !l_scrollable) {
+
+		scroll_area = new ScrollArea;
+		scroll_area->setWidgetResizable(true);
+		scroll_area->setWidget(parameters_widget);
+		scroll_area->setFrameShape(QFrame::NoFrame);
+		main_layout->addWidget(scroll_area, 0);
+
+	}
+
+	l_scrollable = _l_scrollable;
+
+
+}
+
+void GlvParametersWidget_base::set_adapt_max_height(bool _l_adapt) {
+
+	l_adapt_max_height = _l_adapt;
+
+}
+
 void GlvParametersWidget_base::show_parameters(bool _l_show) {
 
-	QLayout* layout = NULL;
-	if (layout_type == LayoutType::Vertical) {
-		layout = vertical_layout;
-	} else if (layout_type == LayoutType::Grid) {
-		layout = grid_layout;
+	parameters_widget->setVisible(_l_show);
+
+	if (save_load_widget) {
+		save_load_widget->setVisible(_l_show);
 	}
-	for (int i = 0; i < layout->count(); i++) {
-		QWidget* widget = layout->itemAt(i)->widget();
-		widget->setVisible(_l_show);
+
+}
+
+bool GlvParametersWidget_base::has_height_decreased() const {
+
+	return l_height_decreased;
+
+}
+
+bool GlvParametersWidget_base::eventFilter(QObject* object, QEvent* _event) {
+
+	if (object == parameters_widget && _event->type() == QEvent::Resize) {
+
+		QResizeEvent* resize_event = dynamic_cast<QResizeEvent*>(_event);
+		if (resize_event->size().height() < resize_event->oldSize().height()) {
+			l_height_decreased = true;
+			emit heightChanged();
+		} else if (resize_event->size().height() > resize_event->oldSize().height()) {
+			l_height_decreased = false;
+			emit heightChanged();
+		} else if (l_adapt_max_height) {
+			l_height_decreased = false;
+		}
+
 	}
+	return false;
 
 }

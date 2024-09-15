@@ -76,6 +76,13 @@ void GlvParametrizationDialog_base::enable_abide_rules_button(bool _l_enable) {
 
 }
 
+void GlvParametrizationDialog_base::set_parameters_widget_base(GlvParametersWidget_base* _parameters_widget_base) {
+
+    parameters_widget_base = _parameters_widget_base;
+    connect(parameters_widget_base, SIGNAL(heightChanged()), this, SLOT(maximum_height_slot()));
+
+}
+
 void GlvParametrizationDialog_base::parametrizationChanged_slot(std::string _parameter_name) {
     emit parametrizationChanged(_parameter_name);
 }
@@ -116,4 +123,25 @@ void GlvParametrizationDialog_base::check_parameters_slot() {
         delete parametrization_tmp;
     }
     
+}
+
+void GlvParametrizationDialog_base::resizeEvent(QResizeEvent* _event) {
+
+    if (parameters_widget_base->is_fully_visible() && !parameters_widget_base->has_height_decreased()) {
+
+        int height = parameters_widget_base->size().height();
+        height += button_box->size().height();
+        height += this->layout()->contentsMargins().top() + this->layout()->contentsMargins().bottom();
+        height += m_layout->spacing();
+        setMaximumHeight(height);
+
+    }
+}
+
+void GlvParametrizationDialog_base::maximum_height_slot() {
+
+    if (!parameters_widget_base->is_fully_visible()) {
+        setMaximumHeight(QWIDGETSIZE_MAX);
+    }
+
 }

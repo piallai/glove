@@ -32,13 +32,27 @@ class GlvParametersWidget_base : public QGroupBox, public GlvSaveLoad {
 
 private:
 	glvm_staticVariable(const, int, grid_horizontal_spacing, 10);
-
+	glvm_staticVariable_def(const, int, layout_margin);
+private :
+	/*! Whether the parameters are set in a scroll area or not.*/
+	bool l_scrollable;
+	class ScrollArea;
+	/*! Scroll area of parameters.*/
+	ScrollArea* scroll_area;
+	/*! Whether last resize update was a height decrease.*/
+	bool l_height_decreased;
+	/*! If true, max height will apply whenever scroll bar appears.
+	* If false (default), the widget can still be resized up to the last height before parameters size reduction.
+	* i.e.: Update height hint to fit to parameters widget.*/
+	bool l_adapt_max_height;
 public:
 	enum LayoutType { Vertical, Grid };
 protected:
 	LayoutType layout_type = LayoutType::Vertical;
 	QVBoxLayout* vertical_layout;
 	QGridLayout* grid_layout;
+	QVBoxLayout* main_layout;
+	QWidget* parameters_widget;
 
 	GlvParametersWidget_base();
 	virtual ~GlvParametersWidget_base();
@@ -56,17 +70,31 @@ public:
 	/*! Display or hide data type information in 'whatsthis'.*/
 	virtual void enable_data_type_info(bool _l_enable) = 0;
 
+	/*! Returns true if the parameters are fully visible (no scroll bars).*/
+	bool is_fully_visible() const;
+	/*! Returns true if the parameters widget last resize update was a height decrease.*/
+	bool has_height_decreased() const;
+	/*! Set parameters to be scrollable or not.
+	* Default state is true.*/
+	void set_scrollable(bool _l_scrollable);
+	/*! Advanced setting.
+	* If true, max height will apply whenever scroll bar appears.
+	* If false (default), the widget can still be resized up to the last height before parameters size reduction.
+	* i.e.: Update height hint to fit to parameters widget.*/
+	void set_adapt_max_height(bool _l_adapt);
+
 protected:
 	/*! Add the parameter widget to the parameters.*/
 	void add_parameter_widget_to_vertical_layout(QWidget* _parameter_widget);
 	template <class Tdata>
 	void set_parameter_widget_to_grid_layout(GlvParameterWidget<Tdata>* _parameter_widget, int i);
-	/*! Set layout type, private.*/
-	void set_layout_type_pv(LayoutType _layout_type);
+	/*! Set layout type, protected.*/
+	void set_layout_type_protected(LayoutType _layout_type);
 	/*! Set save/load widget. Called in GlvParametrizationSaveLoad.*/
 	void set_save_load_widget(GlvWidgetSaveLoad_base* _save_load_widget);
 	/*! Enable/disable possibility to show/hide parameters.*/
 	void set_checkable_collapse(bool _l_checkable);
+	
 private:
 	/*! Add to row \p i :
 	* Column 0 : \p _dataname_label.
@@ -74,14 +102,16 @@ private:
 	* Column 2 : \p _optional_text.*/
 	void add_parameter_widget_to_grid_layout(QWidget* _dataname_label, QWidget* _data_widget, QWidget* _optional_text_label, int i);
 	/*! Get number of parameters.*/
-	virtual int getNparameters() const = 0;
+	virtual int get_Nparameters() const = 0;
+	bool eventFilter(QObject* object, QEvent* _event);
 private slots:
 	/*! Show parameters or not.*/
 	void show_parameters(bool _l_show);
 signals:
 	/*! Emitted when the parameter named \p _parameter_name has changed.*/
 	void parameterChanged(std::string _parameter_name);
-
+	/*! Emitted when the widget containing the parameters (only) is being resized vertically.*/
+	void heightChanged();
 };
 
 #include "GlvParameterWidget.h"
