@@ -21,7 +21,7 @@
 
 #define GLOVE_VERSION_MAJOR 0
 #define GLOVE_VERSION_MINOR 7
-#define GLOVE_VERSION_PATCH 2
+#define GLOVE_VERSION_PATCH 3
 
 #ifndef GLOVE_DISABLE_QT
 #define OPTION_ENABLE_SLV_QT_PROGRESS 1
@@ -72,7 +72,11 @@
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
 #include <QObject>
 #endif
+#ifndef GLOVE_DISABLE_QT
+#include <QObject>
+#endif
 #include <sstream>
+#include <cstdarg>
 #include <algorithm>
 #ifndef GLOVE_DISABLE_QT
 #include <QModelIndex>
@@ -82,10 +86,13 @@
 #include <QVBoxLayout>
 #include <QApplication>
 #include <QMessageBox>
+#include <QtConcurrent/QtConcurrentRun>
+#include <QFutureWatcher>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QLineEdit>
 #include <QStyledItemDelegate>
+#include <QEvent>
 #include <QLabel>
 #include <QPushButton>
 #include <QString>
@@ -95,7 +102,6 @@
 #include <QComboBox>
 #include <QStandardItemModel>
 #include <QProgressDialog>
-#include <QtGlobal>
 #include <QStandardItem>
 #include <QHeaderView>
 #include <QTableView>
@@ -124,7 +130,8 @@
 #include <QStyle>
 #include <QScreen>
 #include <QResizeEvent>
-#include <QThread>
+#include <QProgressBar>
+#include <QCloseEvent>
 #include <cstddef>
 #include <QPainter>
 #include <QSlider>
@@ -688,6 +695,8 @@ namespace slv {
         /*! Read a string from istream with space character. Replaces _is >> _string.*/
         void istream(std::istream& _is, std::string& _string);
 
+        /*! Parse formated \p _format arguments \p _args and returns the corresponding std::string.*/
+        std::string format_va_list(const char* _format, std::va_list _args);
     }
 
 }
@@ -966,7 +975,6 @@ namespace slv {
         template <class Tdat>
         Tdat readB_constr(std::ifstream& _input_file);
 
-        //extern const std::string end_of_file_str;
         glvm_staticVariable(const, std::string, end_of_file_str, "end of file")
 
     }
@@ -4275,6 +4283,7 @@ class SlvCombo;
 * Convenient to return possible errors.
 * Practical use: create instances by setting an error type and a message.
 * += instances to stack errors and return the overall status result.*/
+//class SlvStatus : public SlvOS {
 class SlvStatus : public SlvOS {
 
 public:
@@ -4300,6 +4309,7 @@ private:
 public:
 
     SlvStatus(statusType _type = statusType::ok, std::string _message = "");
+    SlvStatus(statusType _type, const char* _format, ...);
     SlvStatus(const SlvStatus& _status);
     ~SlvStatus();
 
@@ -5200,9 +5210,11 @@ struct SlvCLI {
 	public:
 
 		Arguments(int _argc, char* _argv[]);
-		/*! Get arguments that are not parameters.*/
+		/*! Get arguments that are not parameters. Ex: "-option".*/
 		const std::vector<std::string>& get_solo_arguments() const;
-		/*! Get list of arguments and their corresponding value.*/
+		/*! Get list of arguments and their corresponding value. Ex: "-param 17".
+		* Each parameter argument cas be accessed by its name (ex: "-param"), and return a vector of associated values.
+		* A vector is used in case multiple identical arguments are provided (ex: "-param -17 -param 5").*/
 		const Tparameters& get_parameter_arguments() const;
 		/*! Get single argument of the -glove cli input. Used for loading a parametrization.*/
 		const std::string& get_glove_argument() const;
@@ -5269,75 +5281,255 @@ SlvStatus SlvCLI::parse(Tparametrization& _parametrization, Arguments& _argument
 	return status;
 }
 
-#ifndef GLOVE_DISABLE_QT
-
 class SlvParametrization_base;
-class QDialogButtonBox;
-class QVBoxLayout;
-class GlvParametersWidget_base;
-class QPushButton;
 
-/*! Dialog widget managing parametrization widget.
-* This is the main widget (with GlvParametrizationWidget) to use for parametrization management in the framework.
-* Accept : set the parametrization has the one configured by the widget.
-* Reject : does not modify the parametrization. */
-class GlvParametrizationDialog_base : public QDialog {
-
-    Q_OBJECT
+/*! Parent class of SlvParameter<T> to handle vectors of parameters.*/
+class SlvParameter_base : virtual public SlvIOS {
 
 protected:
 
-    QDialogButtonBox* button_box;
-    QPushButton* abide_rules_button;
-    bool l_dialog;//whether has buttons. if so, parent's activation depends on "this" state. Also QDialog::accept/reject is activated
-    bool l_deny_invalid_parameters;
-    SlvParametrization_base* parametrization_base;//usefull to cast to correct child type (see macros)
-    /*! Base pointer to manage dialog's size depending on parameters visibility.*/
-    GlvParametersWidget_base* parameters_widget_base;
-    QVBoxLayout* m_layout;
+	SlvParametrization_base* parametrization;
 
-    GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent);
+protected:
+
+	SlvParameter_base(SlvParametrization_base* _parametrization);
+	virtual ~SlvParameter_base();
+
+	bool is_param_init_auto() const;
+
 public:
-    virtual ~GlvParametrizationDialog_base();
 
-    /*! Returns base pointer to the stored parameterization, so it can be casted to the real parametrization provided its type is known.*/
-    const SlvParametrization_base* get_parametrization_base() const;
-    void addWidget(QWidget* _widget);
+	/*! Set parameter value using >> operator.*/
+	virtual void set_stream_value(const std::string& _string, bool _l_param_only = true) = 0;
+	/*! Get parameter value using << operator.*/
+	virtual std::string get_stream_value(bool _l_param_only = true) const = 0;
 
-    /*! Show or hide the button controlling rules complying, next to 'Ok' and 'Cancel'.*/
-    void enable_abide_rules_button(bool _l_enable);
+	/*! Get parameter name.*/
+	virtual const std::string& get_name() const = 0;
+	/*! Get parameter description.*/
+	virtual const std::string& get_description() const = 0;
+	/*! Get parameter marker.*/
+	virtual const unsigned int& get_marker() const = 0;
 
-protected :
-    void set_parameters_widget_base(GlvParametersWidget_base* _parameters_widget_base);
-    void resizeEvent(QResizeEvent* _event);
-public slots:
-    /*! Apply parametrization widget. QDialog's accept slot only if l_dialog is true.*/
-    virtual void accept() = 0;
-    /*! Reset parametrization widget with current parametrization value. QDialog's reject slot only if l_dialog is true.*/
-    virtual void reject() = 0;
-    /*! Apply parametrization widget and check parameters.*/
-    virtual SlvStatus apply() = 0;
+	/*! Check if rules are abided for this parameter. Rules can either depend only the parameter or either depend on other ones.*/
+	virtual SlvStatus check_rules() const = 0;
 
-private slots:
-    /*! Update parametrization according to current values contained in parametrization_widget*/
-    virtual void update_parametrization() = 0;
-    void parametrizationChanged_slot(std::string _parameter_name);
-    void abide_slot();
-    /*! Set free maximum height depending on parameters visibility.*/
-    void maximum_height_slot();
-protected slots:
-    // Check parameters by updating parametrization before
-    void check_parameters_slot();
-signals:
-    void parametrizationChanged(std::string _parameter_name);
+	glvm_staticVariable(const, unsigned int, default_marker_value, 0)
+
+	/*! Get the number of rules.*/
+	virtual unsigned int get_Nrules() const = 0;
 
 private:
-    /*! Returns true if the parametrization has rules.*/
-    virtual bool has_rules() = 0;
-    virtual bool abide_rules() = 0;
-    virtual const SlvParametrization_base* new_parametrization_base() const = 0;
+	/*! Static cast attempt of parameter value. Returns NULL if the parameter value is not a parametrization.*/
+	virtual const SlvParametrization_base* parametrization_cast() const = 0;
+
+	friend class SlvParametrization_base;//for parametrization_cast
 
 };
+
+/*! Class inherited by SlvParameterRuleT managing the value of the rule if the template type requires one.*/
+template <class Tparam>
+class SlvParameterRuleValue {
+
+protected:
+
+    Tparam rule_value;
+
+public:
+
+    SlvParameterRuleValue(Tparam _rule_value);
+    ~SlvParameterRuleValue();
+
+    /*! Get rule value.*/
+    const Tparam& get_rule_value() const;
+
+};
+
+template <class Tparam>
+SlvParameterRuleValue<Tparam>::SlvParameterRuleValue(Tparam _rule_value) {
+    rule_value = _rule_value;
+}
+
+template <class Tparam>
+SlvParameterRuleValue<Tparam>::~SlvParameterRuleValue() {
+
+}
+
+template <class Tparam>
+const Tparam& SlvParameterRuleValue<Tparam>::get_rule_value() const {
+    return rule_value;
+}
+
+template <class Tparam>
+class SlvParameter;
+
+/*! Class to specialize if necessary to manage validation a template type. Used by SlvParameterRuleT.*/
+template <class Tparam>
+struct SlvParameterRuleValidation {
+public:
+    static SlvStatus is_valid(const SlvParameter<Tparam>* _parameter) {
+        return SlvStatus();
+    }
+};
+
+template <>
+struct SlvParameterRuleValidation<SlvFile> {
+public:
+	static SlvStatus is_valid(const SlvParameter<SlvFile>* _parameter);
+};
+
+template <>
+struct SlvParameterRuleValidation<SlvDirectory> {
+public:
+	static SlvStatus is_valid(const SlvParameter<SlvDirectory>* _parameter);
+};
+
+#ifndef GLOVE_DISABLE_QT
+
+class QLineEdit;
+class QPushButton;
+class QLabel;
+
+/*! Widget for selecting a file.
+* By default the widget is set to manage a file for read only.
+* Toggle Read/Write button to change mode.*/
+class GlvOpenFile : public QWidget {
+
+    Q_OBJECT
+
+private:
+
+    QLineEdit* line_edit;
+    QPushButton* push_button_read;
+    QPushButton* push_button_write;
+    QPushButton* button_rw;
+    SlvFileExtensions allowed_extensions;
+    /*! File filter for QFileDialog.*/
+    QString file_filter;
+    QStringList file_filters;
+    QLabel* read_status;
+    QLabel* write_status;
+
+    /*! Input/output mode for the widget. Set once at construction.
+    * If IO::Any, both read an write are allowed.*/
+    const SlvFile::IO io_mode;
+
+    /*! Whether a valid file has been selected or not.*/
+    std::map<QIODevice::OpenMode, bool> l_ready;
+
+public:
+
+    /*! \p _file : default file.*/
+    GlvOpenFile(SlvFile _file, QWidget* _parent = 0);
+    /*! \p _default : default file path.*/
+    GlvOpenFile(QString _default = "", QWidget* _parent = 0);
+    /*! File filter, description as \p _description and extensions as \p _allowed_extensions/*/
+    GlvOpenFile(const std::string& _description, const SlvFileExtensions& _allowed_extensions, QWidget* _parent = 0);
+    ~GlvOpenFile();
+
+    /*! Return file instance. Check if is_ready() before using returned value.*/
+    SlvFile get_file() const;
+
+    /*! Whether a valid file has been selected or not for mode \p _mode.*/
+    bool is_ready(QIODevice::OpenMode _mode) const;
+    /*! Makes line edit read-only or not. Shows/hides the open directory button.*/
+    void set_editable(bool l_editable);
+    /*! Set the file filter for QFileDialog.*/
+    void set_file_filter(QString _file_filter = QString(tr("All Files (*)")));
+
+private:
+
+    /*! Return the file filter for QFileDialog based on \p _file properties (allowed extensions, etc).*/
+    static QString get_file_filter(const SlvFile& _file);
+    static QString get_file_filter(const std::string& _description, const SlvFileExtensions& _allowed_extensions);
+    /*! Return separate file filters for QFileDialog based on \p _file allowed extensions.*/
+    static QStringList get_file_filters(const SlvFile& _file);
+
+    /*! Check if file instance is ready for read and write.*/
+    void update_readiness();
+
+    static bool is_valid_read_file(const QString& _path);
+    static bool is_valid_write_file(const QString& _path);
+
+public slots:
+    /*! Opens QFileDialog to select a file. Read only. Returns true if a file was selected. Returns false if cancelled.*/
+    bool getOpenFileName();
+    /*! Opens QFileDialog to select a file. Write only.*/
+    void getSaveFileName();
+    /*! Set file instance by editing QLineEdit. If file is valid, sets instance as ready.
+    * Also set file filter based on the new \p _file.*/
+    void set_file(const SlvFile& _file);
+
+    /*! Changes read/write mode.*/
+    void change_mode(bool _l_write);
+
+private slots:
+
+    void file_changed_slot(const QString& _file_name);
+
+signals:
+
+    /*! Emitted when QLineEdit changes.*/
+    void file_changed(const QString& _file_name);
+
+};
+
+#if __cplusplus > 201402L
+
+#define Tdata std::filesystem::path
+/*! GlvWidgetData specialization for template type: std::filesystem::path.*/
+template <>
+class GlvWidgetData<Tdata> : public GlvOpenFile {
+
+public:
+    GlvWidgetData(Tdata _path = Tdata(), QWidget* _parent = 0) :GlvOpenFile(_path.generic_string(), _parent) {}
+    ~GlvWidgetData() {}
+
+    Tdata get_value() const {
+        return GlvOpenFile::get_file().get_path();
+    }
+    void set_value(const Tdata& _value) {
+        return GlvOpenFile::set_file(SlvFile(_value.generic_string()));
+    }
+};
+
+template <>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(file_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
+    }
+};
+
+#undef Tdata
+#endif
+
+#define Tdata SlvFile
+
+/*! GlvWidgetData for type SlvFile.*/
+template <>
+class GlvWidgetData<Tdata> : public GlvOpenFile {
+
+public:
+    GlvWidgetData(Tdata _file = Tdata(), QWidget* _parent = 0);
+    ~GlvWidgetData();
+
+    Tdata get_value() const {
+        return GlvOpenFile::get_file();
+    }
+    void set_value(const Tdata& _value) {
+        return GlvOpenFile::set_file(_value);
+    }
+
+};
+
+template <>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(file_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
+    }
+};
+
+#undef Tdata
 
 /*! First layer of template specialization possibility.
 * GlvWidgetMaker is also in charge of signals connection through GlvWidgetMakerConnect provided corresponding specialization is defined.
@@ -5725,1362 +5917,6 @@ void GlvDescribedWidget<Tdata>::append_tool_tip(const std::string& _string) {
     }
 
 }
-
-#endif
-
-/*! Class inherited by SlvParameterRuleT managing the value of the rule if the template type requires one.*/
-template <class Tparam>
-class SlvParameterRuleValue {
-
-protected:
-
-    Tparam rule_value;
-
-public:
-
-    SlvParameterRuleValue(Tparam _rule_value);
-    ~SlvParameterRuleValue();
-
-    /*! Get rule value.*/
-    const Tparam& get_rule_value() const;
-
-};
-
-template <class Tparam>
-SlvParameterRuleValue<Tparam>::SlvParameterRuleValue(Tparam _rule_value) {
-    rule_value = _rule_value;
-}
-
-template <class Tparam>
-SlvParameterRuleValue<Tparam>::~SlvParameterRuleValue() {
-
-}
-
-template <class Tparam>
-const Tparam& SlvParameterRuleValue<Tparam>::get_rule_value() const {
-    return rule_value;
-}
-
-template <class Tparam>
-class SlvParameter;
-
-/*! Class to specialize if necessary to manage validation a template type. Used by SlvParameterRuleT.*/
-template <class Tparam>
-struct SlvParameterRuleValidation {
-public:
-    static SlvStatus is_valid(const SlvParameter<Tparam>* _parameter) {
-        return SlvStatus();
-    }
-};
-
-template <>
-struct SlvParameterRuleValidation<SlvFile> {
-public:
-	static SlvStatus is_valid(const SlvParameter<SlvFile>* _parameter);
-};
-
-template <>
-struct SlvParameterRuleValidation<SlvDirectory> {
-public:
-	static SlvStatus is_valid(const SlvParameter<SlvDirectory>* _parameter);
-};
-
-#ifndef GLOVE_DISABLE_QT
-
-class QLineEdit;
-class QPushButton;
-class QLabel;
-
-/*! Widget for selecting a file.
-* By default the widget is set to manage a file for read only.
-* Toggle Read/Write button to change mode.*/
-class GlvOpenFile : public QWidget {
-
-    Q_OBJECT
-
-private:
-
-    QLineEdit* line_edit;
-    QPushButton* push_button_read;
-    QPushButton* push_button_write;
-    QPushButton* button_rw;
-    SlvFileExtensions allowed_extensions;
-    /*! File filter for QFileDialog.*/
-    QString file_filter;
-    QStringList file_filters;
-    QLabel* read_status;
-    QLabel* write_status;
-
-    /*! Input/output mode for the widget. Set once at construction.
-    * If IO::Any, both read an write are allowed.*/
-    const SlvFile::IO io_mode;
-
-    /*! Whether a valid file has been selected or not.*/
-    std::map<QIODevice::OpenMode, bool> l_ready;
-
-public:
-
-    /*! \p _file : default file.*/
-    GlvOpenFile(SlvFile _file, QWidget* _parent = 0);
-    /*! \p _default : default file path.*/
-    GlvOpenFile(QString _default = "", QWidget* _parent = 0);
-    /*! File filter, description as \p _description and extensions as \p _allowed_extensions/*/
-    GlvOpenFile(const std::string& _description, const SlvFileExtensions& _allowed_extensions, QWidget* _parent = 0);
-    ~GlvOpenFile();
-
-    /*! Return file instance. Check if is_ready() before using returned value.*/
-    SlvFile get_file() const;
-
-    /*! Whether a valid file has been selected or not for mode \p _mode.*/
-    bool is_ready(QIODevice::OpenMode _mode) const;
-    /*! Makes line edit read-only or not. Shows/hides the open directory button.*/
-    void set_editable(bool l_editable);
-    /*! Set the file filter for QFileDialog.*/
-    void set_file_filter(QString _file_filter = QString(tr("All Files (*)")));
-
-private:
-
-    /*! Return the file filter for QFileDialog based on \p _file properties (allowed extensions, etc).*/
-    static QString get_file_filter(const SlvFile& _file);
-    static QString get_file_filter(const std::string& _description, const SlvFileExtensions& _allowed_extensions);
-    /*! Return separate file filters for QFileDialog based on \p _file allowed extensions.*/
-    static QStringList get_file_filters(const SlvFile& _file);
-
-    /*! Check if file instance is ready for read and write.*/
-    void update_readiness();
-
-    static bool is_valid_read_file(const QString& _path);
-    static bool is_valid_write_file(const QString& _path);
-
-public slots:
-    /*! Opens QFileDialog to select a file. Read only. Returns true if a file was selected. Returns false if cancelled.*/
-    bool getOpenFileName();
-    /*! Opens QFileDialog to select a file. Write only.*/
-    void getSaveFileName();
-    /*! Set file instance by editing QLineEdit. If file is valid, sets instance as ready.
-    * Also set file filter based on the new \p _file.*/
-    void set_file(const SlvFile& _file);
-
-    /*! Changes read/write mode.*/
-    void change_mode(bool _l_write);
-
-private slots:
-
-    void file_changed_slot(const QString& _file_name);
-
-signals:
-
-    /*! Emitted when QLineEdit changes.*/
-    void file_changed(const QString& _file_name);
-
-};
-
-#if __cplusplus > 201402L
-
-#define Tdata std::filesystem::path
-/*! GlvWidgetData specialization for template type: std::filesystem::path.*/
-template <>
-class GlvWidgetData<Tdata> : public GlvOpenFile {
-
-public:
-    GlvWidgetData(Tdata _path = Tdata(), QWidget* _parent = 0) :GlvOpenFile(_path.generic_string(), _parent) {}
-    ~GlvWidgetData() {}
-
-    Tdata get_value() const {
-        return GlvOpenFile::get_file().get_path();
-    }
-    void set_value(const Tdata& _value) {
-        return GlvOpenFile::set_file(SlvFile(_value.generic_string()));
-    }
-};
-
-template <>
-struct GlvWidgetMakerConnect<Tdata> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(file_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
-    }
-};
-
-#undef Tdata
-#endif
-
-#define Tdata SlvFile
-
-/*! GlvWidgetData for type SlvFile.*/
-template <>
-class GlvWidgetData<Tdata> : public GlvOpenFile {
-
-public:
-    GlvWidgetData(Tdata _file = Tdata(), QWidget* _parent = 0);
-    ~GlvWidgetData();
-
-    Tdata get_value() const {
-        return GlvOpenFile::get_file();
-    }
-    void set_value(const Tdata& _value) {
-        return GlvOpenFile::set_file(_value);
-    }
-
-};
-
-template <>
-struct GlvWidgetMakerConnect<Tdata> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(file_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
-    }
-};
-
-#undef Tdata
-
-/*! Widget for std::pair.*/
-class GlvPairWidget_base : public QWidget {
-    Q_OBJECT
-protected:
-    GlvPairWidget_base(QWidget* _parent = 0) : QWidget(_parent) {}
-    virtual ~GlvPairWidget_base() {}
-public:
-    void set_editable(bool l_editable) {
-        QWidget::setEnabled(l_editable);
-    }
-signals:
-    /*! Emitted when first of pair is modified.*/
-    void valueChanged_first();
-    /*! Emitted when second of pair is modified.*/
-    void valueChanged_second();
-};
-
-template <class T>
-class GlvWidget;
-
-#define _Tdata_ std::pair<T1, T2>
-
-/*! Widget for std::pair.*/
-template <class T1, class T2>
-class GlvPairWidget : public GlvPairWidget_base {
-
-private:
-
-    GlvWidget<T1>* subwidget1;
-    GlvWidget<T2>* subwidget2;
-
-public:
-
-    GlvPairWidget(_Tdata_ _pair = _Tdata_(), QWidget* _parent = 0);
-    ~GlvPairWidget();
-
-    void set_pair(const _Tdata_ _pair);
-    _Tdata_ get_pair() const;
-
-};
-
-template <class T1, class T2>
-GlvPairWidget<T1, T2>::GlvPairWidget(_Tdata_ _pair, QWidget* _parent) : GlvPairWidget_base(_parent) {
-
-    QHBoxLayout* layout = new QHBoxLayout;
-    setLayout(layout);
-
-    layout->setContentsMargins(0, 0, 0, 0);
-
-    bool l_editable = true;
-    subwidget1 = new GlvWidget<T1>(_pair.first, l_editable, _parent);
-    connect(subwidget1, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_first()));
-    layout->addWidget(subwidget1);
-    subwidget2 = new GlvWidget<T2>(_pair.second, l_editable, _parent);
-    connect(subwidget2, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_second()));
-    layout->addWidget(subwidget2);
-
-}
-
-template <class T1, class T2>
-GlvPairWidget<T1, T2>::~GlvPairWidget() {
-
-}
-
-template <class T1, class T2>
-void GlvPairWidget<T1, T2>::set_pair(const _Tdata_ _pair) {
-
-    subwidget1->set_value(_pair.first);
-    subwidget2->set_value(_pair.second);
-
-}
-
-template <class T1, class T2>
-_Tdata_ GlvPairWidget<T1, T2>::get_pair() const {
-
-    _Tdata_ value;
-    value.first = subwidget1->get_value();
-    value.second = subwidget2->get_value();
-    return value;
-
-}
-
-#undef _Tdata_
-
-#define Tdata std::pair<T1, T2>
-/*! GlvWidgetData specialization for template type: std::pair.*/
-template <class T1, class T2>
-class GlvWidgetData<Tdata> : public GlvPairWidget<T1, T2> {
-
-public:
-    GlvWidgetData(Tdata _pair = Tdata(), QWidget* _parent = 0) :GlvPairWidget<T1, T2>(_pair, _parent) {}
-    ~GlvWidgetData() {}
-
-    Tdata get_value() const {
-        return GlvPairWidget<T1, T2>::get_pair();
-    }
-    void set_value(const Tdata& _value) {
-        return GlvPairWidget<T1, T2>::set_pair(_value);
-    }
-
-};
-
-template <class T1, class T2>
-struct GlvWidgetMakerConnect<Tdata> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(valueChanged_first()), _widget_connector, SLOT(valueChanged_slot()));
-        QObject::connect(_widget, SIGNAL(valueChanged_second()), _widget_connector, SLOT(valueChanged_slot()));
-    }
-};
-
-#undef Tdata
-
-template <class T>
-class GlvWidget;
-template <class T>
-class GlvVectorWidget;
-
-/*! Item widget for GlvVectorWidget.*/
-template <class T>
-class GlvVectorWidgetItem : public GlvVectorWidgetItem_base {
-
-private:
-
-    /*! Widget of the data.*/
-    GlvWidget<T>* widget;
-    /*! Vector widget the item belongs to.*/
-    GlvVectorWidget<T>* parent;
-
-private:
-
-    /*! \p _value : Initialization value.
-    * \p _index : index in GlvVectorWidget.*
-    * \p _parent : Vector widget the item belongs to.*/
-    GlvVectorWidgetItem(const T& _value, const unsigned int _index, GlvVectorWidget<T>* _parent);
-    ~GlvVectorWidgetItem();
-
-public:
-    T get_value() const;
-    void set_value(const T _value);
-private:
-    GlvWidget<T>* get_widget() const;
-    void increment_index();
-    void decrement_index();
-    void update_label_index();
-
-    /*! Remove in GlvVectorWidget at index contained in the instance.*/
-    void remove();
-
-    friend class GlvVectorWidget<T>;
-
-};
-
-template <class T>
-GlvVectorWidgetItem<T>::GlvVectorWidgetItem(const T& _value, const unsigned int _index, GlvVectorWidget<T>* _parent) {
-
-    widget = new GlvWidget<T>(_value);
-    index = _index;
-    parent = _parent;
-
-    label_index = new QLabel;
-    update_label_index();
-    remove_button = new QPushButton(tr("Remove"));
-    layout->addWidget(label_index);
-    layout->addWidget(widget);
-    layout->addWidget(remove_button);
-
-    connect(remove_button, SIGNAL(clicked()), this, SLOT(remove()));
-    connect(widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged()));
-
-}
-
-template <class T>
-GlvVectorWidgetItem<T>::~GlvVectorWidgetItem() {
-
-}
-
-template <class T>
-T GlvVectorWidgetItem<T>::get_value() const {
-
-    return widget->get_value();
-
-}
-
-template <class T>
-void GlvVectorWidgetItem<T>::set_value(const T _value) {
-
-    widget->set_value(_value);
-
-}
-
-template <class T>
-GlvWidget<T>* GlvVectorWidgetItem<T>::get_widget() const {
-    return widget;
-}
-
-template <class T>
-void GlvVectorWidgetItem<T>::increment_index() {
-    index++;
-    update_label_index();
-}
-
-template <class T>
-void GlvVectorWidgetItem<T>::decrement_index() {
-    index--;
-    update_label_index();
-}
-
-template <class T>
-void GlvVectorWidgetItem<T>::update_label_index() {
-    label_index->setText(glv::toQString(index));
-}
-
-template <class T>
-void GlvVectorWidgetItem<T>::remove() {
-    parent->removeWidget(index);
-}
-
-#define _Tdata_ std::vector<T>
-
-class QVBoxLayout;
-template <class T>
-class GlvVectorWidgetItem;
-template <class Tvalue>
-class GlvWidget;
-
-/*! Widget to manage interface of std::vector.*/
-template <class T>
-class GlvVectorWidget : public GlvVectorWidget_base {
-
-protected:
-
-    std::vector<GlvVectorWidgetItem<T>*> widgets;
-
-public:
-
-    GlvVectorWidget(_Tdata_ _vector = _Tdata_(), QWidget* _parent = 0);
-    ~GlvVectorWidget();
-
-    /*! Set vector.*/
-    void set_value(const _Tdata_& _vector);
-    /*! Get vector.*/
-    _Tdata_ get_value() const;
-
-    void pushValue(T _value);
-    /*! Reimplementation of virtual method.*/
-    void pushValue();
-    void popValue();
-    /*! New value at index \p i.*/
-    void insertValue(const unsigned int i);
-    /*! Get widget of index \p i.*/
-    GlvWidget<T>* operator[] (const unsigned int i);
-
-private:
-
-    void valueChanged_slot();
-    void removeWidget(const unsigned int i);
-
-    friend class GlvVectorWidgetItem<T>;
-};
-
-template <class T>
-GlvVectorWidget<T>::GlvVectorWidget(_Tdata_ _vector, QWidget* _parent) : GlvVectorWidget_base(_parent) {
-
-    set_value(_vector);
-
-}
-
-template <class T>
-GlvVectorWidget<T>::~GlvVectorWidget() {
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::set_value(const _Tdata_& _vector) {
-
-    int N = (int)std::min(widgets.size(), _vector.size());
-
-    for (int i = 0; i < N; i++) {
-        widgets[i]->set_value(_vector[i]);
-    }
-
-    if (widgets.size() < _vector.size()) {
-        for (int i = N; i < _vector.size(); i++) {
-            pushValue(_vector[i]);
-        }
-    } else if (widgets.size() > _vector.size()) {
-        for (int i = N; i < widgets.size(); i++) {
-            layout_items->removeWidget(widgets[i]);
-            delete widgets[i];
-        }
-        widgets.resize(_vector.size());
-    }
-
-}
-
-template <class T>
-_Tdata_ GlvVectorWidget<T>::get_value() const {
-
-    _Tdata_ value(widgets.size());
-    for (int i = 0; i < widgets.size(); i++) {
-        value[i] = widgets[i]->get_value();
-    }
-    return value;
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::pushValue(T _value) {
-
-    GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(_value, (int)widgets.size(), this);
-    widgets.push_back(widget);
-    layout_items->insertWidget((int)widgets.size() - 1, widget);
-    connect(widget, SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
-    button_pop->setEnabled(true);
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::insertValue(const unsigned int i) {
-
-    unsigned int j = i;
-    if (j >= (unsigned int)widgets.size()) {
-        j = (unsigned int)widgets.size() - 1;
-    }
-    GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(T(), j, this);
-    layout_items->insertWidget(j, widget);
-    widgets.insert(widgets.begin() + j, widget);
-    connect(widget->get_widget(), SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
-    button_pop->setEnabled(true);
-
-    for (unsigned int k = j + 1; k < widgets.size(); k++) {
-        widgets[k]->increment_index();
-    }
-
-}
-
-template <class T>
-GlvWidget<T>* GlvVectorWidget<T>::operator[] (const unsigned int i) {
-    return widgets[i]->get_widget();
-}
-
-template <class T>
-void GlvVectorWidget<T>::pushValue() {
-
-    pushValue(T());
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::popValue() {
-
-    if (!widgets.empty()) {
-        removeWidget((int)widgets.size() - 1);
-    }
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::valueChanged_slot() {
-
-    GlvVectorWidgetItem<T>* item = dynamic_cast<GlvVectorWidgetItem<T>*>(QObject::sender());
-    if (item) {
-        emit valueChanged(item->index);
-    }
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::removeWidget(const unsigned int i) {
-
-    if (!widgets.empty()) {
-
-        layout_items->removeWidget(widgets[i]);
-        delete widgets[i];
-        widgets.erase(widgets.begin() + i);
-
-        for (unsigned int j = i; j < widgets.size(); j++) {
-            widgets[j]->decrement_index();
-        }
-    }
-
-    if (widgets.empty()) {
-        button_pop->setEnabled(false);
-    }
-
-}
-
-#undef _Tdata_
-
-#define _Tdata_ std::array<T, N>
-
-/*! Widget to manage interface of std::vector.*/
-template <class T, size_t N>
-class GlvArrayWidget : public GlvVectorWidget<T> {
-
-public:
-
-    GlvArrayWidget(_Tdata_ _array = _Tdata_(), QWidget* _parent = 0);
-    ~GlvArrayWidget();
-
-    /*! Set vector.*/
-    void set_value(const _Tdata_& _array);
-    /*! Get vector.*/
-    _Tdata_ get_value() const;
-
-private:
-    using GlvVectorWidget<T>::pushValue;
-    using GlvVectorWidget<T>::popValue;
-    using GlvVectorWidget<T>::insertValue;
-
-};
-
-template <class T, size_t N>
-GlvArrayWidget<T, N>::GlvArrayWidget(_Tdata_ _array, QWidget* _parent) : GlvVectorWidget<T>({}, _parent) {
-
-    this->buttons_widget->hide();
-
-    for (int i = 0; i < N; i++) {
-        pushValue();
-        this->widgets[i]->show_remove_button(false);
-    }
-
-    set_value(_array);
-
-}
-
-template <class T, size_t N>
-GlvArrayWidget<T, N>::~GlvArrayWidget() {
-
-}
-
-template <class T, size_t N>
-void GlvArrayWidget<T, N>::set_value(const _Tdata_& _array) {
-
-    for (int i = 0; i < N; i++) {
-        this->widgets[i]->set_value(_array[i]);
-    }
-
-}
-
-template <class T, size_t N>
-_Tdata_ GlvArrayWidget<T, N>::get_value() const {
-
-    _Tdata_ value;
-    for (int i = 0; i < N; i++) {
-        value[i] = this->widgets[i]->get_value();
-    }
-    return value;
-
-}
-
-#undef _Tdata_
-
-#endif
-
-/*! Macro for type detection, for instance when using std::enable_if.
-* struct_name is the name of the structure to be used such as: std::enable_if<struct_name<T>::value>
-* Ttest_subtype is the type struct_name is supposed to contain such as: struct_name::Ttest_subtype */
-#define glvm_SlvIsType(struct_name, Ttest_subtype) \
-template <class Ttested_type>\
-struct struct_name  {\
-    template <class T>\
-    static char test(typename T::Ttest_subtype*);\
-    template <class T>\
-    static long test(T*);\
-    static const bool value = sizeof(test<Ttested_type>(0)) == 1;\
-};
-
-template <typename Tcontainer, typename = void>
-struct SlvIsContainer {
-    static constexpr bool value = false;
-};
-
-glvm_SlvIsType(SlvHasValueType, value_type)
-
-template <typename T, typename = void>
-struct SlvIsIterable : std::false_type {};
-
-template <typename T>
-struct SlvIsIterable<T, std::void_t<decltype(std::begin(std::declval<T&>())), decltype(std::end(std::declval<T&>()))> > : std::true_type {
-};
-
-template <typename Tcontainer>
-struct SlvIsContainer<Tcontainer, typename std::enable_if<SlvIsIterable<Tcontainer>::value && SlvHasValueType<Tcontainer>::value>::type> {
-    static constexpr bool value = true;
-};
-
-template <typename Tcontainer, typename = void>
-struct SlvIsMap {
-    static constexpr bool value = false;
-};
-
-template <class Tkey, class Tvalue>
-struct SlvIsMap< std::map<Tkey, Tvalue> > {
-    static constexpr bool value = true;
-};
-
-template <class Tkey, class Tvalue>
-struct SlvIsMap< std::unordered_map<Tkey, Tvalue> > {
-    static constexpr bool value = true;
-};
-
-#ifndef GLOVE_DISABLE_QT
-
-// Do not enable if value_type is a container. GlvWidgetData_spec_std_container_container.h is used instead
-#define Tenable typename std::enable_if<!SlvIsContainer<T>::value || SlvIsMap<T>::value || std::is_same<T, std::string>::value>::type
-
-#define Tdata std::array<T, N>
-/*! GlvWidgetData specialization for template type: std::vector.*/
-template <class T, size_t N>
-class GlvWidgetData<Tdata, Tenable> : public GlvArrayWidget<T, N> {
-
-public:
-    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvArrayWidget<T, N>(_vector, _parent) {}
-    ~GlvWidgetData() {}
-
-};
-
-template <class T, size_t N>
-struct GlvWidgetMakerConnect<Tdata, Tenable> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
-    }
-};
-
-#undef Tdata
-#undef Tenable
-
-// Do not enable if value_type is a container. GlvWidgetData_spec_std_container_container.h is used instead
-#define Tenable typename std::enable_if<!SlvIsContainer<T>::value || SlvIsMap<T>::value || std::is_same<T, std::string>::value>::type
-
-#define Tdata std::vector<T>
-/*! GlvWidgetData specialization for template type: std::vector.*/
-template <class T>
-class GlvWidgetData<Tdata, Tenable> : public GlvVectorWidget<T> {
-
-public:
-    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvVectorWidget<T>(_vector, _parent) {}
-    ~GlvWidgetData() {}
-
-};
-
-template <class T>
-struct GlvWidgetMakerConnect<Tdata, Tenable> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
-    }
-};
-
-#undef Tdata
-#undef Tenable
-
-class QVBoxLayout;
-class QHBoxLayout;
-class QPushButton;
-
-class GlvMapWidget_base : public QWidget {
-
-    Q_OBJECT
-
-private:
-
-    QWidget* widget_scroll;
-    QPushButton* button_insert;
-
-protected:
-
-    QVBoxLayout* layout_items;
-    QHBoxLayout* insert_layout;
-
-    GlvMapWidget_base(QWidget* _parent = 0);
-    virtual ~GlvMapWidget_base();
-
-public:
-
-    void set_editable(bool l_editable);
-
-protected slots:
-
-    virtual void valueChanged_slot() = 0;
-
-private slots:
-
-    virtual void insertValue() = 0;
-
-signals:
-    /*! Emitted when the value of the \p index-th widget is modified.*/
-    void valueChanged(int _index);
-};
-
-class QHBoxLayout;
-class QLabel;
-class QPushButton;
-
-/*! Item widget for GlvMapWidget.*/
-class GlvMapWidgetItem_base : public QWidget {
-
-    Q_OBJECT
-
-protected:
-
-    QHBoxLayout* layout;
-    /*! Index of the widget in its GlvMapWidget.*/
-    unsigned int index;
-    QPushButton* remove_button;
-
-    GlvMapWidgetItem_base();
-    virtual ~GlvMapWidgetItem_base();
-
-protected slots:
-
-    virtual void remove() = 0;
-
-signals:
-    void valueChanged();
-};
-
-template <class T>
-class GlvWidget;
-template <class Tkey, class Tvalue, class Tcompare>
-class GlvMapWidget;
-
-/*! Item widget for GlvMapWidget.*/
-template <class Tkey, class Tvalue, class Tcompare>
-class GlvMapWidgetItem : public GlvMapWidgetItem_base {
-
-private:
-
-    /*! Widget of the key.*/
-    GlvWidget<Tkey>* key_widget;
-    /*! Widget of the data.*/
-    GlvWidget<Tvalue>* value_widget;
-    /*! Map widget the item belongs to.*/
-    GlvMapWidget<Tkey, Tvalue, Tcompare>* parent;
-
-private:
-
-    /*! \p _key : Key.
-    * \p _value : Initialization value.
-    * \p _index : index in GlvMapWidget.*
-    * \p _parent : Vector widget the item belongs to.*/
-    GlvMapWidgetItem(const Tkey& _key, const Tvalue& _value, const unsigned int _index, GlvMapWidget<Tkey, Tvalue, Tcompare>* _parent);
-    ~GlvMapWidgetItem();
-
-    Tkey get_key() const;
-    void set_key(const Tkey _key);
-    Tvalue get_value() const;
-    void set_value(const Tvalue _value);
-    GlvWidget<Tkey>* get_key_widget() const;
-    GlvWidget<Tvalue>* get_value_widget() const;
-    void increment_index();
-    void decrement_index();
-
-    /*! Remove in GlvMapWidget at index contained in the instance.*/
-    void remove();
-
-    friend class GlvMapWidget<Tkey, Tvalue, Tcompare>;
-};
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::GlvMapWidgetItem(const Tkey& _key, const Tvalue& _value, const unsigned int _index, GlvMapWidget<Tkey, Tvalue, Tcompare>* _parent) {
-
-    key_widget = new GlvWidget<Tkey>(_key);
-    value_widget = new GlvWidget<Tvalue>(_value);
-    index = _index;
-    parent = _parent;
-
-    remove_button = new QPushButton(tr("Remove"));
-    layout->addWidget(key_widget);
-    layout->addWidget(value_widget);
-    layout->addWidget(remove_button);
-
-    connect(remove_button, SIGNAL(clicked()), this, SLOT(remove()));
-    connect(value_widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged()));
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::~GlvMapWidgetItem() {
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-Tkey GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_key() const {
-
-    return key_widget->get_value();
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::set_key(const Tkey _key) {
-
-    key_widget->set_value(_key);
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-Tvalue GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_value() const {
-
-    return value_widget->get_value();
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::set_value(const Tvalue _value) {
-
-    value_widget->set_value(_value);
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvWidget<Tkey>* GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_key_widget() const {
-    return key_widget;
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvWidget<Tvalue>* GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_value_widget() const {
-    return value_widget;
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::increment_index() {
-    index++;
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::decrement_index() {
-    index--;
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::remove() {
-    parent->removeWidget(index);
-}
-
-#define _Tdata_ std::map<Tkey, Tvalue>
-
-class QVBoxLayout;
-template <class Tkey, class Tvalue, class Tcompare>
-class GlvMapWidgetItem;
-template <class Tvalue>
-class GlvWidget;
-
-/*! Widget to manage interface of std::map.*/
-template <class Tkey, class Tvalue, class Tcompare = std::less<Tkey> >
-class GlvMapWidget : public GlvMapWidget_base {
-
-private:
-
-    std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*> widgets;
-
-    GlvWidget<Tkey>* insert_key_widget;
-
-    Tcompare compare_function;
-
-    bool l_editable_key;
-
-public:
-
-    GlvMapWidget(_Tdata_ _map = _Tdata_(), QWidget* _parent = 0);
-    ~GlvMapWidget();
-
-    /*! Set map.*/
-    void set_value(const _Tdata_& _map);
-    /*! Get map.*/
-    _Tdata_ get_value() const;
-
-    /*! Whether key is editable or not (default: false).*/
-    void set_key_editable(bool _l_editable);
-
-    /*! New value at current key.*/
-    void insertValue();
-    /*! Return true if inserted, false otherwise (key already exsists).*/
-    bool insertValue(const Tkey& _key, const Tvalue& _value);
-
-    /*! Get widget of index \p i.*/
-    GlvWidget<Tvalue>* operator[] (const unsigned int i);
-    /*! Get widget of key \p _key.*/
-    GlvWidget<Tvalue>* operator[] (const Tkey _key);
-
-private:
-
-    void insertValue(const int _i, const Tkey& _key, const Tvalue& _value);
-
-    void valueChanged_slot();
-    typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator removeWidget(const unsigned int i);
-    /*! Return index of the corresponding key. Second of pair for existence of the key (true).*/
-    std::pair<int, bool> find(const Tkey& _key) const;
-
-    friend class GlvMapWidgetItem<Tkey, Tvalue, Tcompare>;
-};
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvMapWidget<Tkey, Tvalue, Tcompare>::GlvMapWidget(_Tdata_ _map, QWidget* _parent) : GlvMapWidget_base(_parent) {
-
-    /*! Widget of the key for insert.*/
-    insert_key_widget = new GlvWidget<Tkey>();
-    this->insert_layout->addWidget(insert_key_widget);
-    l_editable_key = false;
-    set_value(_map);
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvMapWidget<Tkey, Tvalue, Tcompare>::~GlvMapWidget() {
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidget<Tkey, Tvalue, Tcompare>::set_value(const _Tdata_& _map) {
-
-    compare_function = _map.key_comp();
-
-    for (typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it = widgets.begin(); it != widgets.end();) {
-
-        if (_map.find((*it)->get_key_widget()->get_value()) == _map.end()) {
-            it = removeWidget((*it)->index);
-        } else {
-            ++it;
-        }
-
-    }
-
-    std::pair<int, bool> index;
-    for (typename _Tdata_::const_iterator it = _map.begin(); it != _map.end(); ++it) {
-
-        index = find(it->first);
-        if (index.second) {
-            widgets[index.first]->get_value_widget()->set_value(it->second);
-        } else {
-            insertValue(index.first, it->first, it->second);
-        }
-
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-_Tdata_ GlvMapWidget<Tkey, Tvalue, Tcompare>::get_value() const {
-
-    _Tdata_ value;
-    for (int i = 0; i < widgets.size(); i++) {
-        value[i] = widgets[i]->get_value();
-    }
-    return value;
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidget<Tkey, Tvalue, Tcompare>::set_key_editable(bool _l_editable) {
-
-    l_editable_key = _l_editable;
-
-    for (int i = 0; i < widgets.size(); i++) {
-        widgets[i]->get_key_widget()->set_editable(l_editable_key);
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue() {
-
-    Tkey key = insert_key_widget->get_value();
-
-    insertValue(key, Tvalue());
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-bool GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue(const Tkey& _key, const Tvalue& _value) {
-
-    std::pair<int, bool> index = find(_key);
-
-    if (!index.second) {
-        insertValue(index.first, _key, _value);
-        return true;
-    } else {
-        return false;
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue(const int _i, const Tkey& _key, const Tvalue& _value) {
-
-    GlvMapWidgetItem<Tkey, Tvalue, Tcompare>* widget = new GlvMapWidgetItem<Tkey, Tvalue, Tcompare>(_key, _value, _i, this);
-    widget->get_key_widget()->set_editable(l_editable_key);
-    layout_items->insertWidget(_i, widget);
-    widgets.insert(widgets.begin() + _i, widget);
-    connect(widget, SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
-
-    for (unsigned int k = _i + 1; k < widgets.size(); k++) {
-        widgets[k]->increment_index();
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvWidget<Tvalue>* GlvMapWidget<Tkey, Tvalue, Tcompare>::operator[] (const unsigned int i) {
-
-    return widgets[i]->get_value_widget();
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvWidget<Tvalue>* GlvMapWidget<Tkey, Tvalue, Tcompare>::operator[] (const Tkey _key) {
-
-    std::pair<int, bool> index = find(_key);
-
-    if (index.second) {
-        return (*this)[index.first];
-    } else {
-        return NULL;
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidget<Tkey, Tvalue, Tcompare>::valueChanged_slot() {
-
-    GlvMapWidgetItem<Tkey, Tvalue, Tcompare>* item = dynamic_cast<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>(QObject::sender());
-    if (item) {
-        emit valueChanged(item->index);
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator GlvMapWidget<Tkey, Tvalue, Tcompare>::removeWidget(const unsigned int i) {
-
-    typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it;
-
-    if (!widgets.empty()) {
-
-        layout_items->removeWidget(widgets[i]);
-        delete widgets[i];
-        it = widgets.erase(widgets.begin() + i);
-
-        for (unsigned int j = i; j < widgets.size(); j++) {
-            widgets[j]->decrement_index();
-        }
-    } else {
-        it = widgets.end();
-    }
-
-    return it;
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-std::pair<int, bool> GlvMapWidget<Tkey, Tvalue, Tcompare>::find(const Tkey& _key) const {
-
-    std::pair<int, bool> result(0, false);
-
-    bool l_found = false;
-    for (typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it = widgets.begin(); it != widgets.end() && !l_found; ++it, result.first++) {
-        l_found = !compare_function((*it)->get_key_widget()->get_value(), _key);
-        if (l_found) {
-            result.second = ((*it)->get_key_widget()->get_value() == _key);
-        }
-    }
-
-    if (l_found) result.first--;
-
-    return result;
-
-}
-
-#undef _Tdata_
-
-#define Tdata std::map<Tkey, Tvalue>
-/*! GlvWidgetData specialization for template type: std::map.*/
-template <class Tkey, class Tvalue>
-class GlvWidgetData<Tdata> : public GlvMapWidget<Tkey, Tvalue> {
-
-public:
-    GlvWidgetData(Tdata _map = Tdata(), QWidget* _parent = 0) :GlvMapWidget<Tkey, Tvalue>(_map, _parent) {}
-    ~GlvWidgetData() {}
-
-};
-
-template <class Tkey, class Tvalue>
-struct GlvWidgetMakerConnect<Tdata> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
-    }
-};
-
-#undef Tdata
-
-class GlvEnumWidget_base : public QComboBox {
-protected:
-    GlvEnumWidget_base(QWidget* _parent = 0) : QComboBox(_parent) {}
-    virtual ~GlvEnumWidget_base() {}
-public:
-    void set_editable(bool l_editable) {
-        QComboBox::setEnabled(l_editable);
-    }
-};
-
-template <class T, typename = void>
-class GlvEnumWidget;
-
-/*! Widget managing an enum type.
-* The enum must be created using the macro: glvm_SlvEnum. See sample001 for example.*/
-template <class Tenum>
-class GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type> : public GlvEnumWidget_base {
-
-public:
-
-    GlvEnumWidget(Tenum _enum = Tenum(), QWidget* _parent = 0);
-    ~GlvEnumWidget();
-
-    /*! Set the enum value.*/
-    void set_value(const Tenum _enum);
-    /*! Get the enum value.*/
-    Tenum get_value() const;
-
-};
-
-template <class Tenum>
-GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::GlvEnumWidget(Tenum _enum, QWidget* _parent) : GlvEnumWidget_base(_parent) {
-
-    for (unsigned int i = 0; i < SlvEnum<Tenum>::size(); i++) {
-        QString enum_name = glv::toQString(SlvEnum<Tenum>::get_name(i));
-        QComboBox::addItem(enum_name);
-    }
-    set_value(_enum);
-
-}
-
-template <class Tenum>
-GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::~GlvEnumWidget() {
-
-}
-
-template <class Tenum>
-void GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::set_value(const Tenum _enum) {
-
-    QComboBox::setCurrentIndex(SlvEnum<Tenum>::enum_positions().at(_enum));
-
-}
-
-template <class Tenum>
-Tenum GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::get_value() const {
-
-    return SlvEnum<Tenum>::enum_positions_inv()[QComboBox::currentIndex()];
-
-}
-
-/*! GlvWidgetData for enum type.*/
-template <class Tdata>
-class GlvWidgetData<Tdata, typename std::enable_if<std::is_enum<Tdata>::value>::type> : public GlvEnumWidget<Tdata> {
-
-public:
-    GlvWidgetData(Tdata _enum = Tdata(), QWidget* _parent = 0) :GlvEnumWidget<Tdata>(_enum, _parent) {}
-    ~GlvWidgetData() {}
-
-};
-
-template <class Tdata>
-struct GlvWidgetMakerConnect<Tdata, typename std::enable_if<std::is_enum<Tdata>::value>::type> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(currentIndexChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
-    }
-};
-
-class QLineEdit;
-class QPushButton;
-class QLabel;
-class QHBoxLayout;
-
-/*! Widget for selecting a directory.*/
-class GlvOpenDirectory : public QWidget {
-
-    Q_OBJECT
-
-private:
-
-    QLineEdit* line_edit;
-    QPushButton* push_button;
-    QLabel* status;
-    /*! Whether a valid directory has been selected or not.*/
-    bool l_ready;
-
-public:
-
-    /*! \p _directory : default directory.*/
-    GlvOpenDirectory(SlvDirectory _directory, QWidget* _parent = 0);
-    /*! \p _default : default directory path.*/
-    GlvOpenDirectory(QString _default = "", QWidget* _parent = 0);
-    ~GlvOpenDirectory();
-
-    /*! Return directory item. Check if is_ready() before using returned value.*/
-    SlvDirectory get_directory() const;
-
-    /*! Whether a valid directory has been selected or not.*/
-    bool is_ready() const;
-    /*! Makes line edit read-only or not. Shows/hides the open directory button.*/
-    void set_editable(bool l_editable);
-
-private:
-
-    /*! Check if directory is valid.*/
-    void update_readiness();
-
-public slots:
-    /*! Opens QFileDialog to select a directory.*/
-    void getExistingDirectory();
-    /*! Set directory item by editing QLineEdit. If directory is valid, sets instance as ready.*/
-    void set_directory(const SlvDirectory& _directory);
-
-private slots:
-
-    void directory_changed_slot(const QString& _directory_path);
-
-signals:
-
-    /*! Emitted when QLineEdit changes.*/
-    void directory_changed(const QString& _directory_path);
-
-};
-
-#define Tdata SlvDirectory
-
-/*! GlvWidgetData for type SlvDirectory.*/
-template <>
-class GlvWidgetData<Tdata> : public GlvOpenDirectory {
-
-public:
-	GlvWidgetData(Tdata _file = Tdata(), QWidget* _parent = 0);
-	~GlvWidgetData();
-
-	Tdata get_value() const {
-		return GlvOpenDirectory::get_directory();
-	}
-	void set_value(const Tdata& _value) {
-		return GlvOpenDirectory::set_directory(_value);
-	}
-
-};
-
-template <>
-struct GlvWidgetMakerConnect<Tdata> {
-	static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-		QObject::connect(_widget, SIGNAL(directory_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
-	}
-};
-
-#undef Tdata
 
 #endif
 
@@ -7683,51 +6519,1274 @@ public:
 
 #endif
 
+/*! Enable if not of specified type in an other file. For instance SlvParameterRuleT_spec_ParameterArithmetic.h*/
+#define Tenable typename std::enable_if<\
+(!slv::ts::is_arithmetic<Tparam>::value || \
+std::is_same<Tparam, bool>::value)\
+>::type
+
+/*! Rule that a parameter SlvParameter is supposed to abide.
+* Same as SlvParameterRuleT_spec_Arithmetic, but instead of using static values for rule, uses a dynamic value in a SlvParameter. See dynamic_rules in SlvParameter.*/
+template <class Tparam>
+class SlvParameterRuleT<SlvParameter<Tparam>, Tenable> {
+
+public:
+	enum RuleType { valid, exception };
+
+private:
+	RuleType rule_type;
+	const SlvParameter<Tparam>* rule_parameter;
+
+public:
+	SlvParameterRuleT();
+	SlvParameterRuleT(RuleType _rule_type, const SlvParameter<Tparam>* _rule_parameter);
+	~SlvParameterRuleT();
+
+	/*! Get rule type of this parameter. Only one per rule instance.*/
+	const RuleType& get_rule_type() const;
+	/*! Return value the parameter this rule is associated to.*/
+	const Tparam& get_rule_value() const;
+
+	/*! Get string description of the rule.*/
+	std::string get_rule_description() const;
+
+	/*! Whether \p _parameter abides the rule or not.*/
+	SlvStatus is_abided(const SlvParameter<Tparam>* _parameter) const;
+	/*! Enforce rule to \p _parameter. Return true if the parameters was abiding the rule. Return false if the parameter was changed.*/
+	bool abide(SlvParameter<Tparam>* _parameter) const;
+};
+
+template <class Tparam>
+SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::SlvParameterRuleT() :SlvParameterRuleT(valid, 0) {
+
+}
+
+template <class Tparam>
+SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::SlvParameterRuleT(RuleType _rule_type, const SlvParameter<Tparam>* _rule_parameter) {
+
+	rule_type = _rule_type;
+	rule_parameter = _rule_parameter;
+}
+
+template <class Tparam>
+SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::~SlvParameterRuleT() {
+
+}
+
+template <class Tparam>
+const typename SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::RuleType& SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_type() const {
+
+	return rule_type;
+}
+
+template <class Tparam>
+const Tparam& SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_value() const {
+	return rule_parameter->get_value();
+}
+
+template <class Tparam>
+std::string SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_description() const {
+
+	return std::string();
+
+}
+
+template <class Tparam>
+SlvStatus SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::is_abided(const SlvParameter<Tparam>* _parameter) const {
+
+	return SlvStatus();
+}
+
+template <class Tparam>
+bool SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::abide(SlvParameter<Tparam>* _parameter) const {
+	return true;
+}
+
+#undef Tenable
+
 class SlvParametrization_base;
 
-/*! Parent class of SlvParameter<T> to handle vectors of parameters.*/
-class SlvParameter_base : virtual public SlvIOS {
+/*! Rule that a parameter SlvParameter is supposed to abide. Specialization for template type which is a SlvParametrization.*/
+template <class Tparam>
+class SlvParameterRuleT<Tparam, typename std::enable_if<std::is_base_of<SlvParametrization_base, Tparam>::value>::type> {
+
+public:
+    SlvParameterRuleT() {}
+    ~SlvParameterRuleT() {}
+
+    /*! Whether \p _parameter abides the rule or not.*/
+    SlvStatus is_abided(const SlvParameter<Tparam>* _parameter) const {
+        return _parameter->get_value().check_parameters();
+    }
+    /*! Enforce rule to \p _parameter. Return true if the parameters was abiding the rule. Return false if the parameter was changed.*/
+    bool abide(SlvParameter<Tparam>* _parameter) const {
+        //return true;
+        Tparam parametrization = _parameter->get_value();
+        bool l_abide = parametrization.abide_rules();
+        _parameter->set_value(parametrization);
+        return l_abide;
+    }
+
+    /*! Get string description of the rule.*/
+    std::string get_rule_description() const {
+        return std::string();
+    }
+
+};
+
+/*! Macro for type detection, for instance when using std::enable_if.
+* struct_name is the name of the structure to be used such as: std::enable_if<struct_name<T>::value>
+* Ttest_subtype is the type struct_name is supposed to contain such as: struct_name::Ttest_subtype */
+#define glvm_SlvIsType(struct_name, Ttest_subtype) \
+template <class Ttested_type>\
+struct struct_name  {\
+    template <class T>\
+    static char test(typename T::Ttest_subtype*);\
+    template <class T>\
+    static long test(T*);\
+    static const bool value = sizeof(test<Ttested_type>(0)) == 1;\
+};
+
+template <typename Tcontainer, typename = void>
+struct SlvIsContainer {
+    static constexpr bool value = false;
+};
+
+glvm_SlvIsType(SlvHasValueType, value_type)
+
+template <typename T, typename = void>
+struct SlvIsIterable : std::false_type {};
+
+template <typename T>
+struct SlvIsIterable<T, std::void_t<decltype(std::begin(std::declval<T&>())), decltype(std::end(std::declval<T&>()))> > : std::true_type {
+};
+
+template <typename Tcontainer>
+struct SlvIsContainer<Tcontainer, typename std::enable_if<SlvIsIterable<Tcontainer>::value && SlvHasValueType<Tcontainer>::value>::type> {
+    static constexpr bool value = true;
+};
+
+#ifndef GLOVE_DISABLE_QT
+
+template <class T>
+class GlvWidget;
+template <class T>
+class GlvVectorWidget;
+
+/*! Item widget for GlvVectorWidget.*/
+template <class T>
+class GlvVectorWidgetItem : public GlvVectorWidgetItem_base {
+
+private:
+
+    /*! Widget of the data.*/
+    GlvWidget<T>* widget;
+    /*! Vector widget the item belongs to.*/
+    GlvVectorWidget<T>* parent;
+
+private:
+
+    /*! \p _value : Initialization value.
+    * \p _index : index in GlvVectorWidget.*
+    * \p _parent : Vector widget the item belongs to.*/
+    GlvVectorWidgetItem(const T& _value, const unsigned int _index, GlvVectorWidget<T>* _parent);
+    ~GlvVectorWidgetItem();
+
+public:
+    T get_value() const;
+    void set_value(const T _value);
+private:
+    GlvWidget<T>* get_widget() const;
+    void increment_index();
+    void decrement_index();
+    void update_label_index();
+
+    /*! Remove in GlvVectorWidget at index contained in the instance.*/
+    void remove();
+
+    friend class GlvVectorWidget<T>;
+
+};
+
+template <class T>
+GlvVectorWidgetItem<T>::GlvVectorWidgetItem(const T& _value, const unsigned int _index, GlvVectorWidget<T>* _parent) {
+
+    widget = new GlvWidget<T>(_value);
+    index = _index;
+    parent = _parent;
+
+    label_index = new QLabel;
+    update_label_index();
+    remove_button = new QPushButton(tr("Remove"));
+    layout->addWidget(label_index);
+    layout->addWidget(widget);
+    layout->addWidget(remove_button);
+
+    connect(remove_button, SIGNAL(clicked()), this, SLOT(remove()));
+    connect(widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged()));
+
+}
+
+template <class T>
+GlvVectorWidgetItem<T>::~GlvVectorWidgetItem() {
+
+}
+
+template <class T>
+T GlvVectorWidgetItem<T>::get_value() const {
+
+    return widget->get_value();
+
+}
+
+template <class T>
+void GlvVectorWidgetItem<T>::set_value(const T _value) {
+
+    widget->set_value(_value);
+
+}
+
+template <class T>
+GlvWidget<T>* GlvVectorWidgetItem<T>::get_widget() const {
+    return widget;
+}
+
+template <class T>
+void GlvVectorWidgetItem<T>::increment_index() {
+    index++;
+    update_label_index();
+}
+
+template <class T>
+void GlvVectorWidgetItem<T>::decrement_index() {
+    index--;
+    update_label_index();
+}
+
+template <class T>
+void GlvVectorWidgetItem<T>::update_label_index() {
+    label_index->setText(glv::toQString(index));
+}
+
+template <class T>
+void GlvVectorWidgetItem<T>::remove() {
+    parent->removeWidget(index);
+}
+
+#define _Tdata_ std::vector<T>
+
+class QVBoxLayout;
+template <class T>
+class GlvVectorWidgetItem;
+template <class Tvalue>
+class GlvWidget;
+
+/*! Widget to manage interface of std::vector.*/
+template <class T>
+class GlvVectorWidget : public GlvVectorWidget_base {
 
 protected:
 
-	SlvParametrization_base* parametrization;
-
-protected:
-
-	SlvParameter_base(SlvParametrization_base* _parametrization);
-	virtual ~SlvParameter_base();
-
-	bool is_param_init_auto() const;
+    std::vector<GlvVectorWidgetItem<T>*> widgets;
 
 public:
 
-	/*! Set parameter value using >> operator.*/
-	virtual void set_stream_value(const std::string& _string, bool _l_param_only = true) = 0;
-	/*! Get parameter value using << operator.*/
-	virtual std::string get_stream_value(bool _l_param_only = true) const = 0;
+    GlvVectorWidget(_Tdata_ _vector = _Tdata_(), QWidget* _parent = 0);
+    ~GlvVectorWidget();
 
-	/*! Get parameter name.*/
-	virtual const std::string& get_name() const = 0;
-	/*! Get parameter description.*/
-	virtual const std::string& get_description() const = 0;
-	/*! Get parameter marker.*/
-	virtual const unsigned int& get_marker() const = 0;
+    /*! Set vector.*/
+    void set_value(const _Tdata_& _vector);
+    /*! Get vector.*/
+    _Tdata_ get_value() const;
 
-	/*! Check if rules are abided for this parameter. Rules can either depend only the parameter or either depend on other ones.*/
-	virtual SlvStatus check_rules() const = 0;
-
-	glvm_staticVariable(const, unsigned int, default_marker_value, 0)
-
-	/*! Get the number of rules.*/
-	virtual unsigned int get_Nrules() const = 0;
+    void pushValue(T _value);
+    /*! Reimplementation of virtual method.*/
+    void pushValue();
+    void popValue();
+    /*! New value at index \p i.*/
+    void insertValue(const unsigned int i);
+    /*! Get widget of index \p i.*/
+    GlvWidget<T>* operator[] (const unsigned int i);
 
 private:
-	/*! Static cast attempt of parameter value. Returns NULL if the parameter value is not a parametrization.*/
-	virtual const SlvParametrization_base* parametrization_cast() const = 0;
 
-	friend class SlvParametrization_base;//for parametrization_cast
+    void valueChanged_slot();
+    void removeWidget(const unsigned int i);
+
+    friend class GlvVectorWidgetItem<T>;
+};
+
+template <class T>
+GlvVectorWidget<T>::GlvVectorWidget(_Tdata_ _vector, QWidget* _parent) : GlvVectorWidget_base(_parent) {
+
+    set_value(_vector);
+
+}
+
+template <class T>
+GlvVectorWidget<T>::~GlvVectorWidget() {
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::set_value(const _Tdata_& _vector) {
+
+    int N = (int)std::min(widgets.size(), _vector.size());
+
+    for (int i = 0; i < N; i++) {
+        widgets[i]->set_value(_vector[i]);
+    }
+
+    if (widgets.size() < _vector.size()) {
+        for (int i = N; i < _vector.size(); i++) {
+            pushValue(_vector[i]);
+        }
+    } else if (widgets.size() > _vector.size()) {
+        for (int i = N; i < widgets.size(); i++) {
+            layout_items->removeWidget(widgets[i]);
+            delete widgets[i];
+        }
+        widgets.resize(_vector.size());
+    }
+
+}
+
+template <class T>
+_Tdata_ GlvVectorWidget<T>::get_value() const {
+
+    _Tdata_ value(widgets.size());
+    for (int i = 0; i < widgets.size(); i++) {
+        value[i] = widgets[i]->get_value();
+    }
+    return value;
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::pushValue(T _value) {
+
+    GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(_value, (int)widgets.size(), this);
+    widgets.push_back(widget);
+    layout_items->insertWidget((int)widgets.size() - 1, widget);
+    connect(widget, SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
+    button_pop->setEnabled(true);
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::insertValue(const unsigned int i) {
+
+    unsigned int j = i;
+    if (j >= (unsigned int)widgets.size()) {
+        j = (unsigned int)widgets.size() - 1;
+    }
+    GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(T(), j, this);
+    layout_items->insertWidget(j, widget);
+    widgets.insert(widgets.begin() + j, widget);
+    connect(widget->get_widget(), SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
+    button_pop->setEnabled(true);
+
+    for (unsigned int k = j + 1; k < widgets.size(); k++) {
+        widgets[k]->increment_index();
+    }
+
+}
+
+template <class T>
+GlvWidget<T>* GlvVectorWidget<T>::operator[] (const unsigned int i) {
+    return widgets[i]->get_widget();
+}
+
+template <class T>
+void GlvVectorWidget<T>::pushValue() {
+
+    pushValue(T());
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::popValue() {
+
+    if (!widgets.empty()) {
+        removeWidget((int)widgets.size() - 1);
+    }
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::valueChanged_slot() {
+
+    GlvVectorWidgetItem<T>* item = dynamic_cast<GlvVectorWidgetItem<T>*>(QObject::sender());
+    if (item) {
+        emit valueChanged(item->index);
+    }
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::removeWidget(const unsigned int i) {
+
+    if (!widgets.empty()) {
+
+        layout_items->removeWidget(widgets[i]);
+        delete widgets[i];
+        widgets.erase(widgets.begin() + i);
+
+        for (unsigned int j = i; j < widgets.size(); j++) {
+            widgets[j]->decrement_index();
+        }
+    }
+
+    if (widgets.empty()) {
+        button_pop->setEnabled(false);
+    }
+
+}
+
+#undef _Tdata_
+
+#define _Tdata_ std::array<T, N>
+
+/*! Widget to manage interface of std::vector.*/
+template <class T, size_t N>
+class GlvArrayWidget : public GlvVectorWidget<T> {
+
+public:
+
+    GlvArrayWidget(_Tdata_ _array = _Tdata_(), QWidget* _parent = 0);
+    ~GlvArrayWidget();
+
+    /*! Set vector.*/
+    void set_value(const _Tdata_& _array);
+    /*! Get vector.*/
+    _Tdata_ get_value() const;
+
+private:
+    using GlvVectorWidget<T>::pushValue;
+    using GlvVectorWidget<T>::popValue;
+    using GlvVectorWidget<T>::insertValue;
 
 };
+
+template <class T, size_t N>
+GlvArrayWidget<T, N>::GlvArrayWidget(_Tdata_ _array, QWidget* _parent) : GlvVectorWidget<T>({}, _parent) {
+
+    this->buttons_widget->hide();
+
+    for (int i = 0; i < N; i++) {
+        pushValue();
+        this->widgets[i]->show_remove_button(false);
+    }
+
+    set_value(_array);
+
+}
+
+template <class T, size_t N>
+GlvArrayWidget<T, N>::~GlvArrayWidget() {
+
+}
+
+template <class T, size_t N>
+void GlvArrayWidget<T, N>::set_value(const _Tdata_& _array) {
+
+    for (int i = 0; i < N; i++) {
+        this->widgets[i]->set_value(_array[i]);
+    }
+
+}
+
+template <class T, size_t N>
+_Tdata_ GlvArrayWidget<T, N>::get_value() const {
+
+    _Tdata_ value;
+    for (int i = 0; i < N; i++) {
+        value[i] = this->widgets[i]->get_value();
+    }
+    return value;
+
+}
+
+#undef _Tdata_
+
+#endif
+
+template <typename Tcontainer, typename = void>
+struct SlvIsMap {
+    static constexpr bool value = false;
+};
+
+template <class Tkey, class Tvalue>
+struct SlvIsMap< std::map<Tkey, Tvalue> > {
+    static constexpr bool value = true;
+};
+
+template <class Tkey, class Tvalue>
+struct SlvIsMap< std::unordered_map<Tkey, Tvalue> > {
+    static constexpr bool value = true;
+};
+
+#ifndef GLOVE_DISABLE_QT
+
+// Do not enable if value_type is a container. GlvWidgetData_spec_std_container_container.h is used instead
+#define Tenable typename std::enable_if<!SlvIsContainer<T>::value || SlvIsMap<T>::value || std::is_same<T, std::string>::value>::type
+
+#define Tdata std::array<T, N>
+/*! GlvWidgetData specialization for template type: std::vector.*/
+template <class T, size_t N>
+class GlvWidgetData<Tdata, Tenable> : public GlvArrayWidget<T, N> {
+
+public:
+    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvArrayWidget<T, N>(_vector, _parent) {}
+    ~GlvWidgetData() {}
+
+};
+
+template <class T, size_t N>
+struct GlvWidgetMakerConnect<Tdata, Tenable> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
+    }
+};
+
+#undef Tdata
+#undef Tenable
+
+// Do not enable if value_type is a container. GlvWidgetData_spec_std_container_container.h is used instead
+#define Tenable typename std::enable_if<!SlvIsContainer<T>::value || SlvIsMap<T>::value || std::is_same<T, std::string>::value>::type
+
+#define Tdata std::vector<T>
+/*! GlvWidgetData specialization for template type: std::vector.*/
+template <class T>
+class GlvWidgetData<Tdata, Tenable> : public GlvVectorWidget<T> {
+
+public:
+    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvVectorWidget<T>(_vector, _parent) {}
+    ~GlvWidgetData() {}
+
+};
+
+template <class T>
+struct GlvWidgetMakerConnect<Tdata, Tenable> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
+    }
+};
+
+#undef Tdata
+#undef Tenable
+
+/*! Widget for std::pair.*/
+class GlvPairWidget_base : public QWidget {
+    Q_OBJECT
+protected:
+    GlvPairWidget_base(QWidget* _parent = 0) : QWidget(_parent) {}
+    virtual ~GlvPairWidget_base() {}
+public:
+    void set_editable(bool l_editable) {
+        QWidget::setEnabled(l_editable);
+    }
+signals:
+    /*! Emitted when first of pair is modified.*/
+    void valueChanged_first();
+    /*! Emitted when second of pair is modified.*/
+    void valueChanged_second();
+};
+
+template <class T>
+class GlvWidget;
+
+#define _Tdata_ std::pair<T1, T2>
+
+/*! Widget for std::pair.*/
+template <class T1, class T2>
+class GlvPairWidget : public GlvPairWidget_base {
+
+private:
+
+    GlvWidget<T1>* subwidget1;
+    GlvWidget<T2>* subwidget2;
+
+public:
+
+    GlvPairWidget(_Tdata_ _pair = _Tdata_(), QWidget* _parent = 0);
+    ~GlvPairWidget();
+
+    void set_pair(const _Tdata_ _pair);
+    _Tdata_ get_pair() const;
+
+};
+
+template <class T1, class T2>
+GlvPairWidget<T1, T2>::GlvPairWidget(_Tdata_ _pair, QWidget* _parent) : GlvPairWidget_base(_parent) {
+
+    QHBoxLayout* layout = new QHBoxLayout;
+    setLayout(layout);
+
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    bool l_editable = true;
+    subwidget1 = new GlvWidget<T1>(_pair.first, l_editable, _parent);
+    connect(subwidget1, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_first()));
+    layout->addWidget(subwidget1);
+    subwidget2 = new GlvWidget<T2>(_pair.second, l_editable, _parent);
+    connect(subwidget2, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_second()));
+    layout->addWidget(subwidget2);
+
+}
+
+template <class T1, class T2>
+GlvPairWidget<T1, T2>::~GlvPairWidget() {
+
+}
+
+template <class T1, class T2>
+void GlvPairWidget<T1, T2>::set_pair(const _Tdata_ _pair) {
+
+    subwidget1->set_value(_pair.first);
+    subwidget2->set_value(_pair.second);
+
+}
+
+template <class T1, class T2>
+_Tdata_ GlvPairWidget<T1, T2>::get_pair() const {
+
+    _Tdata_ value;
+    value.first = subwidget1->get_value();
+    value.second = subwidget2->get_value();
+    return value;
+
+}
+
+#undef _Tdata_
+
+#define Tdata std::pair<T1, T2>
+/*! GlvWidgetData specialization for template type: std::pair.*/
+template <class T1, class T2>
+class GlvWidgetData<Tdata> : public GlvPairWidget<T1, T2> {
+
+public:
+    GlvWidgetData(Tdata _pair = Tdata(), QWidget* _parent = 0) :GlvPairWidget<T1, T2>(_pair, _parent) {}
+    ~GlvWidgetData() {}
+
+    Tdata get_value() const {
+        return GlvPairWidget<T1, T2>::get_pair();
+    }
+    void set_value(const Tdata& _value) {
+        return GlvPairWidget<T1, T2>::set_pair(_value);
+    }
+
+};
+
+template <class T1, class T2>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(valueChanged_first()), _widget_connector, SLOT(valueChanged_slot()));
+        QObject::connect(_widget, SIGNAL(valueChanged_second()), _widget_connector, SLOT(valueChanged_slot()));
+    }
+};
+
+#undef Tdata
+
+class QVBoxLayout;
+class QHBoxLayout;
+class QPushButton;
+
+class GlvMapWidget_base : public QWidget {
+
+    Q_OBJECT
+
+private:
+
+    QWidget* widget_scroll;
+    QPushButton* button_insert;
+
+protected:
+
+    QVBoxLayout* layout_items;
+    QHBoxLayout* insert_layout;
+
+    GlvMapWidget_base(QWidget* _parent = 0);
+    virtual ~GlvMapWidget_base();
+
+public:
+
+    void set_editable(bool l_editable);
+
+protected slots:
+
+    virtual void valueChanged_slot() = 0;
+
+private slots:
+
+    virtual void insertValue() = 0;
+
+signals:
+    /*! Emitted when the value of the \p index-th widget is modified.*/
+    void valueChanged(int _index);
+};
+
+class QHBoxLayout;
+class QLabel;
+class QPushButton;
+
+/*! Item widget for GlvMapWidget.*/
+class GlvMapWidgetItem_base : public QWidget {
+
+    Q_OBJECT
+
+protected:
+
+    QHBoxLayout* layout;
+    /*! Index of the widget in its GlvMapWidget.*/
+    unsigned int index;
+    QPushButton* remove_button;
+
+    GlvMapWidgetItem_base();
+    virtual ~GlvMapWidgetItem_base();
+
+protected slots:
+
+    virtual void remove() = 0;
+
+signals:
+    void valueChanged();
+};
+
+template <class T>
+class GlvWidget;
+template <class Tkey, class Tvalue, class Tcompare>
+class GlvMapWidget;
+
+/*! Item widget for GlvMapWidget.*/
+template <class Tkey, class Tvalue, class Tcompare>
+class GlvMapWidgetItem : public GlvMapWidgetItem_base {
+
+private:
+
+    /*! Widget of the key.*/
+    GlvWidget<Tkey>* key_widget;
+    /*! Widget of the data.*/
+    GlvWidget<Tvalue>* value_widget;
+    /*! Map widget the item belongs to.*/
+    GlvMapWidget<Tkey, Tvalue, Tcompare>* parent;
+
+private:
+
+    /*! \p _key : Key.
+    * \p _value : Initialization value.
+    * \p _index : index in GlvMapWidget.*
+    * \p _parent : Vector widget the item belongs to.*/
+    GlvMapWidgetItem(const Tkey& _key, const Tvalue& _value, const unsigned int _index, GlvMapWidget<Tkey, Tvalue, Tcompare>* _parent);
+    ~GlvMapWidgetItem();
+
+    Tkey get_key() const;
+    void set_key(const Tkey _key);
+    Tvalue get_value() const;
+    void set_value(const Tvalue _value);
+    GlvWidget<Tkey>* get_key_widget() const;
+    GlvWidget<Tvalue>* get_value_widget() const;
+    void increment_index();
+    void decrement_index();
+
+    /*! Remove in GlvMapWidget at index contained in the instance.*/
+    void remove();
+
+    friend class GlvMapWidget<Tkey, Tvalue, Tcompare>;
+};
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::GlvMapWidgetItem(const Tkey& _key, const Tvalue& _value, const unsigned int _index, GlvMapWidget<Tkey, Tvalue, Tcompare>* _parent) {
+
+    key_widget = new GlvWidget<Tkey>(_key);
+    value_widget = new GlvWidget<Tvalue>(_value);
+    index = _index;
+    parent = _parent;
+
+    remove_button = new QPushButton(tr("Remove"));
+    layout->addWidget(key_widget);
+    layout->addWidget(value_widget);
+    layout->addWidget(remove_button);
+
+    connect(remove_button, SIGNAL(clicked()), this, SLOT(remove()));
+    connect(value_widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged()));
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::~GlvMapWidgetItem() {
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+Tkey GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_key() const {
+
+    return key_widget->get_value();
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::set_key(const Tkey _key) {
+
+    key_widget->set_value(_key);
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+Tvalue GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_value() const {
+
+    return value_widget->get_value();
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::set_value(const Tvalue _value) {
+
+    value_widget->set_value(_value);
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvWidget<Tkey>* GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_key_widget() const {
+    return key_widget;
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvWidget<Tvalue>* GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_value_widget() const {
+    return value_widget;
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::increment_index() {
+    index++;
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::decrement_index() {
+    index--;
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::remove() {
+    parent->removeWidget(index);
+}
+
+#define _Tdata_ std::map<Tkey, Tvalue>
+
+class QVBoxLayout;
+template <class Tkey, class Tvalue, class Tcompare>
+class GlvMapWidgetItem;
+template <class Tvalue>
+class GlvWidget;
+
+/*! Widget to manage interface of std::map.*/
+template <class Tkey, class Tvalue, class Tcompare = std::less<Tkey> >
+class GlvMapWidget : public GlvMapWidget_base {
+
+private:
+
+    std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*> widgets;
+
+    GlvWidget<Tkey>* insert_key_widget;
+
+    Tcompare compare_function;
+
+    bool l_editable_key;
+
+public:
+
+    GlvMapWidget(_Tdata_ _map = _Tdata_(), QWidget* _parent = 0);
+    ~GlvMapWidget();
+
+    /*! Set map.*/
+    void set_value(const _Tdata_& _map);
+    /*! Get map.*/
+    _Tdata_ get_value() const;
+
+    /*! Whether key is editable or not (default: false).*/
+    void set_key_editable(bool _l_editable);
+
+    /*! New value at current key.*/
+    void insertValue();
+    /*! Return true if inserted, false otherwise (key already exsists).*/
+    bool insertValue(const Tkey& _key, const Tvalue& _value);
+
+    /*! Get widget of index \p i.*/
+    GlvWidget<Tvalue>* operator[] (const unsigned int i);
+    /*! Get widget of key \p _key.*/
+    GlvWidget<Tvalue>* operator[] (const Tkey _key);
+
+private:
+
+    void insertValue(const int _i, const Tkey& _key, const Tvalue& _value);
+
+    void valueChanged_slot();
+    typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator removeWidget(const unsigned int i);
+    /*! Return index of the corresponding key. Second of pair for existence of the key (true).*/
+    std::pair<int, bool> find(const Tkey& _key) const;
+
+    friend class GlvMapWidgetItem<Tkey, Tvalue, Tcompare>;
+};
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvMapWidget<Tkey, Tvalue, Tcompare>::GlvMapWidget(_Tdata_ _map, QWidget* _parent) : GlvMapWidget_base(_parent) {
+
+    /*! Widget of the key for insert.*/
+    insert_key_widget = new GlvWidget<Tkey>();
+    this->insert_layout->addWidget(insert_key_widget);
+    l_editable_key = false;
+    set_value(_map);
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvMapWidget<Tkey, Tvalue, Tcompare>::~GlvMapWidget() {
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidget<Tkey, Tvalue, Tcompare>::set_value(const _Tdata_& _map) {
+
+    compare_function = _map.key_comp();
+
+    for (typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it = widgets.begin(); it != widgets.end();) {
+
+        if (_map.find((*it)->get_key_widget()->get_value()) == _map.end()) {
+            it = removeWidget((*it)->index);
+        } else {
+            ++it;
+        }
+
+    }
+
+    std::pair<int, bool> index;
+    for (typename _Tdata_::const_iterator it = _map.begin(); it != _map.end(); ++it) {
+
+        index = find(it->first);
+        if (index.second) {
+            widgets[index.first]->get_value_widget()->set_value(it->second);
+        } else {
+            insertValue(index.first, it->first, it->second);
+        }
+
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+_Tdata_ GlvMapWidget<Tkey, Tvalue, Tcompare>::get_value() const {
+
+    _Tdata_ value;
+    for (int i = 0; i < widgets.size(); i++) {
+        value[i] = widgets[i]->get_value();
+    }
+    return value;
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidget<Tkey, Tvalue, Tcompare>::set_key_editable(bool _l_editable) {
+
+    l_editable_key = _l_editable;
+
+    for (int i = 0; i < widgets.size(); i++) {
+        widgets[i]->get_key_widget()->set_editable(l_editable_key);
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue() {
+
+    Tkey key = insert_key_widget->get_value();
+
+    insertValue(key, Tvalue());
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+bool GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue(const Tkey& _key, const Tvalue& _value) {
+
+    std::pair<int, bool> index = find(_key);
+
+    if (!index.second) {
+        insertValue(index.first, _key, _value);
+        return true;
+    } else {
+        return false;
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue(const int _i, const Tkey& _key, const Tvalue& _value) {
+
+    GlvMapWidgetItem<Tkey, Tvalue, Tcompare>* widget = new GlvMapWidgetItem<Tkey, Tvalue, Tcompare>(_key, _value, _i, this);
+    widget->get_key_widget()->set_editable(l_editable_key);
+    layout_items->insertWidget(_i, widget);
+    widgets.insert(widgets.begin() + _i, widget);
+    connect(widget, SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
+
+    for (unsigned int k = _i + 1; k < widgets.size(); k++) {
+        widgets[k]->increment_index();
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvWidget<Tvalue>* GlvMapWidget<Tkey, Tvalue, Tcompare>::operator[] (const unsigned int i) {
+
+    return widgets[i]->get_value_widget();
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvWidget<Tvalue>* GlvMapWidget<Tkey, Tvalue, Tcompare>::operator[] (const Tkey _key) {
+
+    std::pair<int, bool> index = find(_key);
+
+    if (index.second) {
+        return (*this)[index.first];
+    } else {
+        return NULL;
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidget<Tkey, Tvalue, Tcompare>::valueChanged_slot() {
+
+    GlvMapWidgetItem<Tkey, Tvalue, Tcompare>* item = dynamic_cast<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>(QObject::sender());
+    if (item) {
+        emit valueChanged(item->index);
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator GlvMapWidget<Tkey, Tvalue, Tcompare>::removeWidget(const unsigned int i) {
+
+    typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it;
+
+    if (!widgets.empty()) {
+
+        layout_items->removeWidget(widgets[i]);
+        delete widgets[i];
+        it = widgets.erase(widgets.begin() + i);
+
+        for (unsigned int j = i; j < widgets.size(); j++) {
+            widgets[j]->decrement_index();
+        }
+    } else {
+        it = widgets.end();
+    }
+
+    return it;
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+std::pair<int, bool> GlvMapWidget<Tkey, Tvalue, Tcompare>::find(const Tkey& _key) const {
+
+    std::pair<int, bool> result(0, false);
+
+    bool l_found = false;
+    for (typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it = widgets.begin(); it != widgets.end() && !l_found; ++it, result.first++) {
+        l_found = !compare_function((*it)->get_key_widget()->get_value(), _key);
+        if (l_found) {
+            result.second = ((*it)->get_key_widget()->get_value() == _key);
+        }
+    }
+
+    if (l_found) result.first--;
+
+    return result;
+
+}
+
+#undef _Tdata_
+
+#define Tdata std::map<Tkey, Tvalue>
+/*! GlvWidgetData specialization for template type: std::map.*/
+template <class Tkey, class Tvalue>
+class GlvWidgetData<Tdata> : public GlvMapWidget<Tkey, Tvalue> {
+
+public:
+    GlvWidgetData(Tdata _map = Tdata(), QWidget* _parent = 0) :GlvMapWidget<Tkey, Tvalue>(_map, _parent) {}
+    ~GlvWidgetData() {}
+
+};
+
+template <class Tkey, class Tvalue>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
+    }
+};
+
+#undef Tdata
+
+class GlvEnumWidget_base : public QComboBox {
+protected:
+    GlvEnumWidget_base(QWidget* _parent = 0) : QComboBox(_parent) {}
+    virtual ~GlvEnumWidget_base() {}
+public:
+    void set_editable(bool l_editable) {
+        QComboBox::setEnabled(l_editable);
+    }
+};
+
+template <class T, typename = void>
+class GlvEnumWidget;
+
+/*! Widget managing an enum type.
+* The enum must be created using the macro: glvm_SlvEnum. See sample001 for example.*/
+template <class Tenum>
+class GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type> : public GlvEnumWidget_base {
+
+public:
+
+    GlvEnumWidget(Tenum _enum = Tenum(), QWidget* _parent = 0);
+    ~GlvEnumWidget();
+
+    /*! Set the enum value.*/
+    void set_value(const Tenum _enum);
+    /*! Get the enum value.*/
+    Tenum get_value() const;
+
+};
+
+template <class Tenum>
+GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::GlvEnumWidget(Tenum _enum, QWidget* _parent) : GlvEnumWidget_base(_parent) {
+
+    for (unsigned int i = 0; i < SlvEnum<Tenum>::size(); i++) {
+        QString enum_name = glv::toQString(SlvEnum<Tenum>::get_name(i));
+        QComboBox::addItem(enum_name);
+    }
+    set_value(_enum);
+
+}
+
+template <class Tenum>
+GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::~GlvEnumWidget() {
+
+}
+
+template <class Tenum>
+void GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::set_value(const Tenum _enum) {
+
+    QComboBox::setCurrentIndex(SlvEnum<Tenum>::enum_positions().at(_enum));
+
+}
+
+template <class Tenum>
+Tenum GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::get_value() const {
+
+    return SlvEnum<Tenum>::enum_positions_inv()[QComboBox::currentIndex()];
+
+}
+
+/*! GlvWidgetData for enum type.*/
+template <class Tdata>
+class GlvWidgetData<Tdata, typename std::enable_if<std::is_enum<Tdata>::value>::type> : public GlvEnumWidget<Tdata> {
+
+public:
+    GlvWidgetData(Tdata _enum = Tdata(), QWidget* _parent = 0) :GlvEnumWidget<Tdata>(_enum, _parent) {}
+    ~GlvWidgetData() {}
+
+};
+
+template <class Tdata>
+struct GlvWidgetMakerConnect<Tdata, typename std::enable_if<std::is_enum<Tdata>::value>::type> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(currentIndexChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
+    }
+};
+
+class QLineEdit;
+class QPushButton;
+class QLabel;
+class QHBoxLayout;
+
+/*! Widget for selecting a directory.*/
+class GlvOpenDirectory : public QWidget {
+
+    Q_OBJECT
+
+private:
+
+    QLineEdit* line_edit;
+    QPushButton* push_button;
+    QLabel* status;
+    /*! Whether a valid directory has been selected or not.*/
+    bool l_ready;
+
+public:
+
+    /*! \p _directory : default directory.*/
+    GlvOpenDirectory(SlvDirectory _directory, QWidget* _parent = 0);
+    /*! \p _default : default directory path.*/
+    GlvOpenDirectory(QString _default = "", QWidget* _parent = 0);
+    ~GlvOpenDirectory();
+
+    /*! Return directory item. Check if is_ready() before using returned value.*/
+    SlvDirectory get_directory() const;
+
+    /*! Whether a valid directory has been selected or not.*/
+    bool is_ready() const;
+    /*! Makes line edit read-only or not. Shows/hides the open directory button.*/
+    void set_editable(bool l_editable);
+
+private:
+
+    /*! Check if directory is valid.*/
+    void update_readiness();
+
+public slots:
+    /*! Opens QFileDialog to select a directory.*/
+    void getExistingDirectory();
+    /*! Set directory item by editing QLineEdit. If directory is valid, sets instance as ready.*/
+    void set_directory(const SlvDirectory& _directory);
+
+private slots:
+
+    void directory_changed_slot(const QString& _directory_path);
+
+signals:
+
+    /*! Emitted when QLineEdit changes.*/
+    void directory_changed(const QString& _directory_path);
+
+};
+
+#define Tdata SlvDirectory
+
+/*! GlvWidgetData for type SlvDirectory.*/
+template <>
+class GlvWidgetData<Tdata> : public GlvOpenDirectory {
+
+public:
+	GlvWidgetData(Tdata _file = Tdata(), QWidget* _parent = 0);
+	~GlvWidgetData();
+
+	Tdata get_value() const {
+		return GlvOpenDirectory::get_directory();
+	}
+	void set_value(const Tdata& _value) {
+		return GlvOpenDirectory::set_directory(_value);
+	}
+
+};
+
+template <>
+struct GlvWidgetMakerConnect<Tdata> {
+	static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+		QObject::connect(_widget, SIGNAL(directory_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
+	}
+};
+
+#undef Tdata
+
+#endif
 
 /*! std::enable_if for SlvParametrization. Use : std::enable_if<SlvIsParametrization<T>::value>
 * Alternative: std::enable_if<std::is_base_of<SlvParametrization_base, Tparametrization>::value>*/
@@ -8009,13 +8068,12 @@ private:
 
 };
 
-/*! Class managing the progress signal of a loop.
-* Does not contain progress value. Only status.*/
+/*! Class managing the progress signals of a loop.*/
 class SlvProgressionQt :
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
 	public QObject,
 #endif
-	public SlvName {
+	public SlvLblName {
 
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
 	Q_OBJECT
@@ -8024,77 +8082,171 @@ class SlvProgressionQt :
 private:
 
 	/*! Tracked index of progress.
-	It is important to set a safe index because it can be set to Ncounter if cancel is triggered.
+	It is important to set a safe index because it can be set to Niterations if cancel is triggered.
 	ie: Use a different index for data manipulation.*/
-	unsigned int* counter;
+	void* iterator_ptr;
+	enum IteratorType { Int, UnsignedInt, Size_t };
+	/*! Type of the iterator defined at start.*/
+	IteratorType iterator_type;
+
 	/*! Expected maximum number of iterations. Set by emit_start method.*/
-	unsigned int Ncounter;
+	unsigned int Niterations;
+
+	/*! Whether progression instance is used directly as an iterator
+	* true : instance is an iterator. See operator= method.
+	* false : instance may control an external iterator using a pointer.*/
+	bool l_iterating;
+	/*! Iteration value when l_iterating is true.*/
+	std::size_t iterator;
+
+	bool l_started;
+	/*! If Niterations was not provided, then there is no feedback on progress.
+	* This variable checks if progress has ended or not.*/
+	bool l_no_feedback_ended;
+
+	/*! Optional message.*/
+	glvm_GetSetVariable(std::string, message);
 
 	/*! Whether the progression has been canceled externally or not.*/
 	bool l_was_canceled;
 
+	/*! Whether this progress is being called multiple times.
+	* If true, default hiding policy on ending will avoid glitches.
+	* In this case, hiding must be managed using finish().*/
+	bool l_recurrent;
+
 public:
 
-	SlvProgressionQt(std::string _name = "");
+	SlvProgressionQt(std::string _name = "", bool _l_recurrent = false);
+	SlvProgressionQt(const SlvProgressionQt& _progression);
 	~SlvProgressionQt();
 
-	/*! Assign name of progression.*/
+private:
+	/*! Reset progress status.*/
+	void clear_progress();
+
+public:
+	/*! Reset progress status.*/
+	void clear();
+
+	/*! Does nothing. Disable assigment to ensure progress variables are not mixed.*/
 	SlvProgressionQt& operator=(const SlvProgressionQt& _progression);
 
-	/*! Whether the progression as reached its maximum or not: *counter >= Ncounter-1.
+	/*! Whether this progress is being called multiple times.
+	* If true, default hiding policy on ending will avoid glitches.
+	* In this case, hiding must be managed using finish().*/
+	void set_recurrent(bool _l_recurrent);
+	/*! Whether this progress is being called multiple times.
+	* If true, default hiding policy on ending will avoid glitches.
+	* In this case, hiding must be managed using finish().*/
+	bool is_recurrent() const;
+
+	/*! Whether the progression as reached its maximum or not: *iterator_ptr >= Niterations-1.
 	* Return true if the progression was not started yet.*/
 	bool is_over() const;
-	/*! Whether the progression is managing a counter or not. Depends on emit_start strategy.*/
-	bool has_counter() const;
+	/*! Whether the progression is managing a iterator_ptr or not. Depends on start() strategy.*/
+	bool has_iterator_ptr() const;
+	/*! Whether progression instance is used as an iterator. See operator= method.*/
+	bool is_iterating() const;
+	/*! Whether control on progress is possible or not.*/
+	bool is_cancelable() const;
 
-	/*! Emit start signal. Watch without control on the loop (no cancel button). Use explicit emit_progress(int _value) to emit progress.*/
-	void emit_start(std::string _info) const;
-	/*! Emit start signal. Use emit_progress().
-	* \p _info : Set progress message
-	* \p _counter : pointer to the iteration value. Takes control of value by setting \p _Ncounter in case the progression is stopped.*/
-	void emit_start(std::string _info, unsigned int* _counter, const unsigned int _Ncounter) const;
+	/*! Emit start signal. Progress without bar nor control on the loop (no cancel button).*/
+	void start();
+	/*! Emit start signal. Progress without control on the loop (no cancel button).
+	* Use explicit update(int _value) at the end of the loop to update progress.*/
+	void start(const unsigned int _Niterations);
+	/*! Emit start signal.
+	* Use update() at the end of the loop to update progress.
+	* \p _iterator_ptr : pointer to the iteration value. Takes control of value by setting it to \p _Niterations in case the progression is stopped.*/
+	template <class Titerator>
+	void start(Titerator* _iterator_ptr, const unsigned int _Niterations);
+private :
+	void start_pv(const unsigned int _Niterations);
+public :
 
-	/*! Emit progress by using counter pointer and counter number defined by emit_start.
-	* Return false if counter pointer or counter number is null.
-	* If counter reaches Ncounter, then end_signal() is emitted.*/
-	bool emit_progress() const;
-	/*! Emit progress by explicitly setting the progress value \p _value. Must be in the range [0, 100].
-	* Does not assign value to counter pointer.*/
-	void emit_progress(int _value) const;
-	/*! Emits end_signal. Confirm manually the progression progress is over.
-	* Apply counter finish.
-	* Release counter pointer.
-	* If a counter is provided, is automatically called at end of loop. No need to call it.*/
-	void emit_end() const;
-	/*! Emits final_signal. Implies that progress monitoring is completely over. Will remove Qt progression from GlvProgressMgr.
+	/*! Emit progress by using _iterator_ptr pointer and Niterations number defined by emit_start.
+	* Return false if _iterator_ptr pointer or Niterations number is null.
+	* If _iterator_ptr reaches Niterations, then ended() is emitted.*/
+	bool update();
+	/*! Update progress by explicitly setting the progress value \p _value.
+	* To be used with start(const unsigned int _Niterations).
+	* Does not assign value to _iterator_ptr pointer.
+	* Return false if _iterator_ptr number is null.*/
+	bool update(int _value);
+	/*! Confirm manually the progress is over.
+	* To be used if started with start(), ie no progress bar nor cancel control.
+	* If the progress is already monitored by a _iterator_ptr or an iterator, is automatically called at end of loop. No need to call it explicitly.
+	* Apply iterator finish.
+	* Release iterator_ptr pointer (set to NULL).*/
+	void end();
+	/*! Implies that progress monitoring is completely over. Will remove Qt progression from GlvProgressMgr.
 	* Doing so means the progression will need to be added again to a Qt GlvProgressMgr.
-	* Apply counter finish.
-	* Release counter pointer.
-	* ie: Same as emit_end() with removal from GlvProgressMgr.*/
-	void emit_final() const;
+	* Apply iterator finish.
+	* Release _terator_ptr pointer (set to NULL).
+	* ie: Same as end() with removal from GlvProgressMgr.*/
+	void finish();
 
+	/*! Apply cancel to tracked iterator/iterator_ptr.
+	* Ends the loop.
+	* Does not emit signals. Use end() method instead.*/
 	void cancel();
 	/*! Whether the progression has been canceled externally or not.
 	* If so, it means the algorithm that was watched probably did not go through.*/
 	bool was_canceled() const;
 
-	/*! Designed to be called from outside the SlvProgressionQt instance.
-	* Enforce finish by setting the counter to finish value Ncounter.
-	* The loop will end if the iterator is properly related to the counter pointer.*/
-	void counter_finish();
+	/*! Cast to iterator.*/
+	operator std::size_t() const;
+	/*! Initialize iterator and start progress.*/
+	SlvProgressionQt& operator=(const std::size_t _iterator);
+
+	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
+	* Leaves < operator possible on iterator index, without impacting progression.
+	* On the other hand, bitwise operation is not possible of iterator index.
+	* Use init() or start() methods as an alternative to manage Niterations with classical int iterator index.*/
+	bool operator<<(std::size_t _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<(int _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<(unsigned int _Niterations);
+
+	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
+	* Leaves < operator possible on iterator index, without impacting progression.
+	* On the other hand, bitwise operation is not possible of iterator index.
+	* Use init() or start() methods as an alternative to manage Niterations with classical int iterator index.*/
+	bool operator<<=(std::size_t _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<=(int _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<=(unsigned int _Niterations);
+
+	/*! Increase iterator and update progress.*/
+	SlvProgressionQt& operator++();
+	/*! Increase iterator and update progress.*/
+	SlvProgressionQt operator++(int);
 
 private:
 
-	static bool is_over(unsigned int _counter, unsigned int _Ncounter);
+	/*! Enforce finish by setting the iterator_ptr to finish value Niterations.
+	* The loop will end if the iterator is properly related to the iterator_ptr pointer.*/
+	void iterator_finish();
+
+	/*! iterator_ptr pointer is being checked at end of loop content.*/
+	static bool is_iterator_ptr_over(unsigned int _iterator_value, unsigned int _Niterations);
+	/*! Iterator is being checked at beginning of loop content.*/
+	static bool is_iterator_over(std::size_t _iterator, unsigned int _Niterations);
 
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
 signals:
 
-	void start_signal(std::string _message);
-	void progress_signal(int _value);
-	/*! If a counter is provided, is automatically emitted at end of loop.*/
-	void end_signal();
-	void final_signal();
+	/*! Emitted when progress starts.*/
+	void started();
+	/*! Emit progress value in a range [0, 100] when progress is updated.*/
+	void updated(int _value);
+	/*! If an iterator or iterator_ptr is provided, is automatically emitted at end of loop.*/
+	void ended();
+	/*! Emitted when progress is completely over.*/
+	void finished();
 #endif
 
 };
@@ -8113,7 +8265,7 @@ private:
 
 public:
 
-	SlvProgression(std::string _name = "");
+	SlvProgression(std::string _name = "", bool _l_recurrent = false);
 	SlvProgression(const SlvProgression& _progression);
 	~SlvProgression();
 
@@ -8123,8 +8275,84 @@ public:
 
 protected:
 
+	/*! Assignment operator to avoid assigning SlvProgressionQt progression.*/
 	SlvProgression& operator=(const SlvProgression& _progression);
 
+};
+
+class SlvParametrization_base : virtual public SlvVirtualGetName, virtual public SlvIOS {
+
+protected:
+
+	/* Copy of the pointer of the parameters set in SlvParametrization**.
+	* Convenient to call virtual methods on all the parameters without neededing to known the parameter template type.*/
+	std::vector<const SlvParameter_base*> parameters;
+
+	/*! Whether param_init() method is called each time a parameter's value is modified.*/
+	bool l_param_init_auto;
+
+public:
+
+	/*! Separate static name of the class to parameters. ex: name@[param1,param2,param3].*/
+	glvm_staticVariable(const, char, separator, '@');
+
+protected:
+	SlvParametrization_base();
+public:
+	virtual ~SlvParametrization_base();
+
+	/*! Whether param_init() method is called each time a parameter's value is modified.
+	* Either by SlvParametrization**::operator=
+	* Or SlvParametrization**::set_***(value).
+	* Default is true.*/
+	bool is_param_init_auto() const;
+	/*! Set whether param_init() method is called each time a parameter's value is modified.
+	* Either by SlvParametrization**::operator=
+	* Or SlvParametrization**::set_***(value).
+	* Default is true.*/
+	void set_param_init_auto(bool _l_param_init_auto);
+
+	/*! Get string identification of the parametrization.*/
+	std::string get_id_str() const;
+	/*! Get a name of the instance plus string identification of the parametrization.*/
+	std::string get_full_name() const;
+
+	/*! Check parameters rules.*/
+	virtual SlvStatus check_parameters() const = 0;
+
+	/*! Check if the parametrization has rules or not.*/
+	bool has_rules() const;
+	/*! Returns false if the rules were not abided, meaning there was a modification of the parametrization.
+	* Returns true if rules are abided, meaning there was no modification of the parameterization.*/
+	virtual bool abide_rules() = 0;
+
+	/*! Process of parameters at construction.
+	* Usefull to call after a param_cast() assignment.
+	* When definition of param_init() is needed, must be reimplemented in the parametrization class inheriting from SlvParametrization.
+	* Ex: private parameter deriving from other ones.*/
+	virtual void param_init();
+
+	/*! Recursively find the parameters which name is \p _parameter_name.
+	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
+	* If false, they are excluded (but recursivity still applies).*/
+	std::vector<const SlvParameter_base*> find(std::string _parameter_name, bool _l_parametrizations) const;
+	/*! Recursively find the frist parameter which name is \p _parameter_name.
+	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
+	* If false, they are excluded (but recursivity still applies).
+	* Returns NULL if none found.*/
+	const SlvParameter_base* find_first(std::string _parameter_name, bool _l_parametrizations) const;
+
+	/*! Set parameter values using >> operator by providing parameter name and corresponding value as string.
+	* Returns :
+	* First of pair: the conflicts corresponding to multiple parameters with the same name. Ie: assignment ambiguity.
+	* Second of pair : parameter names that could not be found in the parametrization.*/
+	std::pair< std::map<std::string, int>, std::vector<std::string> > set_stream_values(const std::map<std::string, std::string>& _stream_values, bool _l_parametrizations);
+
+private:
+	/*! Get a vector (one element per parameter) of strings. Each string is the slv::string::to_id_str of the parameter value.
+	* The marker value is used to discriminate which parameters are being converted to string.
+	* Setting the marker value of a parameter is possible in the macro classParameter.*/
+	virtual std::vector<std::string> get_vector_id_str(unsigned int _marker = SlvParameter_base::default_marker_value()) const = 0;
 };
 
 /*! Convenience class to inherit both from SlvIFS and SlvOFS.*/
@@ -8583,89 +8811,13 @@ namespace slv {
 
 #endif
 
-class SlvParametrization_base : virtual public SlvVirtualGetName, virtual public SlvIOS {
-
-protected:
-
-	/* Copy of the pointer of the parameters set in SlvParametrization**.
-	* Convenient to call virtual methods on all the parameters without neededing to known the parameter template type.*/
-	std::vector<const SlvParameter_base*> parameters;
-
-	/*! Whether param_init() method is called each time a parameter's value is modified.*/
-	bool l_param_init_auto;
-
-public:
-
-	/*! Separate static name of the class to parameters. ex: name@[param1,param2,param3].*/
-	glvm_staticVariable(const, char, separator, '@');
-
-protected:
-	SlvParametrization_base();
-public:
-	virtual ~SlvParametrization_base();
-
-	/*! Whether param_init() method is called each time a parameter's value is modified.
-	* Either by SlvParametrization**::operator=
-	* Or SlvParametrization**::set_***(value).
-	* Default is true.*/
-	bool is_param_init_auto() const;
-	/*! Set whether param_init() method is called each time a parameter's value is modified.
-	* Either by SlvParametrization**::operator=
-	* Or SlvParametrization**::set_***(value).
-	* Default is true.*/
-	void set_param_init_auto(bool _l_param_init_auto);
-
-	/*! Get string identification of the parametrization.*/
-	std::string get_id_str() const;
-	/*! Get a name of the instance plus string identification of the parametrization.*/
-	std::string get_full_name() const;
-
-	/*! Check parameters rules.*/
-	virtual SlvStatus check_parameters() const = 0;
-
-	/*! Check if the parametrization has rules or not.*/
-	bool has_rules() const;
-	/*! Returns false if the rules were not abided, meaning there was a modification of the parametrization.
-	* Returns true if rules are abided, meaning there was no modification of the parameterization.*/
-	virtual bool abide_rules() = 0;
-
-	/*! Process of parameters at construction.
-	* Usefull to call after a param_cast() assignment.
-	* When definition of param_init() is needed, must be reimplemented in the parametrization class inheriting from SlvParametrization.
-	* Ex: private parameter deriving from other ones.*/
-	virtual void param_init();
-
-	/*! Recursively find the parameters which name is \p _parameter_name.
-	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
-	* If false, they are excluded (but recursivity still applies).*/
-	std::vector<const SlvParameter_base*> find(std::string _parameter_name, bool _l_parametrizations) const;
-	/*! Recursively find the frist parameter which name is \p _parameter_name.
-	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
-	* If false, they are excluded (but recursivity still applies).
-	* Returns NULL if none found.*/
-	const SlvParameter_base* find_first(std::string _parameter_name, bool _l_parametrizations) const;
-
-	/*! Set parameter values using >> operator by providing parameter name and corresponding value as string.
-	* Returns :
-	* First of pair: the conflicts corresponding to multiple parameters with the same name. Ie: assignment ambiguity.
-	* Second of pair : parameter names that could not be found in the parametrization.*/
-	std::pair< std::map<std::string, int>, std::vector<std::string> > set_stream_values(const std::map<std::string, std::string>& _stream_values, bool _l_parametrizations);
-
-private:
-	/*! Get a vector (one element per parameter) of strings. Each string is the slv::string::to_id_str of the parameter value.
-	* The marker value is used to discriminate which parameters are being converted to string.
-	* Setting the marker value of a parameter is possible in the macro classParameter.*/
-	virtual std::vector<std::string> get_vector_id_str(unsigned int _marker = SlvParameter_base::default_marker_value()) const = 0;
-};
-
 #define EXPAND(arg) arg
 #define glvm_pv_parametrization_constructor(\
-_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25,\
+_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24,\
 macro_arg, ...) macro_arg
 
 /*! Define parametrization constructor.*/
 #define glvm_parametrization_constructor(...) EXPAND( glvm_pv_parametrization_constructor(__VA_ARGS__,\
-glvm_parametrization25_constructor,\
 glvm_parametrization24_constructor,\
 glvm_parametrization23_constructor,\
 glvm_parametrization22_constructor,\
@@ -8691,17 +8843,23 @@ glvm_parametrization3_constructor,\
 glvm_parametrization2_constructor,\
 glvm_parametrization1_constructor)(__VA_ARGS__))
 
-#define glvm_parametrization1_constructor(param1_decl)\
+#define glvm_parametrization0_constructor()\
+SlvParametrization0
+
+#define glvm_parametrization1_constructor(\
+param1_decl)\
 SlvParametrization1<typename SlvPvClassParam_##param1_decl::Tparam>(new SlvPvClassParam_##param1_decl(this)\
 )
 
-#define glvm_parametrization2_constructor(param1_decl,\
+#define glvm_parametrization2_constructor(\
+param1_decl,\
 param2_decl)\
 SlvParametrization2<typename SlvPvClassParam_##param1_decl::Tparam, typename SlvPvClassParam_##param2_decl::Tparam>(new SlvPvClassParam_##param1_decl(this),\
 new SlvPvClassParam_##param2_decl(this)\
 )
 
-#define glvm_parametrization3_constructor(param1_decl,\
+#define glvm_parametrization3_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl)\
 SlvParametrization3<typename SlvPvClassParam_##param1_decl::Tparam, typename SlvPvClassParam_##param2_decl::Tparam, typename SlvPvClassParam_##param3_decl::Tparam>(new SlvPvClassParam_##param1_decl(this),\
@@ -8709,7 +8867,8 @@ new SlvPvClassParam_##param2_decl(this),\
 new SlvPvClassParam_##param3_decl(this)\
 )
 
-#define glvm_parametrization4_constructor(param1_decl,\
+#define glvm_parametrization4_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl)\
@@ -8719,7 +8878,8 @@ new SlvPvClassParam_##param3_decl(this),\
 new SlvPvClassParam_##param4_decl(this)\
 )
 
-#define glvm_parametrization5_constructor(param1_decl,\
+#define glvm_parametrization5_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8731,7 +8891,8 @@ new SlvPvClassParam_##param4_decl(this),\
 new SlvPvClassParam_##param5_decl(this)\
 )
 
-#define glvm_parametrization6_constructor(param1_decl,\
+#define glvm_parametrization6_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8745,7 +8906,8 @@ new SlvPvClassParam_##param5_decl(this),\
 new SlvPvClassParam_##param6_decl(this)\
 )
 
-#define glvm_parametrization7_constructor(param1_decl,\
+#define glvm_parametrization7_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8761,7 +8923,8 @@ new SlvPvClassParam_##param6_decl(this),\
 new SlvPvClassParam_##param7_decl(this)\
 )
 
-#define glvm_parametrization8_constructor(param1_decl,\
+#define glvm_parametrization8_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8779,7 +8942,8 @@ new SlvPvClassParam_##param7_decl(this),\
 new SlvPvClassParam_##param8_decl(this)\
 )
 
-#define glvm_parametrization9_constructor(param1_decl,\
+#define glvm_parametrization9_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8799,7 +8963,8 @@ new SlvPvClassParam_##param8_decl(this),\
 new SlvPvClassParam_##param9_decl(this)\
 )
 
-#define glvm_parametrization10_constructor(param1_decl,\
+#define glvm_parametrization10_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8821,7 +8986,8 @@ new SlvPvClassParam_##param9_decl(this),\
 new SlvPvClassParam_##param10_decl(this)\
 )
 
-#define glvm_parametrization11_constructor(param1_decl,\
+#define glvm_parametrization11_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8845,7 +9011,8 @@ new SlvPvClassParam_##param10_decl(this),\
 new SlvPvClassParam_##param11_decl(this)\
 )
 
-#define glvm_parametrization12_constructor(param1_decl,\
+#define glvm_parametrization12_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8871,7 +9038,8 @@ new SlvPvClassParam_##param11_decl(this),\
 new SlvPvClassParam_##param12_decl(this)\
 )
 
-#define glvm_parametrization13_constructor(param1_decl,\
+#define glvm_parametrization13_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8899,7 +9067,8 @@ new SlvPvClassParam_##param12_decl(this),\
 new SlvPvClassParam_##param13_decl(this)\
 )
 
-#define glvm_parametrization14_constructor(param1_decl,\
+#define glvm_parametrization14_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8929,7 +9098,8 @@ new SlvPvClassParam_##param13_decl(this),\
 new SlvPvClassParam_##param14_decl(this)\
 )
 
-#define glvm_parametrization15_constructor(param1_decl,\
+#define glvm_parametrization15_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8961,7 +9131,8 @@ new SlvPvClassParam_##param14_decl(this),\
 new SlvPvClassParam_##param15_decl(this)\
 )
 
-#define glvm_parametrization16_constructor(param1_decl,\
+#define glvm_parametrization16_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -8995,7 +9166,8 @@ new SlvPvClassParam_##param15_decl(this),\
 new SlvPvClassParam_##param16_decl(this)\
 )
 
-#define glvm_parametrization17_constructor(param1_decl,\
+#define glvm_parametrization17_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -9031,7 +9203,8 @@ new SlvPvClassParam_##param16_decl(this),\
 new SlvPvClassParam_##param17_decl(this)\
 )
 
-#define glvm_parametrization18_constructor(param1_decl,\
+#define glvm_parametrization18_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -9069,7 +9242,8 @@ new SlvPvClassParam_##param17_decl(this),\
 new SlvPvClassParam_##param18_decl(this)\
 )
 
-#define glvm_parametrization19_constructor(param1_decl,\
+#define glvm_parametrization19_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -9109,7 +9283,8 @@ new SlvPvClassParam_##param18_decl(this),\
 new SlvPvClassParam_##param19_decl(this)\
 )
 
-#define glvm_parametrization20_constructor(param1_decl,\
+#define glvm_parametrization20_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -9151,7 +9326,8 @@ new SlvPvClassParam_##param19_decl(this),\
 new SlvPvClassParam_##param20_decl(this)\
 )
 
-#define glvm_parametrization21_constructor(param1_decl,\
+#define glvm_parametrization21_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -9195,7 +9371,8 @@ new SlvPvClassParam_##param20_decl(this),\
 new SlvPvClassParam_##param21_decl(this)\
 )
 
-#define glvm_parametrization22_constructor(param1_decl,\
+#define glvm_parametrization22_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -9241,7 +9418,8 @@ new SlvPvClassParam_##param21_decl(this),\
 new SlvPvClassParam_##param22_decl(this)\
 )
 
-#define glvm_parametrization23_constructor(param1_decl,\
+#define glvm_parametrization23_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -9289,7 +9467,8 @@ new SlvPvClassParam_##param22_decl(this),\
 new SlvPvClassParam_##param23_decl(this)\
 )
 
-#define glvm_parametrization24_constructor(param1_decl,\
+#define glvm_parametrization24_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -9337,58 +9516,6 @@ new SlvPvClassParam_##param21_decl(this),\
 new SlvPvClassParam_##param22_decl(this),\
 new SlvPvClassParam_##param23_decl(this),\
 new SlvPvClassParam_##param24_decl(this)\
-)
-
-#define glvm_parametrization25_constructor(param1_decl,\
-param2_decl,\
-param3_decl,\
-param4_decl,\
-param5_decl,\
-param6_decl,\
-param7_decl,\
-param8_decl,\
-param9_decl,\
-param10_decl,\
-param11_decl,\
-param12_decl,\
-param13_decl,\
-param14_decl,\
-param15_decl,\
-param16_decl,\
-param17_decl,\
-param18_decl,\
-param19_decl,\
-param20_decl,\
-param21_decl,\
-param22_decl,\
-param23_decl,\
-param24_decl,\
-param25_decl)\
-SlvParametrization25<typename SlvPvClassParam_##param1_decl::Tparam, typename SlvPvClassParam_##param2_decl::Tparam, typename SlvPvClassParam_##param3_decl::Tparam, typename SlvPvClassParam_##param4_decl::Tparam, typename SlvPvClassParam_##param5_decl::Tparam, typename SlvPvClassParam_##param6_decl::Tparam, typename SlvPvClassParam_##param7_decl::Tparam, typename SlvPvClassParam_##param8_decl::Tparam, typename SlvPvClassParam_##param9_decl::Tparam, typename SlvPvClassParam_##param10_decl::Tparam, typename SlvPvClassParam_##param11_decl::Tparam, typename SlvPvClassParam_##param12_decl::Tparam, typename SlvPvClassParam_##param13_decl::Tparam, typename SlvPvClassParam_##param14_decl::Tparam, typename SlvPvClassParam_##param15_decl::Tparam, typename SlvPvClassParam_##param16_decl::Tparam, typename SlvPvClassParam_##param17_decl::Tparam, typename SlvPvClassParam_##param18_decl::Tparam, typename SlvPvClassParam_##param19_decl::Tparam, typename SlvPvClassParam_##param20_decl::Tparam, typename SlvPvClassParam_##param21_decl::Tparam, typename SlvPvClassParam_##param22_decl::Tparam, typename SlvPvClassParam_##param23_decl::Tparam, typename SlvPvClassParam_##param24_decl::Tparam, typename SlvPvClassParam_##param25_decl::Tparam>(new SlvPvClassParam_##param1_decl(this),\
-new SlvPvClassParam_##param2_decl(this),\
-new SlvPvClassParam_##param3_decl(this),\
-new SlvPvClassParam_##param4_decl(this),\
-new SlvPvClassParam_##param5_decl(this),\
-new SlvPvClassParam_##param6_decl(this),\
-new SlvPvClassParam_##param7_decl(this),\
-new SlvPvClassParam_##param8_decl(this),\
-new SlvPvClassParam_##param9_decl(this),\
-new SlvPvClassParam_##param10_decl(this),\
-new SlvPvClassParam_##param11_decl(this),\
-new SlvPvClassParam_##param12_decl(this),\
-new SlvPvClassParam_##param13_decl(this),\
-new SlvPvClassParam_##param14_decl(this),\
-new SlvPvClassParam_##param15_decl(this),\
-new SlvPvClassParam_##param16_decl(this),\
-new SlvPvClassParam_##param17_decl(this),\
-new SlvPvClassParam_##param18_decl(this),\
-new SlvPvClassParam_##param19_decl(this),\
-new SlvPvClassParam_##param20_decl(this),\
-new SlvPvClassParam_##param21_decl(this),\
-new SlvPvClassParam_##param22_decl(this),\
-new SlvPvClassParam_##param23_decl(this),\
-new SlvPvClassParam_##param24_decl(this),\
-new SlvPvClassParam_##param25_decl(this)\
 )
 
 #define glvm_parametrization_name(_name)\
@@ -9945,41 +10072,6 @@ private:
 glvm_parametrization_name(_name);\
 glvm_parametrization24_static_init
 
-#define glvm_parametrization25_static_init \
-public:\
-static bool has_rules() {\
-return Tpv_parameter1::has_rules()\
- || Tpv_parameter2::has_rules()\
- || Tpv_parameter3::has_rules()\
- || Tpv_parameter4::has_rules()\
- || Tpv_parameter5::has_rules()\
- || Tpv_parameter6::has_rules()\
- || Tpv_parameter7::has_rules()\
- || Tpv_parameter8::has_rules()\
- || Tpv_parameter9::has_rules()\
- || Tpv_parameter10::has_rules()\
- || Tpv_parameter11::has_rules()\
- || Tpv_parameter12::has_rules()\
- || Tpv_parameter13::has_rules()\
- || Tpv_parameter14::has_rules()\
- || Tpv_parameter15::has_rules()\
- || Tpv_parameter16::has_rules()\
- || Tpv_parameter17::has_rules()\
- || Tpv_parameter18::has_rules()\
- || Tpv_parameter19::has_rules()\
- || Tpv_parameter20::has_rules()\
- || Tpv_parameter21::has_rules()\
- || Tpv_parameter22::has_rules()\
- || Tpv_parameter23::has_rules()\
- || Tpv_parameter24::has_rules()\
- || Tpv_parameter25::has_rules();\
-}\
-private:
-
-#define glvm_parametrization25_init(_name)\
-glvm_parametrization_name(_name);\
-glvm_parametrization25_static_init
-
 #define glvm_parametrization1_inherited_template_init(base_class)\
 using typename base_class::Tpv_parameter1;
 
@@ -10328,33 +10420,6 @@ using typename base_class::Tpv_parameter22;\
 using typename base_class::Tpv_parameter23;\
 using typename base_class::Tpv_parameter24;
 
-#define glvm_parametrization25_inherited_template_init(base_class)\
-using typename base_class::Tpv_parameter1;\
-using typename base_class::Tpv_parameter2;\
-using typename base_class::Tpv_parameter3;\
-using typename base_class::Tpv_parameter4;\
-using typename base_class::Tpv_parameter5;\
-using typename base_class::Tpv_parameter6;\
-using typename base_class::Tpv_parameter7;\
-using typename base_class::Tpv_parameter8;\
-using typename base_class::Tpv_parameter9;\
-using typename base_class::Tpv_parameter10;\
-using typename base_class::Tpv_parameter11;\
-using typename base_class::Tpv_parameter12;\
-using typename base_class::Tpv_parameter13;\
-using typename base_class::Tpv_parameter14;\
-using typename base_class::Tpv_parameter15;\
-using typename base_class::Tpv_parameter16;\
-using typename base_class::Tpv_parameter17;\
-using typename base_class::Tpv_parameter18;\
-using typename base_class::Tpv_parameter19;\
-using typename base_class::Tpv_parameter20;\
-using typename base_class::Tpv_parameter21;\
-using typename base_class::Tpv_parameter22;\
-using typename base_class::Tpv_parameter23;\
-using typename base_class::Tpv_parameter24;\
-using typename base_class::Tpv_parameter25;
-
 /*! Parametrization for 0 parameter.
 * All classes inheriting SlvParametrization** must have default constructor () */
 class SlvParametrization0 : public SlvParametrization_base {
@@ -10405,6 +10470,8 @@ public:
 	SlvStatus readJson(const nlohmann::json& _json);
 #endif
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 0);
 	typedef SlvParametrization0 Tparametrization;
 
 	Tparametrization& param_cast();
@@ -10900,6 +10967,8 @@ class SlvParametrization1 : public SlvParametrization0 {
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 1);
 	typedef SlvParametrization1<T1> Tparametrization;
 	typedef SlvParametrization0 Tparametrization_lower;
 
@@ -11078,6 +11147,8 @@ class SlvParametrization2 : public SlvParametrization1<T1> {
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 2);
 	typedef SlvParametrization2<T1, T2> Tparametrization;
 	typedef SlvParametrization1<T1> Tparametrization_lower;
 
@@ -11256,6 +11327,8 @@ class SlvParametrization3 : public SlvParametrization2<T1, T2> {
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 3);
 	typedef SlvParametrization3<T1, T2, T3> Tparametrization;
 	typedef SlvParametrization2<T1, T2> Tparametrization_lower;
 
@@ -11434,6 +11507,8 @@ class SlvParametrization4 : public SlvParametrization3<T1, T2, T3> {
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 4);
 	typedef SlvParametrization4<T1, T2, T3, T4> Tparametrization;
 	typedef SlvParametrization3<T1, T2, T3> Tparametrization_lower;
 
@@ -11612,6 +11687,8 @@ class SlvParametrization5 : public SlvParametrization4<T1, T2, T3, T4> {
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 5);
 	typedef SlvParametrization5<T1, T2, T3, T4, T5> Tparametrization;
 	typedef SlvParametrization4<T1, T2, T3, T4> Tparametrization_lower;
 
@@ -11790,6 +11867,8 @@ class SlvParametrization6 : public SlvParametrization5<T1, T2, T3, T4, T5> {
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 6);
 	typedef SlvParametrization6<T1, T2, T3, T4, T5, T6> Tparametrization;
 	typedef SlvParametrization5<T1, T2, T3, T4, T5> Tparametrization_lower;
 
@@ -11968,6 +12047,8 @@ class SlvParametrization7 : public SlvParametrization6<T1, T2, T3, T4, T5, T6> {
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 7);
 	typedef SlvParametrization7<T1, T2, T3, T4, T5, T6, T7> Tparametrization;
 	typedef SlvParametrization6<T1, T2, T3, T4, T5, T6> Tparametrization_lower;
 
@@ -12146,6 +12227,8 @@ class SlvParametrization8 : public SlvParametrization7<T1, T2, T3, T4, T5, T6, T
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 8);
 	typedef SlvParametrization8<T1, T2, T3, T4, T5, T6, T7, T8> Tparametrization;
 	typedef SlvParametrization7<T1, T2, T3, T4, T5, T6, T7> Tparametrization_lower;
 
@@ -12324,6 +12407,8 @@ class SlvParametrization9 : public SlvParametrization8<T1, T2, T3, T4, T5, T6, T
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 9);
 	typedef SlvParametrization9<T1, T2, T3, T4, T5, T6, T7, T8, T9> Tparametrization;
 	typedef SlvParametrization8<T1, T2, T3, T4, T5, T6, T7, T8> Tparametrization_lower;
 
@@ -12502,6 +12587,8 @@ class SlvParametrization10 : public SlvParametrization9<T1, T2, T3, T4, T5, T6, 
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 10);
 	typedef SlvParametrization10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Tparametrization;
 	typedef SlvParametrization9<T1, T2, T3, T4, T5, T6, T7, T8, T9> Tparametrization_lower;
 
@@ -12680,6 +12767,8 @@ class SlvParametrization11 : public SlvParametrization10<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 11);
 	typedef SlvParametrization11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> Tparametrization;
 	typedef SlvParametrization10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Tparametrization_lower;
 
@@ -12858,6 +12947,8 @@ class SlvParametrization12 : public SlvParametrization11<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 12);
 	typedef SlvParametrization12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> Tparametrization;
 	typedef SlvParametrization11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> Tparametrization_lower;
 
@@ -13036,6 +13127,8 @@ class SlvParametrization13 : public SlvParametrization12<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 13);
 	typedef SlvParametrization13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> Tparametrization;
 	typedef SlvParametrization12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> Tparametrization_lower;
 
@@ -13214,6 +13307,8 @@ class SlvParametrization14 : public SlvParametrization13<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 14);
 	typedef SlvParametrization14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> Tparametrization;
 	typedef SlvParametrization13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> Tparametrization_lower;
 
@@ -13392,6 +13487,8 @@ class SlvParametrization15 : public SlvParametrization14<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 15);
 	typedef SlvParametrization15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> Tparametrization;
 	typedef SlvParametrization14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> Tparametrization_lower;
 
@@ -13570,6 +13667,8 @@ class SlvParametrization16 : public SlvParametrization15<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 16);
 	typedef SlvParametrization16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> Tparametrization;
 	typedef SlvParametrization15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> Tparametrization_lower;
 
@@ -13748,6 +13847,8 @@ class SlvParametrization17 : public SlvParametrization16<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 17);
 	typedef SlvParametrization17<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> Tparametrization;
 	typedef SlvParametrization16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> Tparametrization_lower;
 
@@ -13926,6 +14027,8 @@ class SlvParametrization18 : public SlvParametrization17<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 18);
 	typedef SlvParametrization18<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> Tparametrization;
 	typedef SlvParametrization17<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> Tparametrization_lower;
 
@@ -14104,6 +14207,8 @@ class SlvParametrization19 : public SlvParametrization18<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 19);
 	typedef SlvParametrization19<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> Tparametrization;
 	typedef SlvParametrization18<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> Tparametrization_lower;
 
@@ -14282,6 +14387,8 @@ class SlvParametrization20 : public SlvParametrization19<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 20);
 	typedef SlvParametrization20<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> Tparametrization;
 	typedef SlvParametrization19<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> Tparametrization_lower;
 
@@ -14460,6 +14567,8 @@ class SlvParametrization21 : public SlvParametrization20<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 21);
 	typedef SlvParametrization21<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> Tparametrization;
 	typedef SlvParametrization20<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> Tparametrization_lower;
 
@@ -14638,6 +14747,8 @@ class SlvParametrization22 : public SlvParametrization21<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 22);
 	typedef SlvParametrization22<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> Tparametrization;
 	typedef SlvParametrization21<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> Tparametrization_lower;
 
@@ -14816,6 +14927,8 @@ class SlvParametrization23 : public SlvParametrization22<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 23);
 	typedef SlvParametrization23<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> Tparametrization;
 	typedef SlvParametrization22<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> Tparametrization_lower;
 
@@ -14994,6 +15107,8 @@ class SlvParametrization24 : public SlvParametrization23<T1, T2, T3, T4, T5, T6,
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 24);
 	typedef SlvParametrization24<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> Tparametrization;
 	typedef SlvParametrization23<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> Tparametrization_lower;
 
@@ -15164,186 +15279,9 @@ struct slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParame
 };
 #endif
 
-/*! Parametrization for 25 parameters.*/
-template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class T10, class T11, class T12, class T13, class T14, class T15, class T16, class T17, class T18, class T19, class T20, class T21, class T22, class T23, class T24, class T25>
-class SlvParametrization25 : public SlvParametrization24<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> {
-
-	SlvParameter<T25>* parameter25;
-
-public:
-
-	typedef SlvParametrization25<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25> Tparametrization;
-	typedef SlvParametrization24<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> Tparametrization_lower;
-
-protected: 
-
-	SlvParametrization25(SlvParameter<T1>* _parameter1, SlvParameter<T2>* _parameter2, SlvParameter<T3>* _parameter3, SlvParameter<T4>* _parameter4, SlvParameter<T5>* _parameter5, SlvParameter<T6>* _parameter6, SlvParameter<T7>* _parameter7, SlvParameter<T8>* _parameter8, SlvParameter<T9>* _parameter9, SlvParameter<T10>* _parameter10, SlvParameter<T11>* _parameter11, SlvParameter<T12>* _parameter12, SlvParameter<T13>* _parameter13, SlvParameter<T14>* _parameter14, SlvParameter<T15>* _parameter15, SlvParameter<T16>* _parameter16, SlvParameter<T17>* _parameter17, SlvParameter<T18>* _parameter18, SlvParameter<T19>* _parameter19, SlvParameter<T20>* _parameter20, SlvParameter<T21>* _parameter21, SlvParameter<T22>* _parameter22, SlvParameter<T23>* _parameter23, SlvParameter<T24>* _parameter24, SlvParameter<T25>* _parameter25) :Tparametrization_lower(_parameter1, _parameter2, _parameter3, _parameter4, _parameter5, _parameter6, _parameter7, _parameter8, _parameter9, _parameter10, _parameter11, _parameter12, _parameter13, _parameter14, _parameter15, _parameter16, _parameter17, _parameter18, _parameter19, _parameter20, _parameter21, _parameter22, _parameter23, _parameter24), parameter25(_parameter25) {
-		SlvParametrization_base::parameters.push_back(parameter25);
-	}
-
-	SlvParametrization25(const SlvParametrization25& _parametrization) :Tparametrization_lower(_parametrization) {
-		parameter25 =  _parametrization.get_parameter25().clone(this);
-		SlvParametrization_base::parameters.push_back(parameter25);
-	}
-
-	~SlvParametrization25() {
-		delete parameter25;
-	}
-
-public: 
-
-	Tparametrization& operator=(const SlvParametrization25& _parametrization) {
-		param_assign_rec(_parametrization);
-		if (this->is_param_init_auto()) this->param_init();
-		return *this;
-	}
-
-protected:
-	void param_assign_rec(const SlvParametrization25& _parametrization) {
-		Tparametrization_lower::param_assign_rec(_parametrization);
-		*parameter25 = _parametrization.get_parameter25();
-	}
-public:
-
-	/*! Set parameter values all at once.*/
-	void set_parameter_values(T1 _val1, T2 _val2 = T2(), T3 _val3 = T3(), T4 _val4 = T4(), T5 _val5 = T5(), T6 _val6 = T6(), T7 _val7 = T7(), T8 _val8 = T8(), T9 _val9 = T9(), T10 _val10 = T10(), T11 _val11 = T11(), T12 _val12 = T12(), T13 _val13 = T13(), T14 _val14 = T14(), T15 _val15 = T15(), T16 _val16 = T16(), T17 _val17 = T17(), T18 _val18 = T18(), T19 _val19 = T19(), T20 _val20 = T20(), T21 _val21 = T21(), T22 _val22 = T22(), T23 _val23 = T23(), T24 _val24 = T24(), T25 _val25 = T25(), bool _l_param_only = true) {
-		Tparametrization_lower::set_parameter_values(_val1, _val2, _val3, _val4, _val5, _val6, _val7, _val8, _val9, _val10, _val11, _val12, _val13, _val14, _val15, _val16, _val17, _val18, _val19, _val20, _val21, _val22, _val23, _val24, _l_param_only);
-		set_parameter25_value(_val25, _l_param_only);
-	}
-
-protected:
-	void set_parameter25_value(const T25& _val25, bool _l_param_only = true) {
-		parameter25->set_value(_val25, _l_param_only);
-	}
-public:
-
-	const SlvParameter<T25>& get_parameter25() const {
-		return *parameter25;
-	}
-
-	SlvStatus check_parameters() const {
-		SlvStatus status = Tparametrization_lower::check_parameters();
-		status += parameter25->check_rules();
-		return status;
-	}
-
-	glvm_pv_SlvParametrization_abide(25, Tparametrization_lower)
-
-	bool operator==(const SlvParametrization25& _parametrization) const {
-		return *parameter25 == *_parametrization.parameter25 && *static_cast<const Tparametrization_lower*>(this) == _parametrization;
-	}
-
-	bool operator!=(const SlvParametrization25& _parametrization) const {
-		return !(*this == _parametrization);
-	}
-
-	/*! Get a vector (one element per parameter) of strings. Each string is the slv::string::to_id_str of the parameter value.
-	* The marker value is used to discriminate which parameters are being converted to string.
-	* Setting the marker value of a parameter is possible in the macro glvm_parameter.*/
-	std::vector<std::string> get_vector_id_str(unsigned int _marker = SlvParameter_base::default_marker_value()) const {
-		std::vector<std::string> vector_id_str = Tparametrization_lower::get_vector_id_str(_marker);
-		if (_marker == parameter25->get_marker()) {
-			vector_id_str.push_back(slv::string::to_id_str(parameter25->get_value()));
-		}
-		return vector_id_str;
-	}
-
-	/*! Get string serialization of the parametrization. Each vector element contains a parameter name and the corresponding parameter value as string using operator <<.
-	* Parameters of nested parametrizations are simply added. Ie: there is no record of intermediate parametrizations.*/
-	std::vector< std::pair<std::string, std::string> > get_string_serialization(unsigned int _marker = SlvParameter_base::default_marker_value()) const {
-		std::vector< std::pair<std::string, std::string> > serialization = Tparametrization_lower::get_string_serialization(_marker);
-		if (_marker == parameter25->get_marker()) {
-			slv::vector::add(serialization, SlvParameterSpec<T25>::get_string_serialization(*parameter25));
-		}
-		return serialization;
-	}
-
-	/*! Same as get_string_serialization, but bool parameters are treated appart.
-	* If bool parameter is true, the parameter name is added to the second vector, if false it is not.*/
-	std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > get_string_serialization_bool(unsigned int _marker = SlvParameter_base::default_marker_value()) const {
-		std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > serialization = Tparametrization_lower::get_string_serialization_bool(_marker);
-		if (_marker == parameter25->get_marker()) {
-			std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > serialization_parameter = SlvParameterSpec<T25>::get_string_serialization_bool(*parameter25);
-			slv::vector::add(serialization.first, serialization_parameter.first);
-			slv::vector::add(serialization.second, serialization_parameter.second);
-		}
-		return serialization;
-	}
-
-protected:
-	void ostream(std::ostream& _os) const {
-		Tparametrization_lower::ostream(_os);
-		glvm_pv_SlvParametrization_ostream(25)
-	}
-	void istream_rec(std::istream& _is) {
-		Tparametrization_lower::istream_rec(_is);
-		glvm_pv_SlvParametrization_istream(25)
-	}
-	void istream(std::istream& _is) {
-		istream_rec(_is);
-		if (this->is_param_init_auto()) this->param_init();
-	}
-public:
-	void writeB(std::ofstream& _output_file) const {
-		Tparametrization_lower::writeB(_output_file);
-		glvm_pv_SlvParametrization_writeB(25);
-	}
-protected:
-	bool readB_rec(std::ifstream& _input_file) {
-		bool l_read = Tparametrization_lower::readB_rec(_input_file);
-		if (l_read) l_read = glvm_pv_SlvParametrization_readB(25);
-		return l_read;
-	}
-public:
-	bool readB(std::ifstream& _input_file) {
-		bool l_read = readB_rec(_input_file);
-		if (l_read && this->is_param_init_auto()) this->param_init();
-		return l_read;
-	}
-
-#if OPTION_USE_THIRDPARTY_JSON==1
-	void writeJson(nlohmann::json& _json) const {
-		Tparametrization_lower::writeJson(_json);
-		glvm_pv_SlvParametrization_writeJson(25)
-	}
-	SlvStatus readJson(const nlohmann::json& _json) {
-		SlvStatus status = Tparametrization_lower::readJson(_json);
-		glvm_pv_SlvParametrization_readJson(25)
-		return status;
-	}
-#endif
-
-	/*! Cast to SlvParametrization.*/
-	Tparametrization& param_cast() {
-		return *this;
-	}
-
-	/*! Cast to SlvParametrization.*/
-	const Tparametrization& param_cast() const {
-		 return *this;
-	}
-
-	/*! Assignment at parametrization level.
-	* Equivalent to: param_cast() = 
-	* Assign parameters from another parametrization class. Manages parameters initialization.
-	* The class inheriting from this one is supposed to be Tprametrization.
-	* There is no guarantee though, and the method will apply as long as SlvParametrization types are the same.*/
-	template <class Tparametrization>
-	void param_assign(const Tparametrization& _parametrization) {
-		*this = _parametrization;
-	}
-
-};
-
-#if OPTION_USE_THIRDPARTY_JSON==1
-template <class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class T10, class T11, class T12, class T13, class T14, class T15, class T16, class T17, class T18, class T19, class T20, class T21, class T22, class T23, class T24, class T25>
-struct slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParametrization25<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25>, typename std::enable_if<!slv::rw::json::ReadWrite<T25>::l_valid || !slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParametrization24<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> >::l_valid>::type> {
-	static constexpr bool l_valid = false;
-};
-#endif
-
 #define EXPAND(arg) arg
 #define glvm_pv_get_macro_parametrization(\
+_class_name,\
 _1_1, _1_2, _1_3, _1_4, _1_5,\
 _2_1, _2_2, _2_3, _2_4, _2_5,\
 _3_1, _3_2, _3_3, _3_4, _3_5,\
@@ -15368,14 +15306,12 @@ _21_1, _21_2, _21_3, _21_4, _21_5,\
 _22_1, _22_2, _22_3, _22_4, _22_5,\
 _23_1, _23_2, _23_3, _23_4, _23_5,\
 _24_1, _24_2, _24_3, _24_4, _24_5,\
-_25_1, _25_2, _25_3, _25_4, _25_5,\
 macro_arg, ...) macro_arg
 
 /*! Declare a parametrization class implementing only parameters.
 * Convenient for quickly declare a class inheriting SlvParametrizationX.
 * Does not allow rule management, all parameters are simply named, typed, and commented.*/
-#define glvm_parametrization(class_declaration, class_name, ...) EXPAND( glvm_pv_get_macro_parametrization(__VA_ARGS__,\
-glvm_parametrization25, _null25a, _null25b, _null25c, _null25d,\
+#define glvm_parametrization(class_declaration, ...) EXPAND( glvm_pv_get_macro_parametrization(__VA_ARGS__,\
 glvm_parametrization24, _null24a, _null24b, _null24c, _null24d,\
 glvm_parametrization23, _null23a, _null23b, _null23c, _null23d,\
 glvm_parametrization22, _null22a, _null22b, _null22c, _null22d,\
@@ -15399,9 +15335,18 @@ glvm_parametrization5, _null5a, _null5b, _null5c, _null5d,\
 glvm_parametrization4, _null4a, _null4b, _null4c, _null4d,\
 glvm_parametrization3, _null3a, _null3b, _null3c, _null3d,\
 glvm_parametrization2, _null2a, _null2b, _null2c, _null2d,\
-glvm_parametrization1)(class_declaration, class_name, __VA_ARGS__))
+glvm_parametrization1, _null1a, _null1b, _null1c, _null1d,\
+glvm_parametrization0)(class_declaration, __VA_ARGS__))
 
-#define glvm_parametrization1(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value)\
+#define glvm_parametrization0(class_declaration, class_name)\
+class class_declaration : public SlvParametrization0 {\
+glvm_parametrization0_init(class_name)\
+public:\
+class_declaration() :SlvParametrization0() {}\
+};
+
+#define glvm_parametrization1(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value)\
 class class_declaration : public SlvParametrization1<param1_type> {\
 glvm_parametrization1_init(class_name)\
 glvm_parameter(1, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value)\
@@ -15409,7 +15354,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration) {}\
 };
 
-#define glvm_parametrization2(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization2(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value)\
 class class_declaration : public SlvParametrization2<param1_type, param2_type> {\
 glvm_parametrization2_init(class_name)\
@@ -15419,7 +15365,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration) {}\
 };
 
-#define glvm_parametrization3(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization3(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value)\
 class class_declaration : public SlvParametrization3<param1_type, param2_type, param3_type> {\
@@ -15431,7 +15378,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration) {}\
 };
 
-#define glvm_parametrization4(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization4(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value)\
@@ -15445,7 +15393,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration) {}\
 };
 
-#define glvm_parametrization5(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization5(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15461,7 +15410,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration) {}\
 };
 
-#define glvm_parametrization6(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization6(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15479,7 +15429,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration) {}\
 };
 
-#define glvm_parametrization7(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization7(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15499,7 +15450,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration) {}\
 };
 
-#define glvm_parametrization8(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization8(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15521,7 +15473,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration) {}\
 };
 
-#define glvm_parametrization9(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization9(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15545,7 +15498,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration) {}\
 };
 
-#define glvm_parametrization10(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization10(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15571,7 +15525,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration) {}\
 };
 
-#define glvm_parametrization11(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization11(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15599,7 +15554,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration) {}\
 };
 
-#define glvm_parametrization12(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization12(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15629,7 +15585,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration) {}\
 };
 
-#define glvm_parametrization13(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization13(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15661,7 +15618,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration) {}\
 };
 
-#define glvm_parametrization14(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization14(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15695,7 +15653,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration) {}\
 };
 
-#define glvm_parametrization15(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization15(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15731,7 +15690,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration) {}\
 };
 
-#define glvm_parametrization16(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization16(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15769,7 +15729,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration) {}\
 };
 
-#define glvm_parametrization17(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization17(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15809,7 +15770,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration) {}\
 };
 
-#define glvm_parametrization18(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization18(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15851,7 +15813,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration, param18_declaration) {}\
 };
 
-#define glvm_parametrization19(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization19(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15895,7 +15858,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration, param18_declaration, param19_declaration) {}\
 };
 
-#define glvm_parametrization20(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization20(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15941,7 +15905,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration, param18_declaration, param19_declaration, param20_declaration) {}\
 };
 
-#define glvm_parametrization21(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization21(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -15989,7 +15954,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration, param18_declaration, param19_declaration, param20_declaration, param21_declaration) {}\
 };
 
-#define glvm_parametrization22(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization22(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -16039,7 +16005,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration, param18_declaration, param19_declaration, param20_declaration, param21_declaration, param22_declaration) {}\
 };
 
-#define glvm_parametrization23(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization23(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -16091,7 +16058,8 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration, param18_declaration, param19_declaration, param20_declaration, param21_declaration, param22_declaration, param23_declaration) {}\
 };
 
-#define glvm_parametrization24(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization24(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -16145,2269 +16113,360 @@ public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration, param18_declaration, param19_declaration, param20_declaration, param21_declaration, param22_declaration, param23_declaration, param24_declaration) {}\
 };
 
-#define glvm_parametrization25(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
-param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
-param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
-param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
-param5_declaration, param5_type, param5_name, param5_comment, param5_default_value,\
-param6_declaration, param6_type, param6_name, param6_comment, param6_default_value,\
-param7_declaration, param7_type, param7_name, param7_comment, param7_default_value,\
-param8_declaration, param8_type, param8_name, param8_comment, param8_default_value,\
-param9_declaration, param9_type, param9_name, param9_comment, param9_default_value,\
-param10_declaration, param10_type, param10_name, param10_comment, param10_default_value,\
-param11_declaration, param11_type, param11_name, param11_comment, param11_default_value,\
-param12_declaration, param12_type, param12_name, param12_comment, param12_default_value,\
-param13_declaration, param13_type, param13_name, param13_comment, param13_default_value,\
-param14_declaration, param14_type, param14_name, param14_comment, param14_default_value,\
-param15_declaration, param15_type, param15_name, param15_comment, param15_default_value,\
-param16_declaration, param16_type, param16_name, param16_comment, param16_default_value,\
-param17_declaration, param17_type, param17_name, param17_comment, param17_default_value,\
-param18_declaration, param18_type, param18_name, param18_comment, param18_default_value,\
-param19_declaration, param19_type, param19_name, param19_comment, param19_default_value,\
-param20_declaration, param20_type, param20_name, param20_comment, param20_default_value,\
-param21_declaration, param21_type, param21_name, param21_comment, param21_default_value,\
-param22_declaration, param22_type, param22_name, param22_comment, param22_default_value,\
-param23_declaration, param23_type, param23_name, param23_comment, param23_default_value,\
-param24_declaration, param24_type, param24_name, param24_comment, param24_default_value,\
-param25_declaration, param25_type, param25_name, param25_comment, param25_default_value)\
-class class_declaration : public SlvParametrization25<param1_type, param2_type, param3_type, param4_type, param5_type, param6_type, param7_type, param8_type, param9_type, param10_type, param11_type, param12_type, param13_type, param14_type, param15_type, param16_type, param17_type, param18_type, param19_type, param20_type, param21_type, param22_type, param23_type, param24_type, param25_type> {\
-glvm_parametrization25_init(class_name)\
-glvm_parameter(1, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value)\
-glvm_parameter(2, param2_declaration, param2_type, param2_name, param2_comment, param2_default_value)\
-glvm_parameter(3, param3_declaration, param3_type, param3_name, param3_comment, param3_default_value)\
-glvm_parameter(4, param4_declaration, param4_type, param4_name, param4_comment, param4_default_value)\
-glvm_parameter(5, param5_declaration, param5_type, param5_name, param5_comment, param5_default_value)\
-glvm_parameter(6, param6_declaration, param6_type, param6_name, param6_comment, param6_default_value)\
-glvm_parameter(7, param7_declaration, param7_type, param7_name, param7_comment, param7_default_value)\
-glvm_parameter(8, param8_declaration, param8_type, param8_name, param8_comment, param8_default_value)\
-glvm_parameter(9, param9_declaration, param9_type, param9_name, param9_comment, param9_default_value)\
-glvm_parameter(10, param10_declaration, param10_type, param10_name, param10_comment, param10_default_value)\
-glvm_parameter(11, param11_declaration, param11_type, param11_name, param11_comment, param11_default_value)\
-glvm_parameter(12, param12_declaration, param12_type, param12_name, param12_comment, param12_default_value)\
-glvm_parameter(13, param13_declaration, param13_type, param13_name, param13_comment, param13_default_value)\
-glvm_parameter(14, param14_declaration, param14_type, param14_name, param14_comment, param14_default_value)\
-glvm_parameter(15, param15_declaration, param15_type, param15_name, param15_comment, param15_default_value)\
-glvm_parameter(16, param16_declaration, param16_type, param16_name, param16_comment, param16_default_value)\
-glvm_parameter(17, param17_declaration, param17_type, param17_name, param17_comment, param17_default_value)\
-glvm_parameter(18, param18_declaration, param18_type, param18_name, param18_comment, param18_default_value)\
-glvm_parameter(19, param19_declaration, param19_type, param19_name, param19_comment, param19_default_value)\
-glvm_parameter(20, param20_declaration, param20_type, param20_name, param20_comment, param20_default_value)\
-glvm_parameter(21, param21_declaration, param21_type, param21_name, param21_comment, param21_default_value)\
-glvm_parameter(22, param22_declaration, param22_type, param22_name, param22_comment, param22_default_value)\
-glvm_parameter(23, param23_declaration, param23_type, param23_name, param23_comment, param23_default_value)\
-glvm_parameter(24, param24_declaration, param24_type, param24_name, param24_comment, param24_default_value)\
-glvm_parameter(25, param25_declaration, param25_type, param25_name, param25_comment, param25_default_value)\
-public:\
-class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration, param18_declaration, param19_declaration, param20_declaration, param21_declaration, param22_declaration, param23_declaration, param24_declaration, param25_declaration) {}\
-};
+/*! This class is a sort of std::map, with "factory" features.
+Tvalue must inherit SlvLabeling<Tlabel>, with Tlabel being the 'key'.
+Therefore, unlike std::map, the key (Tlabel) is owned by Tvalue.
+The instance owns the elements (no shared pointer).*/
+template <class Tvalue, class Tlabel = typename Tvalue::Tlabeling>
+class SlvPool : virtual public SlvOS {
 
-#ifndef GLOVE_DISABLE_QT
+private:
 
-/*! Widget managing SlvParameter.*/
-class GlvParameterWidget_base : public QObject {
+	std::vector<Tvalue*> elements;
 
-    Q_OBJECT
+public:
+
+	SlvPool();
+	SlvPool(const SlvPool<Tvalue, Tlabel>& _pool);
+	~SlvPool();
+
+	/*! Clear the instance. Delete owned elements.*/
+	void clear();
+
+	typedef typename std::vector<Tvalue*>::const_iterator const_iterator;
+	/*! Iterator to the first element.*/
+	const_iterator begin() const;
+	/*! Iterator to the last element.*/
+	const_iterator end() const;
+
+	typedef typename std::vector<Tvalue*>::iterator iterator;
+	/*! Iterator to the first element.*/
+	iterator begin();
+	/*! Iterator to the last element.*/
+	iterator end();
+
+	/*! Create and delete elements to match \p _pool.*/
+	SlvPool<Tvalue, Tlabel>& operator=(const SlvPool<Tvalue, Tlabel>& _pool);
+
+	/*! Get number of elements. Size of the pool.*/
+	std::size_t psize() const;
+
+	/*! Return true if the pool contains no elements.*/
+	bool empty() const;
+
+	/*! Add an element created externally.
+	* Checks if an element with the same label already exists.
+	* The pool instance will own the element (possible deletion).*/
+	bool add(Tvalue* _element);
+
+	/*! Get the element which label is equal to \p _label.
+	* Return NULL if not found.
+	* Template label argument for flexibility in the == operator.*/
+	template <class Tlabel2>
+	const Tvalue* get(const Tlabel2& _label) const;
+	/*! Get the element which label is equal to \p _label.
+	* Return NULL if not found.
+	* Template label argument for flexibility in the == operator.*/
+	template <class Tlabel2>
+	Tvalue* get(const Tlabel2& _label);
+
+	/*! Get vector of elements.*/
+	const std::vector<Tvalue*>& get_elements() const;
+
+	/*! Create and return an element labelled \p _label.
+	* If an element with this _label already exists, returns it.*/
+	Tvalue* new_element(const Tlabel& _label);
+	/*! Delete element labelled \p _label.
+	* Template label argument for flexibility in the == operator.*/
+	template <class Tlabel2>
+	bool delete_element(const Tlabel2& _label);
+	/*! Delete element which label is the same as the one of \p _element.
+	* If \p _l_owned is true, delete only if _element is part of the pool.
+	* Ambiguous if Tlabel is the same type as Tvalue*. Unlikely though.*/
+	template <class Tvalue2>
+	bool delete_element(Tvalue2* _element, bool _l_owned = true);
+	/*! Delete element at index \p el.
+	* _at suffix for disambiguation with Tlabel/Tvalue */
+	bool delete_element_at(const unsigned int el);
+
+	/*! Returns the elements index where the element with label \p _label is located.
+	* Returns -1 if \p _label is not found.
+	* Template label argument for flexibility in the == operator.*/
+	template <class Tlabel2>
+	unsigned int get_n(const Tlabel2& _label) const;
+
+	/* Returns the iterator of element which label is \p _label.
+	* If not found, returns end().*/
+	template <class Tlabel2>
+	iterator find(const Tlabel2& _label);
+	/* Returns the iterator of element which label is \p _label.
+	* If not found, returns end().*/
+	template <class Tlabel2>
+	const_iterator find(const Tlabel2& _label) const;
+
+	/*! Get element at index \p el.*/
+	Tvalue* operator[](const unsigned int el);
+	/*! Get element at index \p el.*/
+	const Tvalue* operator[](const unsigned int el) const;
 
 protected:
 
-    GlvParameterWidget_base() {}
-    virtual ~GlvParameterWidget_base() {}
-
-signals:
-    /*! Emitted when the widget interface related to the value of the parameter is modified.*/
-    void parameterChanged(std::string _parameter_name);
-
-private slots:
-    virtual void valueChanged_slot() = 0;
+	void ostream(std::ostream& _os) const;
 
 };
 
-/*! Widget managing SlvParameter.*/
-template <class Tparam>
-class GlvParameterWidget : public GlvDescribedWidget<Tparam>, public GlvParameterWidget_base {
-
-public:
-
-    GlvParameterWidget(const SlvParameter<Tparam>& _parameter, bool l_editable = true, QWidget* _parent = 0);
-    ~GlvParameterWidget();
-
-    /*! Set value.*/
-    void set(const SlvParameter<Tparam>& _parameter);
-    /*! Set as editable or not.*/
-    void set_editable(bool l_editable);
-    /*! Apply all rules of \p _parameter.*/
-    void abide_rules(const SlvParameter<Tparam>& _parameter);
-
-private:
-    /*! Apply \p _parameter_rule.*/
-    void abide_rule(const SlvParameterRuleT<Tparam>& _parameter_rule);
-    void valueChanged_slot();
-    /*! Get description of rules. One rule description per line.*/
-    std::string get_rules_description(const SlvParameter<Tparam>& _parameter) const;
-
-};
-
-template <class Tparam>
-GlvParameterWidget<Tparam>::GlvParameterWidget(const SlvParameter<Tparam>& _parameter, bool l_editable, QWidget* _parent) :GlvDescribedWidget<Tparam>(_parameter.get_value(), _parameter.get_name(), _parameter.get_description(), l_editable, _parent) {
-
-    QObject::connect(this->data_widget, SIGNAL(valueChanged()), static_cast<GlvParameterWidget_base*>(this), SLOT(valueChanged_slot()));
-
-    abide_rules(_parameter);
-
-    GlvDescribedWidget<Tparam>::append_tool_tip(get_rules_description(_parameter));
+template <class Tvalue, class Tlabel>
+SlvPool<Tvalue, Tlabel>::SlvPool() {
 
 }
 
-template <class Tparam>
-GlvParameterWidget<Tparam>::~GlvParameterWidget() {
+template <class Tvalue, class Tlabel>
+SlvPool<Tvalue, Tlabel>::SlvPool(const SlvPool<Tvalue, Tlabel>& _pool) {
+
+	*this = _pool;
 
 }
 
-template <class Tparam>
-void GlvParameterWidget<Tparam>::set(const SlvParameter<Tparam>& _parameter) {
+template <class Tvalue, class Tlabel>
+SlvPool<Tvalue, Tlabel>::~SlvPool() {
 
-    this->data_widget->set_value(_parameter.get_value());
-}
-
-template <class Tparam>
-void GlvParameterWidget<Tparam>::set_editable(bool l_editable) {
-
-    this->data_widget->set_editable(l_editable);
-}
-
-template <class Tparam>
-void GlvParameterWidget<Tparam>::abide_rules(const SlvParameter<Tparam>& _parameter) {
-
-    for (unsigned int r = 0; r < _parameter.get_rules().size(); r++) {
-        abide_rule(_parameter.get_rules()[r]);
-    }
-}
-
-template <class Tparam>
-void GlvParameterWidget<Tparam>::abide_rule(const SlvParameterRuleT<Tparam>& _parameter_rule) {
-
-    GlvParameterRuleAbiding<Tparam>::abide(_parameter_rule, this->data_widget->get_widget());
+	clear();
 
 }
 
-template <class Tparam>
-void GlvParameterWidget<Tparam>::valueChanged_slot() {
-
-    emit parameterChanged(this->data_name);
-
-}
-
-template <class Tparam>
-std::string GlvParameterWidget<Tparam>::get_rules_description(const SlvParameter<Tparam>& _parameter) const {
-
-    std::string description;
-
-    std::vector<std::string> descriptions = _parameter.get_rules_description();
-
-    for (typename std::vector<std::string>::const_iterator it = descriptions.begin(); it != descriptions.end(); ++it) {
-        description += *it;
-        if (std::next(it) != descriptions.end() && !it->empty()) {
-            description += "\n";
-        }
-    }
-
-    return description;
-}
-
-class QVBoxLayout;
-class QGridLayout;
-template <class Tparam>
-class GlvParameterWidget;
-
-/*! Widget managing the parameters of classes SlvParametrization**.*/
-class GlvParametersWidget_base : public QGroupBox, public GlvSaveLoad {
-
-	Q_OBJECT
-
-private:
-	glvm_staticVariable(const, int, grid_horizontal_spacing, 10);
-	glvm_staticVariable_def(const, int, layout_margin);
-private :
-	/*! Whether the parameters are set in a scroll area or not.*/
-	bool l_scrollable;
-	class ScrollArea;
-	/*! Scroll area of parameters.*/
-	ScrollArea* scroll_area;
-	/*! Whether last resize update was a height decrease.*/
-	bool l_height_decreased;
-	/*! If true, max height will apply whenever scroll bar appears.
-	* If false (default), the widget can still be resized up to the last height before parameters size reduction.
-	* i.e.: Update height hint to fit to parameters widget.*/
-	bool l_adapt_max_height;
-public:
-	enum LayoutType { Vertical, Grid };
-protected:
-	LayoutType layout_type = LayoutType::Vertical;
-	QVBoxLayout* vertical_layout;
-	QGridLayout* grid_layout;
-	QVBoxLayout* main_layout;
-	QWidget* parameters_widget;
-
-	GlvParametersWidget_base();
-	virtual ~GlvParametersWidget_base();
-public:
-
-	/*! Set layout of parameters widget to vertical, ie a stack of the parameter widgets.
-	* More intuitive, but lacks aligment of names and data widgets
-	* It is possible to switch from set_layout_grid() to set_layout_vertical() and vice versa.*/
-	void set_layout_vertical();
-	/*! Set layout of parameters widget as a grid layout.Names and data widgets are aligned, but their ownsership is moved.
-	* It is possible to switch from set_layout_grid() to set_layout_vertical() and vice versa.*/
-	void set_layout_grid();
-	/*! Set layout type either to LayoutType::Vertical or LayoutType::Grid.*/
-	virtual void set_layout_type(LayoutType _layout_type) = 0;
-	/*! Display or hide data type information in 'whatsthis'.*/
-	virtual void enable_data_type_info(bool _l_enable) = 0;
-
-	/*! Returns true if the parameters are fully visible (no scroll bars).*/
-	bool is_fully_visible() const;
-	/*! Returns true if the parameters widget last resize update was a height decrease.*/
-	bool has_height_decreased() const;
-	/*! Set parameters to be scrollable or not.
-	* Default state is true.*/
-	void set_scrollable(bool _l_scrollable);
-	/*! Advanced setting.
-	* If true, max height will apply whenever scroll bar appears.
-	* If false (default), the widget can still be resized up to the last height before parameters size reduction.
-	* i.e.: Update height hint to fit to parameters widget.*/
-	void set_adapt_max_height(bool _l_adapt);
-
-protected:
-	/*! Add the parameter widget to the parameters.*/
-	void add_parameter_widget_to_vertical_layout(QWidget* _parameter_widget);
-	template <class Tdata>
-	void set_parameter_widget_to_grid_layout(GlvParameterWidget<Tdata>* _parameter_widget, int i);
-	/*! Set layout type, protected.*/
-	void set_layout_type_protected(LayoutType _layout_type);
-	/*! Set save/load widget. Called in GlvParametrizationSaveLoad.*/
-	void set_save_load_widget(GlvWidgetSaveLoad_base* _save_load_widget);
-	/*! Enable/disable possibility to show/hide parameters.*/
-	void set_checkable_collapse(bool _l_checkable);
-	
-private:
-	/*! Add to row \p i :
-	* Column 0 : \p _dataname_label.
-	* Column 1 : \p _data_widget.
-	* Column 2 : \p _optional_text.*/
-	void add_parameter_widget_to_grid_layout(QWidget* _dataname_label, QWidget* _data_widget, QWidget* _optional_text_label, int i);
-	/*! Get number of parameters.*/
-	virtual int get_Nparameters() const = 0;
-	bool eventFilter(QObject* object, QEvent* _event);
-private slots:
-	/*! Show parameters or not.*/
-	void show_parameters(bool _l_show);
-signals:
-	/*! Emitted when the parameter named \p _parameter_name has changed.*/
-	void parameterChanged(std::string _parameter_name);
-	/*! Emitted when the widget containing the parameters (only) is being resized vertically.*/
-	void heightChanged();
-};
-
-template <class Tdata>
-void GlvParametersWidget_base::set_parameter_widget_to_grid_layout(GlvParameterWidget<Tdata>* _parameter_widget, int i) {
-
-	add_parameter_widget_to_grid_layout(reinterpret_cast<QWidget*>(_parameter_widget->data_name_label), \
-		_parameter_widget->get_widget(), \
-		reinterpret_cast<QWidget*>(_parameter_widget->optional_text_label), i);
-
-}
-
-template <class T>
-class GlvParametersWidget;
-
-/*! Widget managing the parameters of classes SlvParametrization**.*/
-template <>
-class GlvParametersWidget<SlvParametrization0> : public GlvParametersWidget_base {
-
-public:
-    GlvParametersWidget(const SlvParametrization0& _parametered_object, bool l_editable);
-    ~GlvParametersWidget();
-    /*! Set parametrization.*/
-    void set(const SlvParametrization0& _parametered_object);
-    /*! Get parametrization. Tparametrization is the class inheriting from SlvParametrization.*/
-    template <class Tparametrization>
-    Tparametrization get() const;
-    /*! Set the parameters as editable or not.*/
-    void set_editable(bool l_editable);
-protected:
-    void assign_recursive(SlvParametrization0& _parametrization) const;
-    /*! Set the layout of parameters as either
-    * Vertical : stack of widgets
-    * Grid : parameters name are in the first column, their respective interaction widget on the second one.*/
-    void set_layout_type(LayoutType _layout_type);
-    /*! Enable or not display of parameter types in WhatsThis.*/
-    void enable_data_type_info(bool _l_enable);
-private:
-    int get_Nparameters() const;
-};
-
-inline GlvParametersWidget<SlvParametrization0>::GlvParametersWidget(const SlvParametrization0& _parametered_object, bool l_editable) {
-
-}
-
-inline GlvParametersWidget<SlvParametrization0>::~GlvParametersWidget() {
-
-}
-
-inline void GlvParametersWidget<SlvParametrization0>::set(const SlvParametrization0& _parametered_object) {}
-
-template <class Tparametrization>
-Tparametrization GlvParametersWidget<SlvParametrization0>::get() const {
-    return Tparametrization();
-}
-
-inline void GlvParametersWidget<SlvParametrization0>::set_editable(bool l_editable) {}
-
-inline void GlvParametersWidget<SlvParametrization0>::assign_recursive(SlvParametrization0& _parametrization) const {}
-
-inline void GlvParametersWidget<SlvParametrization0>::set_layout_type(LayoutType _layout_type) {
-    GlvParametersWidget_base::set_layout_type_protected(_layout_type);
-}
-
-inline void GlvParametersWidget<SlvParametrization0>::enable_data_type_info(bool _l_enable) {}
-
-inline int GlvParametersWidget<SlvParametrization0>::get_Nparameters() const {
-    return 0;
-}
-
-#define glvm_pv_GlvParametersWidget_make_parameter(i) \
-parameter##i = new GlvParameterWidget<Tparam##i>(_parametered_object.get_parameter##i(), l_editable);\
-this->connect(static_cast<GlvParameterWidget_base*>(parameter##i), SIGNAL(parameterChanged(std::string)), this, SIGNAL(parameterChanged(std::string)));\
-GlvParametersWidget_base::add_parameter_widget_to_vertical_layout(parameter##i);
-
-#define glvm_pv_GlvParametersWidget_get_parameter(i) \
-GlvParameterWidget<Tparam##i>* parameter_widget##i = dynamic_cast<GlvParameterWidget<Tparam##i>*>(this->layout()->itemAt(i-1)->widget());\
-Tparam##i parameter_value##i;\
-parameter_value##i = parameter_widget##i->get_value();
-
-/*! Macro in charge of defining the template class parameter widget for i parameters.*/
-#define glvm_pv_GlvParametersWidget(i, meta_Tparameters_current, spec_Tparameters_current)\
-template <meta_Tparameters_current>\
-class GlvParametersWidget< SlvParametrization##i<spec_Tparameters_current> > : public GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower> {\
-    private:\
-    GlvParameterWidget<Tparam##i>* parameter##i;\
-    protected:\
-    Tparam##i get_value##i() const {\
-        return parameter##i->get_value();\
-    }\
-    public:\
-    GlvParametersWidget(const SlvParametrization##i<spec_Tparameters_current>& _parametered_object, bool l_editable):GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>(_parametered_object, l_editable) {\
-        glvm_pv_GlvParametersWidget_make_parameter(i)\
-    }\
-    ~GlvParametersWidget() {}\
-    const GlvParameterWidget<Tparam##i>* get_parameter##i() const {return parameter##i;}\
-	GlvParameterWidget<Tparam##i>* get_parameter##i() {return parameter##i;}\
-    void set(const SlvParametrization##i<spec_Tparameters_current>& _parametered_object) {\
-        GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>::set(_parametered_object);\
-        parameter##i->set(_parametered_object.get_parameter##i());\
-    }\
-    protected:\
-    void assign_recursive(SlvParametrization##i<spec_Tparameters_current>& _parametrization) const {\
-        GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>::assign_recursive(_parametrization);\
-        const_cast<SlvParameter<Tparam##i>*>(&const_cast<const SlvParametrization##i<spec_Tparameters_current>*>(&_parametrization)->get_parameter##i())->set_value(get_value##i());\
-    }\
-    public:\
-    template <class Tparametrization>\
-    Tparametrization get() const {\
-        Tparametrization parametrization;\
-        assign_recursive(parametrization);\
-        static_cast<SlvParametrization_base*>(&parametrization)->param_init();\
-        return parametrization;\
-    }\
-    void set_editable(bool l_editable) {\
-        GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>::set_editable(l_editable);\
-        parameter##i->set_editable(l_editable);\
-    }\
-    void set_layout_type(GlvParametersWidget_base::LayoutType _layout_type) {\
-        GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>::set_layout_type(_layout_type);\
-        if (_layout_type == GlvParametersWidget_base::LayoutType::Vertical) {\
-            GlvParametersWidget_base::add_parameter_widget_to_vertical_layout(parameter##i);\
-            parameter##i->reclaim_widgets_ownership();\
-        } else if (_layout_type == GlvParametersWidget_base::LayoutType::Grid) {\
-            GlvParametersWidget_base::set_parameter_widget_to_grid_layout(parameter##i, i - 1);\
-        }\
-    }\
-    void enable_data_type_info(bool _l_enable) {\
-        GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>::enable_data_type_info(_l_enable);\
-        parameter##i->enable_data_type_info(_l_enable);\
-    }\
-private:\
-    int get_Nparameters() const {\
-        return i;\
-    }\
-};
-
-glvm_pv_GlvParametersWidget(1, class Tparam1, \
-Tparam1)
-
-glvm_pv_GlvParametersWidget(2, class Tparam1 COMMA class Tparam2, \
-Tparam1 COMMA Tparam2)
-
-glvm_pv_GlvParametersWidget(3, class Tparam1 COMMA class Tparam2 COMMA class Tparam3, \
-Tparam1 COMMA Tparam2 COMMA Tparam3)
-
-glvm_pv_GlvParametersWidget(4, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4)
-
-glvm_pv_GlvParametersWidget(5, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5)
-
-glvm_pv_GlvParametersWidget(6, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6)
-
-glvm_pv_GlvParametersWidget(7, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7)
-
-glvm_pv_GlvParametersWidget(8, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8)
-
-glvm_pv_GlvParametersWidget(9, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9)
-
-glvm_pv_GlvParametersWidget(10, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10)
-
-glvm_pv_GlvParametersWidget(11, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11)
-
-glvm_pv_GlvParametersWidget(12, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12)
-
-glvm_pv_GlvParametersWidget(13, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13)
-
-glvm_pv_GlvParametersWidget(14, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14)
-
-glvm_pv_GlvParametersWidget(15, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15)
-
-glvm_pv_GlvParametersWidget(16, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16)
-
-glvm_pv_GlvParametersWidget(17, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17)
-
-glvm_pv_GlvParametersWidget(18, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18)
-
-glvm_pv_GlvParametersWidget(19, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19)
-
-glvm_pv_GlvParametersWidget(20, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20)
-
-glvm_pv_GlvParametersWidget(21, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20 COMMA class Tparam21, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20 COMMA Tparam21)
-
-glvm_pv_GlvParametersWidget(22, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20 COMMA class Tparam21 COMMA class Tparam22, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20 COMMA Tparam21 COMMA Tparam22)
-
-glvm_pv_GlvParametersWidget(23, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20 COMMA class Tparam21 COMMA class Tparam22 COMMA class Tparam23, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20 COMMA Tparam21 COMMA Tparam22 COMMA Tparam23)
-
-glvm_pv_GlvParametersWidget(24, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20 COMMA class Tparam21 COMMA class Tparam22 COMMA class Tparam23 COMMA class Tparam24, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20 COMMA Tparam21 COMMA Tparam22 COMMA Tparam23 COMMA Tparam24)
-
-glvm_pv_GlvParametersWidget(25, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20 COMMA class Tparam21 COMMA class Tparam22 COMMA class Tparam23 COMMA class Tparam24 COMMA class Tparam25, \
-Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20 COMMA Tparam21 COMMA Tparam22 COMMA Tparam23 COMMA Tparam24 COMMA Tparam25)
-
-template <class Tparametrization>
-class GlvParametrizationSaveLoad;
-
-/*! Widget managing SlvParametrization to widget, and vice versa.
-* Tparametrization is a class inheriting from SlvParametrization.
-* Member values not belonging to SlvParametrization are ignored here (constructor values).
-* This is the main widget (with GlvParametrizationDialog) to use for parametrization management in the framework.*/
-template <class Tparametrization>
-class GlvParametrizationWidget : public GlvParametersWidget<typename Tparametrization::Tparametrization> {
-
-public:
-
-    GlvParametrizationWidget(const Tparametrization _parametrization = Tparametrization(), bool l_editable = true, QWidget* _parent = 0);
-    ~GlvParametrizationWidget();
-
-    /*! Get parametrization.*/
-    Tparametrization get_parametrization() const;
-    /*! Set parametrization.*/
-    void set_parametrization(const Tparametrization& _parametrization);
-
-    /*! Same as get_parametrization(), to be compliant with GlvWidgetMaker.*/
-    Tparametrization get_value() const;
-    /*! Same as set_parametrization(), to be compliant with GlvWidgetMaker.*/
-    void set_value(const Tparametrization& _parametrization);
-
-    friend class GlvParametrizationSaveLoad<Tparametrization>;
-};
-
-/*! Convenience macro to access widget (GlvWidgetData) of parameter number 'parameter_index'.
-* See example in sample001.cpp.*/
-#define glvm_get_parameter_GlvWidgetData(glv_parametrization_widget, parameter_index) glv_parametrization_widget->get_parameter##parameter_index()->get_widget()->get_widget()
-/*! Convenience macro to access widget (GlvWidget) of parameter number 'parameter_index'.*/
-#define glvm_get_parameter_GlvWidget(glv_parametrization_widget, parameter_index) glv_parametrization_widget->get_parameter##parameter_index()->get_widget()
-
-template <class Tparametrization>
-GlvParametrizationWidget<Tparametrization>::GlvParametrizationWidget(const Tparametrization _parametrization, bool l_editable, QWidget* _parent) :GlvParametersWidget<typename Tparametrization::Tparametrization>(_parametrization, l_editable) {
-
-    this->setTitle(QString(Tparametrization::name().c_str()));
-    // Set grid layout by default. More ergonomic.
-    GlvParametersWidget_base::set_layout_grid();
-
-}
-
-template <class Tparametrization>
-GlvParametrizationWidget<Tparametrization>::~GlvParametrizationWidget() {
-
-}
-
-template <class Tparametrization>
-Tparametrization GlvParametrizationWidget<Tparametrization>::get_parametrization() const {
-
-    return this->template get<Tparametrization>();
-
-}
-
-template <class Tparametrization>
-void GlvParametrizationWidget<Tparametrization>::set_parametrization(const Tparametrization& _parametrization) {
-
-    return this->set(_parametrization);
-}
-
-template <class Tparametrization>
-Tparametrization GlvParametrizationWidget<Tparametrization>::get_value() const {
-    return get_parametrization();
-}
-
-template <class Tparametrization>
-void GlvParametrizationWidget<Tparametrization>::set_value(const Tparametrization& _parametrization) {
-    set_parametrization(_parametrization);
-}
-
-class QWidget;
-
-namespace glv {
-	/*! Flag functions for Glv*/
-	namespace flag {
-		/*! Calls QMessageBox according to \p _status most critical type.
-		* \p _l_show_all : if false displays only most critical message (if any). If true displays all messages.*/
-		void showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent = NULL);
-		/*! Calls QMessageBox according to \p _status most critical type.
-		* \p _message : preceding message.
-		* \p _l_show_all : if false displays only most critical message (if any). If true displays all messages.*/
-		void showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent = NULL);
-		/*! Calls QMessageBox::critical with message \p _message and breaks.*/
-		void BREAK(std::string warning_message, QWidget* _parent = NULL);
-		/*! Calls QMessageBox::information with message \p _message.*/
-		void INFO(std::string warning_message, QWidget* _parent = NULL);
+template <class Tvalue, class Tlabel>
+void SlvPool<Tvalue, Tlabel>::clear() {
+
+	for (iterator it = begin(); it != end(); ++it) {
+		delete* it;
 	}
-}
-
-/*! Dialog widget managing parametrization widget.
-* Tparametrization is a class inheriting from SlvParametrization.
-* Member values not belonging to SlvParametrization are ignored here (constructor values).
-* This is the main widget (with GlvParametrizationWidget) to use for parametrization management in the framework.
-* Accept : set the parametrization has the one configured by the widget.
-* Reject : does not modify the parametrization. */
-template <class Tparametrization>
-class GlvParametrizationDialog : public GlvParametrizationDialog_base {
-
-private:
-
-    /*! Widget managing SlvParametrization to widget, and vice versa.*/
-    GlvParametrizationWidget<Tparametrization>* parametrization_widget;
-
-public:
-
-    /*! \p _parametrization : Initial parametrization.
-    * \p _l_dialog: Whether the widget enables QDialog properties or not, such as button box, and related signals.
-    * \p _l_deny_invalid_parameters : if true, acceptance of the parametrization is not possible if one of the parameters is invalid.*/
-    GlvParametrizationDialog(Tparametrization _parametrization = Tparametrization(), bool _l_dialog = true, bool _l_deny_invalid_parameters = true, QWidget* _parent = NULL);
-    GlvParametrizationDialog(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent = NULL);
-    GlvParametrizationDialog(bool _l_dialog, QWidget* _parent = NULL);
-    GlvParametrizationDialog(QWidget* _parent);
-    ~GlvParametrizationDialog();
-
-    /*! Get current parametrization in memory. Does not return the parametrization currently displayed in the parametrization widget.*/
-    const Tparametrization& get_parametrization() const;
-    /*! Set parameterization. If \p _l_param_only is true, then only the parameters are set. If false, the whole instance is assigned (not recommended, must be a special case).*/
-    void set_parametrization(const Tparametrization& _parametrization, bool _l_param_only = true);
-
-    /*! Get the widget managing the parametrization interface.*/
-    GlvParametrizationWidget<Tparametrization>* get_parametrization_widget();
-
-    /*! Apply parametrization widget and check parameters.*/
-    SlvStatus apply();
-
-    /*! Apply parametrization widget. QDialog's accept slot only if l_dialog is true.*/
-    void accept();
-    /*! Reset parametrization widget with current parametrization value. QDialog's reject slot only if l_dialog is true.*/
-    void reject();
-    /*! Closing the widget means rejection.*/
-    void closeEvent(QCloseEvent* _event);
-
-private:
-
-    /*! Update parametrization according to current values contained in parametrization_widget*/
-    void update_parametrization();
-    /*! Returns true if the parametrization has rules.*/
-    bool has_rules();
-    /*! Returns false if the rules were not abided, meaning there was a modification of the parametrization*/
-    /*! Returns true if rules are abided, meaning there was no modification of the parameterization*/
-    bool abide_rules();
-    /*! Create a new parametrization instance from the parametrization widget. Deletion must be managed after using this method.*/
-    const SlvParametrization_base* new_parametrization_base() const;
-
-};
-
-template <class Tparametrization>
-GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(Tparametrization _parametrization, bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :GlvParametrizationDialog_base(_l_dialog, _l_deny_invalid_parameters, _parent) {
-
-    parametrization_base = new Tparametrization;
-    parametrization_widget = new GlvParametrizationWidget<Tparametrization>;
-    set_parameters_widget_base(parametrization_widget);
-    set_parametrization(_parametrization);
-
-    connect(parametrization_widget, SIGNAL(parameterChanged(std::string)), this, SLOT(parametrizationChanged_slot(std::string)));
-    addWidget(parametrization_widget);
-
-    // Rules are actually static, but rtti is needed to access the actual parameters
-    enable_abide_rules_button(parametrization_base->has_rules());
+	elements.clear();
 
 }
 
-template <class Tparametrization>
-GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :GlvParametrizationDialog(Tparametrization(), _l_dialog, _l_deny_invalid_parameters, _parent) {
-    
-}
+template <class Tvalue, class Tlabel>
+typename SlvPool<Tvalue, Tlabel>::const_iterator SlvPool<Tvalue, Tlabel>::begin() const {
 
-template <class Tparametrization>
-GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(bool _l_dialog, QWidget* _parent) :GlvParametrizationDialog(Tparametrization(), _l_dialog, true, _parent) {
-    
-}
-
-template <class Tparametrization>
-GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(QWidget* _parent) : GlvParametrizationDialog(Tparametrization(), true, _parent) {
+	return elements.begin();
 
 }
 
-template <class Tparametrization>
-GlvParametrizationDialog<Tparametrization>::~GlvParametrizationDialog() {
+template <class Tvalue, class Tlabel>
+typename SlvPool<Tvalue, Tlabel>::const_iterator SlvPool<Tvalue, Tlabel>::end() const {
+
+	return elements.end();
 
 }
 
-template <class Tparametrization>
-const Tparametrization& GlvParametrizationDialog<Tparametrization>::get_parametrization() const {
+template <class Tvalue, class Tlabel>
+typename SlvPool<Tvalue, Tlabel>::iterator SlvPool<Tvalue, Tlabel>::begin() {
 
-    return (*dynamic_cast<Tparametrization*>(parametrization_base));
-
-}
-
-template <class Tparametrization>
-void GlvParametrizationDialog<Tparametrization>::set_parametrization(const Tparametrization& _parametrization, bool _l_param_only) {
-
-    if (_l_param_only) {
-        dynamic_cast<Tparametrization*>(parametrization_base)->param_assign(_parametrization);
-    } else {
-        (*dynamic_cast<Tparametrization*>(parametrization_base)) = _parametrization;
-    }
-    dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget)->set_parametrization(_parametrization);
-    check_parameters_slot();
+	return elements.begin();
 
 }
 
-template <class Tparametrization>
-void GlvParametrizationDialog<Tparametrization>::update_parametrization() {
+template <class Tvalue, class Tlabel>
+typename SlvPool<Tvalue, Tlabel>::iterator SlvPool<Tvalue, Tlabel>::end() {
 
-    // no param_cast() assignment here because the updated parametrization is supposed to be equal to an instance freshly created
-    (*dynamic_cast<Tparametrization*>(parametrization_base)) = dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget)->get_parametrization();
-
-}
-
-template <class Tparametrization>
-bool GlvParametrizationDialog<Tparametrization>::has_rules() {
-
-    return Tparametrization::has_rules();
+	return elements.end();
 
 }
 
-template <class Tparametrization>
-bool GlvParametrizationDialog<Tparametrization>::abide_rules() {
+template <class Tvalue, class Tlabel>
+SlvPool<Tvalue, Tlabel>& SlvPool<Tvalue, Tlabel>::operator=(const SlvPool<Tvalue, Tlabel>& _pool) {
 
-    // Update parametrization
-    update_parametrization();
-    // Abide rules
-    bool l_abide = parametrization_base->abide_rules();
+	clear();
 
-    // If rules were not abided (parametrization was modified)
-    if (!l_abide) {
-        // Assign to widget
-        dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget)->set_parametrization(*dynamic_cast<Tparametrization*>(parametrization_base));
-    }
+	for (const_iterator it = _pool.elements.begin(); it != _pool.elements.end(); ++it) {
+		(*new_element(static_cast<const SlvLabeling<Tlabel>*>(*it)->get_label())) = **it;
+	}
 
-    return l_abide;
+	return *this;
 }
 
-template <class Tparametrization>
-GlvParametrizationWidget<Tparametrization>* GlvParametrizationDialog<Tparametrization>::get_parametrization_widget() {
+template <class Tvalue, class Tlabel>
+std::size_t SlvPool<Tvalue, Tlabel>::psize() const {
 
-    return dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget);
+	return elements.size();
 
 }
 
-template <class Tparametrization>
-const SlvParametrization_base* GlvParametrizationDialog<Tparametrization>::new_parametrization_base() const {
+template <class Tvalue, class Tlabel>
+bool SlvPool<Tvalue, Tlabel>::empty() const {
 
-    Tparametrization* parametrization = new Tparametrization;
-    *parametrization = dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget)->get_parametrization();
-    return parametrization;
-}
-
-template <class Tparametrization>
-void GlvParametrizationDialog<Tparametrization>::accept() {
-
-    SlvStatus status = apply();
-
-    if (status || !l_deny_invalid_parameters) {
-
-        if (l_dialog) {
-            QDialog::accept();
-        }
-
-    }
+	return elements.empty();
 
 }
 
-template <class Tparametrization>
-void GlvParametrizationDialog<Tparametrization>::reject() {
-
-    // Set previous parametrization
-    dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget)->set_parametrization(*dynamic_cast<Tparametrization*>(parametrization_base));
-    if (l_dialog) QDialog::reject();
-}
-
-template <class Tparametrization>
-SlvStatus GlvParametrizationDialog<Tparametrization>::apply() {
-
-    update_parametrization();
-
-    SlvStatus status = parametrization_base->check_parameters();
-    if (!status && l_deny_invalid_parameters) {
-        glv::flag::showQMessageBox(status, false, this);
-    }
-    return status;
-}
-
-template <class Tparametrization>
-void GlvParametrizationDialog<Tparametrization>::closeEvent(QCloseEvent* _event) {
-
-    reject();
-
-}
-
-template <class Tparametrization>
-class GlvParametrizationWidget;
-
-/*! Manages save and load of Tparametrization in a binary file.
-* See example sample009.*/
-template <class Tparametrization>
-class GlvParametrizationSaveLoad : public GlvWidgetSaveLoad_base {
-
-private:
-
-    GlvParametrizationWidget<Tparametrization>* parametrization_widget;
-
-public:
-
-    /*! \p _widget : direct integration to the GlvWidget. Nothing else to do.
-    * \p _allowed_extensions : file extensions the file can read and write to. Allowed extensions contains by default the static name of the parametrization.
-    * \p _orientation : Orientation of Save/Load buttons. Stacked (default) or side-by-side. */
-    GlvParametrizationSaveLoad(GlvParametrizationWidget<Tparametrization>* _parametrization_widget, SlvFileExtensions _allowed_extensions = {}, Qt::Orientation _orientation = Qt::Orientation::Horizontal);
-    ~GlvParametrizationSaveLoad();
-
-    /*! Save parametrization to file \p _file_name.*/
-    void save(const std::string& _file_name);
-    /*! Load parametrization from file \p _file_name.*/
-    SlvStatus load(const std::string& _file_name);
-
-private :
-
-    static SlvFileExtensions allowed_extensions_constructor(SlvFileExtensions _allowed_extensions);
-
-    friend class GlvParametrizationWidget<Tparametrization>;
-};
-
-template <class Tparametrization>
-GlvParametrizationSaveLoad<Tparametrization>::GlvParametrizationSaveLoad(GlvParametrizationWidget<Tparametrization>* _parametrization_widget, SlvFileExtensions _allowed_extensions, Qt::Orientation _orientation) : GlvWidgetSaveLoad_base(allowed_extensions_constructor(_allowed_extensions), _orientation, Tparametrization::name()) {
-
-    parametrization_widget = _parametrization_widget;
-    parametrization_widget->set_save_load_widget(this);
-
-}
-
-template <class Tparametrization>
-GlvParametrizationSaveLoad<Tparametrization>::~GlvParametrizationSaveLoad() {
-
-    parametrization_widget->set_save_load_widget(NULL);
-
-}
-
-template <class Tparametrization>
-void GlvParametrizationSaveLoad<Tparametrization>::save(const std::string& _file_name) {
-
-    bool l_write_default_binary = true;
-
-#if OPTION_USE_THIRDPARTY_JSON==1
-    if (SlvFileMgr::get_extension(_file_name) == ".json") {
-        if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
-
-            l_write_default_binary = false;
-
-            std::ofstream file_stream;
-            SlvStatus status = SlvFileMgr::open_file(file_stream, _file_name);
-            if (status) {
-                nlohmann::json json_value;
-                slv::rw::json::ReadWrite<Tparametrization>::writeJson(parametrization_widget->get_value(), json_value);
-                file_stream << json_value.dump(4);
-                file_stream.close();
-            }
-
-        } else {
-            SlvStatus status_tmp(SlvStatus::statusType::warning, "Json parser is not managed for this type.\nUsing default binary parser.");
-            glv::flag::showQMessageBox(status_tmp, false, this);
-        }
-    }
-#endif
-
-    if (l_write_default_binary) {
-        SlvFileMgr::write_binary(parametrization_widget->get_value().param_cast(), _file_name);
-    }
-
-}
-
-template <class Tparametrization>
-SlvStatus GlvParametrizationSaveLoad<Tparametrization>::load(const std::string& _file_name) {
-
-    SlvStatus status;
-    Tparametrization value;
-
-    bool l_read_default_binary = true;
-
-#if OPTION_USE_THIRDPARTY_JSON==1
-    if (SlvFileMgr::get_extension(_file_name) == ".json") {
-        if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
-
-            l_read_default_binary = false;
-
-            std::ifstream file_stream;
-            status = SlvFileMgr::open_file(file_stream, _file_name);
-            if (status) {
-
-                nlohmann::json json_value;
-                file_stream >> json_value;
-                if (!json_value.empty()) {
-                    status = slv::rw::json::ReadWrite<Tparametrization>::readJson(value, json_value);
-                    bool l_set_parameters = interactive_load_parameters(_file_name, status);
-                    if (l_set_parameters) {
-                        value.param_init();
-                        parametrization_widget->set_value(value);
-                    }
-
-                }
-
-            }
-
-        } else {
-            SlvStatus status_tmp(SlvStatus::statusType::warning, "Json parser is not managed for this type.\nUsing default binary parser.");
-            glv::flag::showQMessageBox(status_tmp, false, this);
-        }
-    }
-#endif
-
-    if (l_read_default_binary) {
-
-        status = SlvFileMgr::read_binary(value.param_cast(), _file_name);
-        if (status) {
-            value.param_init();
-            parametrization_widget->set_value(value);
-        }
-
-    }
-
-    return status;
-}
-
-template <class Tparametrization>
-SlvFileExtensions GlvParametrizationSaveLoad<Tparametrization>::allowed_extensions_constructor(SlvFileExtensions _allowed_extensions) {
-
-    SlvFileExtensions allowed_extensions = _allowed_extensions;
-    allowed_extensions.add(SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true));
-#if OPTION_USE_THIRDPARTY_JSON==1
-    if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
-        allowed_extensions.add(".json");
-    }
-#endif
-    return allowed_extensions;
-
-}
-
-/*! Use a parameter named \p parameter_name of the CLI parametrization as a location where to save the configuration file.
-* If such a parameter does not exist, return empty string.*/
-#define GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(Tparametrization, parameter_name)\
-template <>\
-struct GlvCLI::ParamOutput<Tparametrization> {\
-		static std::string get_path(const Tparametrization& _parametrization) {\
-			const SlvParameter_base* parameter = _parametrization.find_first(parameter_name, false);\
-			if (parameter) {\
-				return parameter->get_stream_value();\
-			} else {\
-				return std::string();\
-			}\
-	}\
-};
-
-/*! Use a parameter of the CLI parametrization as a location where to save the configuration file.
-* The parameter is defined by its declaration name.
-* The parameter can be nested into other parameters. Can accept parameter nested up to 3 levels (ie: 4 parameter declarations specification).*/
-#define GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(Tparametrization, ...) EXPAND( glvm_pv_get_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(__VA_ARGS__, glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4, glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3, glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2, glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1)(Tparametrization, __VA_ARGS__))
-#define EXPAND(arg) arg
-#define glvm_pv_get_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(_1, _2, _3, _4, macro_arg, ...) macro_arg
-#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1(Tparametrization, parameter_name)\
-template <>\
-struct GlvCLI::ParamOutput<Tparametrization> {\
-		static std::string get_path(const Tparametrization& _parametrization) {\
-			std::ostringstream stream;\
-			stream << _parametrization.get_##parameter_name();\
-			return stream.str();\
-	}\
-};
-
-#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2(Tparametrization, parameter_name1, parameter_name2)\
-template <>\
-struct GlvCLI::ParamOutput<Tparametrization> {\
-		static std::string get_path(const Tparametrization& _parametrization) {\
-			std::ostringstream stream;\
-			stream << _parametrization.get_##parameter_name1().get_##parameter_name2();\
-			return stream.str();\
-	}\
-};
-
-#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3(Tparametrization, parameter_name1, parameter_name2, parameter_name3)\
-template <>\
-struct GlvCLI::ParamOutput<Tparametrization> {\
-		static std::string get_path(const Tparametrization& _parametrization) {\
-			std::ostringstream stream;\
-			stream << _parametrization.get_##parameter_name1().get_##parameter_name2().get_##parameter_name3();\
-			return stream.str();\
-	}\
-};
-
-#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4(Tparametrization, parameter_name1, parameter_name2, parameter_name3, parameter_name4)\
-template <>\
-struct GlvCLI::ParamOutput<Tparametrization> {\
-		static std::string get_path(const Tparametrization& _parametrization) {\
-			std::ostringstream stream;\
-			stream << _parametrization.get_##parameter_name1().get_##parameter_name2().get_##parameter_name3().get_##parameter_name4();\
-			return stream.str();\
-	}\
-};
-
-#define GLOVE_CLI(Tparametrization) \
-return GlvCLI::main<Tparametrization>(argc, argv);\
-}\
-int glv_cli_main(int argc, char* argv[]) {
-
-int glv_cli_main(int argc, char* argv[]);//forward declare for gcc
-
-struct GlvCLI {
-
-public:
-
-	template <class Tparametrization>
-	static int main(int _argc, char* _argv[]);
-
-private:
-
-	/*! Class to specialize to provide output path for parameters file.*/
-	template <class Tparametrization>
-	struct ParamOutput {
-		static std::string get_path(const Tparametrization& _parametrization) {
-			return "";
-		}
-	};
-
-};
-
-template <class Tparametrization>
-int GlvCLI::main(int _argc, char* _argv[]) {
-
-	if (SlvCLI::has_glove(_argc, _argv)) {
-
-		QApplication app(_argc, _argv);
-
-		std::string autosave_file_name = SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true);
-#if OPTION_USE_THIRDPARTY_JSON==1
-		autosave_file_name += ".json";
-#endif
-
-		GlvParametrizationDialog<Tparametrization> dialog;
-		GlvParametrizationSaveLoad<Tparametrization>* save_load_widget = new GlvParametrizationSaveLoad<Tparametrization>(dialog.get_parametrization_widget());
-
-		SlvCLI::Arguments arguments(_argc, _argv);
-
-		if (!arguments.get_glove_argument().empty()) {
-
-			save_load_widget->load(arguments.get_glove_argument());
-
-		}
-
-		Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
-		SlvStatus status;
-
-		if (!arguments.is_empty()) {
-
-			status = SlvCLI::parse(parametrization, arguments);
-
-			glv::flag::showQMessageBox(QObject::tr("Arguments conflict"), status, true);
-
-			dialog.set_parametrization(parametrization);
-
-		} else if (SlvFile(autosave_file_name).exists() && arguments.get_glove_argument().empty()) {
-
-			save_load_widget->load(autosave_file_name);
-
-		}
-
-		int result = dialog.exec();
-		if (result == QDialog::Accepted) {
-
-			save_load_widget->save(autosave_file_name);
-			
-			SlvDirectory directory(ParamOutput<Tparametrization>::get_path(dialog.get_parametrization()));
-			if (directory.exists()) {
-				save_load_widget->save(SlvFile(directory, autosave_file_name).get_path());
-			}
-
-			std::vector< std::pair<std::string, std::string> > parameter_arguments = dialog.get_parametrization().get_string_serialization_bool().first;
-			for (SlvCLI::Arguments::Tparameters::const_iterator it = arguments.get_parameter_arguments().begin(); it != arguments.get_parameter_arguments().end(); ++it) {
-				parameter_arguments.push_back({ it->first, it->second[0] });
-			}
-
-			std::vector<std::string> solo_arguments = dialog.get_parametrization().get_string_serialization_bool().second;
-			slv::vector::add(solo_arguments, arguments.get_solo_arguments());
-
-			std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(parameter_arguments, solo_arguments);
-			cli_arguments.second[0] = _argv[0];
-
-			return glv_cli_main(cli_arguments.first, cli_arguments.second);
-
-		} else {
-			return 0;
-		}
-
+template <class Tvalue, class Tlabel>
+bool SlvPool<Tvalue, Tlabel>::add(Tvalue* _element) {
+
+	// Static cast to prevent get_label shadowing
+	if (!get(static_cast<const SlvLabeling<Tlabel>*>(_element)->get_label())) {
+		elements.push_back(_element);
+		return true;
 	} else {
-		return glv_cli_main(_argc, _argv);
+		slv::flag::ISSUE(slv::flag::FlagType::Warning, "Can not add the element ", *_element, " in the pool, an element with the same label ", static_cast<const SlvLabeling<Tlabel>*>(_element)->get_label(), " already exists");
+		return false;
 	}
 
 }
 
-class QVBoxLayout;
-class QGridLayout;
-class QComboBox;
-class QLabel;
-class QDialogButtonBox;
+template <class Tvalue, class Tlabel>
+template <class Tlabel2>
+Tvalue* SlvPool<Tvalue, Tlabel>::get(const Tlabel2& _label) {
 
-class GlvListDialog_base : public QDialog {
-
-    Q_OBJECT
-
-protected:
-
-    /*! Whether QDialog functionalities are activated or not (buttons, accept/reject).*/
-    bool l_dialog;
-
-    /*! Main layout.*/
-    QVBoxLayout* layout;
-    QGridLayout* list_layout;
-
-    QLabel* text_widget;
-    QLabel* list_name_widget;
-    QComboBox* combo_list;
-    QDialogButtonBox* button_box;
-
-    /*! \p _parent : If not NULL, then the widget is modal.
-    * \p _l_dialog : Whether the list enables QDialog properties or not, such as button box, and related signals.*/
-    GlvListDialog_base(QWidget* _parent, bool _l_dialog);
-    virtual ~GlvListDialog_base();
-
-public:
-
-    /*! Get combo's current text.*/
-    std::string get_currentText();
-    /*! Set combo's current index to the one corresponding to \p _name. If \p _name is not found, returns false.*/
-    bool set_currentText(const std::string& _name);
-
-    /*! Set descriptive text of the widget.*/
-    void set_text(const QString& _text);
-
-    /*! Add \p _widget to the main layout while keeping QDialogButtonBox on the bottom.*/
-    void addWidget(QWidget* _widget);
-
-    /*! QDialog's accept slot only if l_dialog is true.*/
-    void accept();
-    /*! QDialog's reject slot only if l_dialog is true.*/
-    void reject();
-
-protected:
-    /*! Enables or disables Ok button (if dialog button box is activated).
-    * Usefull to clear items which have been filtered by GlvParamListDialog_Filtering.*/
-    void setOkButtonEnabled(bool _l_enable);
-
-public slots:
-
-    /*! Enables all items in the QComboBox list.*/
-    void enable_combo_items();
-
-};
-
-/*! QDialog list of a list of names. See sample003 for example.*/
-class GlvListDialog : public GlvListDialog_base {
-
-public:
-    /*! \p _names : List of names to fill the combo list.
-    * \p _list_name : name of the list used for display.
-    * \p _parent : If not NULL, then the widget is modal.
-    * \p _l_dialog: Whether the list enables QDialog properties or not, such as button box, and related signals.*/
-    GlvListDialog(const std::vector<std::string>& _names, const std::string _list_name, QWidget* _parent, bool _l_dialog = true);
-    ~GlvListDialog();
-
-};
-
-/*! Default filtering structure. Any Toption is compatible with any Telement.*/
-template <class Telement, class Toption, typename = void>
-struct GlvListFilterDefault {
-    static constexpr bool is_compatible = true;//whether Toption is compatible with Telement
-};
-
-/*! Structure in charge of filtering (disabling) QComboBox items in GlvParamListDialog and GlvListDialogTlist.
-* If the type associated to a QComboBox item name is not compatible with another type (Toption), then the item is being disabled.*/
-struct GlvParamListDialog_Filtering {
-
-public:
-
-    /*! Filters.
-    * \p _combo_list : QComboBox to process.
-    * \p _Nitems : if not NULL, returns the number of enabled items.*/
-    template <class Tlist, template <class Tlist_item, class Toption, class _Tenable> class Tfiltering, class Toption>
-    static SlvStatus filter_list(QComboBox* _combo_list, int* _Nitems);
-
-private:
-
-    /*! Specialization with Tlist to use dedicated macro. See example in sample003_1 and sample003_2.*/
-    template <class Tlist>
-    struct Spec;
-
-    /*! Returns true if set as enabled. False if the item is filtered (disabled).
-    * Tfiltering is the filtering structure
-    * T1 is the type associated to item cointained in _combo_list at index
-    * T2 is the filtering argument.*/
-    template < template <class T1, class T2, typename = void> class Tfiltering, class T1, class T2 >
-    static bool filter(QComboBox* _combo_list, unsigned int _index);
-
-    /*! Sets current index to first item not deactivated.*/
-    static void update_current_item(QComboBox* _combo_list);
-
-};
-
-template <class Tlist, template <class Tlist_item, class Toption, class _Tenable> class Tfiltering, class Toption>
-SlvStatus GlvParamListDialog_Filtering::filter_list(QComboBox* _combo_list, int* _Nitems) {
-
-    SlvStatus status;
-    std::string item_name;
-    bool l_enabled;
-    if (_Nitems) *_Nitems = 0;
-    for (int i = 0; i < _combo_list->count(); i++) {
-
-        item_name = _combo_list->itemText(i).toStdString();
-        l_enabled = Spec<Tlist>::template filter<Tfiltering, Toption>(item_name, _combo_list, i);
-
-        if (l_enabled && _Nitems) (*_Nitems)++;
-    }
-
-    update_current_item(_combo_list);
-
-    return status;
-}
-
-template <class Tlist>
-struct GlvParamListDialog_Filtering::Spec {
-    template <template <class Tlist_item, class Toption, class _Tenable> class Tfiltering, class Toption>
-    static bool filter(const std::string& _item_name, QComboBox* _combo_list, int i) {
-        return true;
-    }
-};
-
-template < template <class T1, class T2, typename = void> class Tfiltering, class T1, class T2 >
-bool GlvParamListDialog_Filtering::filter(QComboBox* _combo_list, unsigned int _index) {
-
-    if (!Tfiltering<T1, T2>::is_compatible) {
-        qobject_cast<QStandardItemModel*>(_combo_list->model())->item(_index)->setEnabled(false);
-        return false;
-    } else {
-        qobject_cast<QStandardItemModel*>(_combo_list->model())->item(_index)->setEnabled(true);
-        return true;
-    }
+	iterator it = find(_label);
+	if (it != end()) {
+		return *it;
+	} else {
+		return NULL;
+	}
 
 }
 
-/*! QDialog list of Tlist type.
-* Tlist must have:
-* - static const std::vector<std::string>& list() method
-* - static const std::string& name() method
-* No GlvParametrizationDialog management as compared to GlvParamListDialog.*/
-template <class Tlist>
-class GlvListDialogTlist : public GlvListDialog {
+template <class Tvalue, class Tlabel>
+template <class Tlabel2>
+const Tvalue* SlvPool<Tvalue, Tlabel>::get(const Tlabel2& _label) const {
 
-public:
-
-    GlvListDialogTlist(QWidget* _parent, bool _l_dialog = true);
-    ~GlvListDialogTlist() {}
-
-    /*! Enables or disables items in QComboBox depending on whether types of the list are compatible with T1 according to Tfiltering.*/
-    template < template <class T1, class T2, class Tenable> class Tfiltering, class T1 >
-    void filter_list();// This method is also in GlvParamListDialog. Factorization is not straightfoward because it is impossible to virtually inherit QObject.
-
-};
-
-template <class Tlist>
-GlvListDialogTlist<Tlist>::GlvListDialogTlist(QWidget* _parent, bool _l_dialog) :GlvListDialog(Tlist::list(), Tlist::name(), _parent, _l_dialog) {
+	return const_cast<SlvPool<Tvalue, Tlabel>*>(this)->get(_label);
 
 }
 
-template <class Tlist>
-template < template <class T1, class T2, class Tenable> class Tfiltering, class T1 >
-void GlvListDialogTlist<Tlist>::filter_list() {
+template <class Tvalue, class Tlabel>
+template <class Tlabel2>
+unsigned int SlvPool<Tvalue, Tlabel>::get_n(const Tlabel2& _label) const {
 
-    int Nitems;
-    GlvParamListDialog_Filtering::filter_list<Tlist, Tfiltering, T1>(combo_list, &Nitems);
+	const_iterator it = find(_label);
 
-    if (Nitems == 0) {
-        setOkButtonEnabled(false);
-    } else {
-        setOkButtonEnabled(true);
-    }
-
-}
-
-template <class Tbase, class Tsublist, class Toption>
-class GlvParamListDialog_Open_TemplateObject;
-
-/*! Specialization with Tlist to use dedicated macro. Use by GlvParamListDialog_Open_TemplateObject.*/
-template <class Tsublist>
-struct GlvParamListDialog_Open_TemplateObject_Spec {
-    template <class Tbase, class Toption>
-    static bool build_parametrization_templated(GlvParametrizationDialog_base*& _configure_window, std::string _item_name, const Toption* _option, bool _l_show, QWidget* _parent);
-    /*! Calls and return GlvParamListDialog_Open_TemplateObject::cast_check.
-    * Only replace preprocessor macro.
-    * Not implemented, just provides method signature.*/
-    template <class Tbase, class Toption>
-    static GlvParametrizationDialog_base* cast_check(std::string _item_name, const GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>* _list);
-    /*! Creates new GlvParametrizationDialog.
-    * Only replace preprocessor macro.
-    * Not implemented, just provides method signature.*/
-    template <class Tbase, class Toption>
-    static GlvParametrizationDialog_base* build_parametrization(std::string _item_name, QWidget* _parent);
-    /*! Applies changes to the created parametrization widget.
-    * Not implemented, just provides method signature.*/
-    template <class Tbase, class Toption>
-    static void configuration(std::string _item_name, const GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>* _list);
-};
-
-/*! List to select the type among Tsublist.
-Tbase: base type of the template object. Tbase::Tderived<Telement, Toption> to be the 'real' type.*/
-template <class Tbase, class Tsublist, class Toption>
-class GlvParamListDialog_Open_TemplateObject : public GlvListDialogTlist<Tsublist> {
-
-private:
-    /*! Pointer to the reference parametrization widget.*/
-    GlvParametrizationDialog_base*& parametrization_dialog;
-    /*! Whether the parametrization widget is shown or not.*/
-    const bool l_show_parametrization_dialog;
-    /*! Option.*/
-    const Toption* option;
-public:
-    /*! Whether a parametrization widget has been created or not.*/
-    bool l_created = false;
-public:
-    GlvParamListDialog_Open_TemplateObject(QWidget* _parent, GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_parametrization_dialog);
-    ~GlvParamListDialog_Open_TemplateObject();
-
-    /*! Casts parametrization widget with a type (Targ) of the list.*/
-    template <class Targ>
-    GlvParametrizationDialog_base* cast_check() const;
-
-    /*! Rejects QDialog and sets parametrization widget creation status to false.*/
-    void reject();
-    /*! Accepts the selected type of the list, and creates the parametrization widget.
-    * Sets parametrization widget creation status to true.*/
-    void accept();
-
-    friend struct GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>;
-};
-
-template <class Tbase, class Tsublist, class Toption>
-GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>::GlvParamListDialog_Open_TemplateObject(QWidget* _parent, GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_parametrization_dialog)
-    :GlvListDialogTlist<Tsublist>(_parent), parametrization_dialog(_parametrization_dialog), l_show_parametrization_dialog(_l_show_parametrization_dialog) {
-
-    option = _option;
-}
-
-template <class Tbase, class Tsublist, class Toption>
-GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>::~GlvParamListDialog_Open_TemplateObject() {}
-
-template <class Tbase, class Tsublist, class Toption>
-template <class Targ>
-GlvParametrizationDialog_base* GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>::cast_check() const {
-
-    GlvParametrizationDialog_base* parametrization_dialog_cast_check;
-    parametrization_dialog_cast_check = dynamic_cast<GlvParametrizationDialog<typename Tbase::template Tderived<Targ, Toption> >*>(parametrization_dialog);
-
-    return parametrization_dialog_cast_check;
-}
-
-template <class Tbase, class Tsublist, class Toption>
-void GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>::reject() {
-    GlvListDialogTlist<Tsublist>::reject();
-
-    l_created = false;
-}
-
-template <class Tbase, class Tsublist, class Toption>
-void GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>::accept() {
-
-    l_created = false;
-
-    GlvListDialogTlist<Tsublist>::accept();
-    std::string item_name = this->get_currentText();
-
-    if (Tsublist::is_templated(item_name)) {
-
-        l_created = GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>::template build_parametrization_templated<Tbase, Toption>(parametrization_dialog, item_name, option, l_show_parametrization_dialog, this);
-
-    } else {
-
-        GlvParametrizationDialog_base* parametrization_dialog_cast_check;
-
-        parametrization_dialog_cast_check = GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>::template cast_check<Tbase, Toption>(item_name, this);
-
-        if (parametrization_dialog_cast_check) {
-            //means that parametrization type hasn't change from previously created parametrization_dialog
-
-        } else {
-            //means that parametrization type has changed, or simply that there was no parametrization_dialog created yet
-
-            if (parametrization_dialog) {
-                delete parametrization_dialog;
-            }
-
-            parametrization_dialog = GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>::template build_parametrization<Tbase, Toption>(item_name, this->parentWidget());
-
-            l_created = true;
-
-            GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>::configuration(item_name, this);
-
-        }
-
-        if (l_show_parametrization_dialog) parametrization_dialog->show();
-
-    }
+	if (it != end()) {
+		return std::distance(begin(), it);
+	} else {
+		return -1;
+	}
 
 }
 
-/*! In charge of opening a secondary list to select a secondary type. Target type is sort of: Tbase<Tsublist-pick>.
-* Not supposed to be specialized.*/
-template <class Tbase, class Tsublist, class Toption>
-struct GlvParamListDialog_Open_Templated {
-
-    template <template <class _Tlist_item, class _Toption, class _Tenable> class Tfiltering = GlvListFilterDefault>
-    static bool open(GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_parametrization_dialog, QWidget* _parent) {
-
-        GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>* sublist;
-        sublist = new GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>(_parent, _parametrization_dialog, _option, _l_show_parametrization_dialog);
-        sublist->template filter_list<Tfiltering, Toption>();
-
-        sublist->set_text(glv::toQString("Select " + Tbase::name() + "'s " + Tsublist::item_description()));
-
-        if (_l_show_parametrization_dialog) {
-            sublist->exec();
-        } else {
-            sublist->accept();
-        }
-        bool l_created = sublist->l_created;
-
-        delete sublist;
-
-        return l_created;
-
-    }
-
-};
-
-template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
-class GlvParamListDialog_Open_TemplateTemplateObject;
-
-template <class Tsublist>
-struct GlvParamListDialog_Open_TemplateTemplateObject_Spec {
-    template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Toption>
-    static bool build_parametrization_templated(GlvParametrizationDialog_base*& _configure_window, std::string _item_name, const Toption* _option, bool _l_show, QWidget* _parent);
-    /*! Calls and return GlvParamListDialog_Open_TemplateObject::cast_check.
-    * Only replace preprocessor macro.
-    * Not implemented, just provides method signature.*/
-    template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Toption>
-    static GlvParametrizationDialog_base* cast_check(std::string _item_name, const GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>* _list);
-    /*! Creates new GlvParametrizationDialog.
-    * Only replace preprocessor macro.
-    * Not implemented, just provides method signature.*/
-    template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Toption>
-    static GlvParametrizationDialog_base* build_parametrization(std::string _item_name, QWidget* _parent);
-    /*! Applies changes to the created parametrization widget.
-    * Not implemented, just provides method signature.*/
-    template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Toption>
-    static void configuration(std::string _item_name, const GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>* _list);
-};
-
-/*! List to select the type among Tsublist.
-Tbase: base type of the template object. Tclass<Tbase::Tderived<Telement, Toption>, Toption> to be the 'real' type.*/
-template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
-class GlvParamListDialog_Open_TemplateTemplateObject : public GlvListDialogTlist<Tsublist> {
-
-private:
-    /*! Pointer to the reference parametrization widget.*/
-    GlvParametrizationDialog_base*& parametrization_dialog;
-    /*! Whether the parametrization widget is shown or not.*/
-    const bool l_show_parametrization_dialog;
-    /*! Option.*/
-    const Toption* option;
-public:
-    /*! Whether a parametrization widget has been created or not.*/
-    bool l_created = false;
-public:
-    GlvParamListDialog_Open_TemplateTemplateObject(QWidget* _parent, GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_configure_window);
-    ~GlvParamListDialog_Open_TemplateTemplateObject();
-
-    /*! Cast parametrization widget with a type (Targ) of the list.*/
-    template <class Targ>
-    GlvParametrizationDialog_base* cast_check() const;
-
-    /*! Rejects QDialog and sets parametrization widget creation status to false.*/
-    void reject();
-    /*! Accepts the selected type of the list, and creates the parametrization widget.
-    * Sets parametrization widget creation status to true.*/
-    void accept();
-
-    friend struct GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>;
-};
-
-template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
-GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>::GlvParamListDialog_Open_TemplateTemplateObject(QWidget* _parent, GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_parametrization_dialog)
-    :GlvListDialogTlist<Tsublist>(_parent), parametrization_dialog(_parametrization_dialog), l_show_parametrization_dialog(_l_show_parametrization_dialog) {
-
-    option = _option;
+template <class Tvalue, class Tlabel>
+const std::vector<Tvalue*>& SlvPool<Tvalue, Tlabel>::get_elements() const {
+	return elements;
 }
 
-template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
-GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>::~GlvParamListDialog_Open_TemplateTemplateObject() {}
+template <class Tvalue, class Tlabel>
+Tvalue* SlvPool<Tvalue, Tlabel>::new_element(const Tlabel& _label) {
 
-template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
-template <class Targ>
-GlvParametrizationDialog_base* GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>::cast_check() const {
+	Tvalue* value = get(_label);
+	if (!value) {
+		value = new Tvalue(_label);
+		elements.push_back(value);
+	} else {
+		slv::flag::ISSUE(slv::flag::FlagType::Warning, "Can not create the element ", *value, " in the pool, an element with the same label ", value->get_label(), " already exists");
+	}
 
-    GlvParametrizationDialog_base* parametrization_dialog_cast_check;
-    parametrization_dialog_cast_check = dynamic_cast<GlvParametrizationDialog<Tclass<typename Tbase::template Tderived<Targ, Toption>, Toption > >*>(parametrization_dialog);
-
-    return parametrization_dialog_cast_check;
+	return value;
 }
 
-template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
-void GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>::reject() {
-    GlvListDialogTlist<Tsublist>::reject();
+template <class Tvalue, class Tlabel>
+template <class Tlabel2>
+bool SlvPool<Tvalue, Tlabel>::delete_element(const Tlabel2& _label) {
 
-    l_created = false;
-}
-
-template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
-void GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>::accept() {
-
-    l_created = false;
-
-    GlvListDialogTlist<Tsublist>::accept();
-    std::string item_name = this->get_currentText();
-
-    if (Tsublist::is_templated(item_name)) {
-
-        l_created = GlvParamListDialog_Open_TemplateTemplateObject_Spec<Tsublist>::template build_parametrization_templated<Tclass, Tbase, Toption>(parametrization_dialog, item_name, option, l_show_parametrization_dialog, this);
-
-    } else {
-
-        GlvParametrizationDialog_base* parametrization_dialog_cast_check;
-
-        parametrization_dialog_cast_check = GlvParamListDialog_Open_TemplateTemplateObject_Spec<Tsublist>::template cast_check<Tclass, Tbase, Toption>(item_name, this);
-
-        if (parametrization_dialog_cast_check) {
-            //means that parametrization type hasn't change from previously created parametrization_dialog
-
-        } else {
-            //means that parametrization type has changed, or simply that there was no parametrization_dialog created yet
-
-            if (parametrization_dialog) {
-                delete parametrization_dialog;
-            }
-
-            parametrization_dialog = GlvParamListDialog_Open_TemplateTemplateObject_Spec<Tsublist>::template build_parametrization<Tclass, Tbase, Toption>(item_name, this->parentWidget()->parentWidget());
-
-            l_created = true;
-
-            GlvParamListDialog_Open_TemplateTemplateObject_Spec<Tsublist>::configuration(item_name, this);
-
-        }
-
-        if (l_show_parametrization_dialog) parametrization_dialog->show();
-
-    }
+	iterator it = find(_label);
+	if (it != end()) {
+		delete* it;
+		elements.erase(it);
+		return true;
+	} else {
+		slv::flag::ISSUE(slv::flag::FlagType::Warning, "Can not delete. The element labelled ", _label, " does not exist.");
+		return false;
+	}
 
 }
 
-/*! In charge of opening a tertiary list to select a tertiary type. Target type is sort of: Tclass<Tbase<Tsublist-pick>>.
-* Not supposed to be specialized.*/
-template < template <class Tbase_derived, class _Toption> class Tclass, class Tbase, class Tsublist, class Toption>
-struct GlvParamListDialog_Open_TemplatedTemplated {
+template <class Tvalue, class Tlabel>
+template <class Tvalue2>
+bool SlvPool<Tvalue, Tlabel>::delete_element(Tvalue2* _element, bool _l_owned) {
 
-    template <template <class _Tlist_item, class _Toption, class _Tenable> class Tfiltering = GlvListFilterDefault>
-    static bool open(GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_parametrization_dialog, QWidget* _parent) {
+	if (!_l_owned || slv::vector::find(static_cast<Tvalue*>(_element), elements)) {
+		return delete_element(_element->get_label());
+	} else {
+		return false;
+	}
 
-        GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>* sublist;
-        sublist = new GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>(_parent, _parametrization_dialog, _option, _l_show_parametrization_dialog);
-        sublist->template filter_list<Tfiltering, Toption>();
+}
 
-        sublist->set_text(glv::toQString("Select " + Tbase::name() + "'s " + Tsublist::item_description()));
+template <class Tvalue, class Tlabel>
+bool SlvPool<Tvalue, Tlabel>::delete_element_at(const unsigned int el) {
 
-        if (_l_show_parametrization_dialog) {
-            sublist->exec();
-        } else {
-            sublist->accept();
-        }
-        bool l_created = sublist->l_created;
+	if (el < psize()) {
+		delete elements[el];
+		elements.erase(elements.begin() + el);
+		return true;
+	} else {
+		return false;
+	}
 
-        delete sublist;
+}
 
-        return l_created;
+template <class Tvalue, class Tlabel>
+template <class Tlabel2>
+typename SlvPool<Tvalue, Tlabel>::iterator SlvPool<Tvalue, Tlabel>::find(const Tlabel2& _label) {
 
-    }
+	bool l_found = false;
+	iterator it = begin();
+	while (it != end() && !l_found) {
+		l_found = (static_cast<const SlvLabeling<Tlabel>*>(*it)->get_label() == _label);
+		if (!l_found) ++it;
+	}
 
-};
+	return it;
 
-class GlvParametrizationDialog_base;
-class SlvParametrization_base;
+}
 
-class GlvParamListDialog_base : public GlvListDialog {
+template <class Tvalue, class Tlabel>
+template <class Tlabel2>
+typename SlvPool<Tvalue, Tlabel>::const_iterator SlvPool<Tvalue, Tlabel>::find(const Tlabel2& _label) const {
 
-	Q_OBJECT
+	bool l_found = false;
+	const_iterator it = begin();
+	while (it != end() && !l_found) {
+		l_found = (static_cast<const SlvLabeling<Tlabel>*>(*it)->get_label() == _label);
+		if (l_found) ++it;
+	}
 
-protected:
-	/*! \p _names : List of names to fill the combo list.
-	* \p _list_name : name of the list used for display.
-	* \p _l_dialog: Whether QDialog functionalities are activated or not (buttons, accept/reject).
-	* \p _l_visible_config : If true, configure button is displayed. Otherwise, parametrization is triggered when changing QComboBox item.*/
-	GlvParamListDialog_base(const std::vector<std::string>& _names, const std::string _list_name, QWidget* _parent, bool _l_dialog, bool _l_visible_config);
-public:
-	virtual ~GlvParamListDialog_base();
-protected:
+	return it;
 
-	/*! Whether configuration is displayed below list, or accessible by configure button.*/
-	bool l_visible_config;
+}
 
-	/*! Parametrization widget.*/
-	GlvParametrizationDialog_base* parametrization_dialog;
+template <class Tvalue, class Tlabel>
+Tvalue* SlvPool<Tvalue, Tlabel>::operator[](const unsigned int el) {
+	return elements[el];
+}
 
-	/*! Delete parametrization widget.*/
-	void delete_parametrization_dialog();
+template <class Tvalue, class Tlabel>
+const Tvalue* SlvPool<Tvalue, Tlabel>::operator[](const unsigned int el) const {
+	return elements[el];
+}
 
-public:
+template <class Tvalue, class Tlabel>
+void SlvPool<Tvalue, Tlabel>::ostream(std::ostream& _os) const {
 
-	/*! Get base parametrization widget.*/
-	GlvParametrizationDialog_base* get_parametrization_dialog_base();
-	/*! Get base parametrization.*/
-	const SlvParametrization_base* get_parametrization_base() const;
+	for (const_iterator it = begin(); it != end(); ++it) {
+		_os << **it << ", " << (*it)->get_label() << std::endl;
+	}
 
-private slots:
+}
 
-	virtual void make_parametrization_dialog() = 0;
-	virtual void make_parametrization_dialog(const QString& _item_name) = 0;
-
-signals:
-	/*! Emitted when a parametrization widget is requested in GlvParamListDialog (ex: creation).*/
-	void configure(QString _item_name);
-
-};
-
-template <class Tparametrization>
-class GlvParametrizationDialog;
-
-/*! Configuration list of Tlist type.
-* Tlist must have:
-* - static const std::vector<std::string>& list() method
-* - static const std::string& name() method
-* Toption is the type of the optional data provided for the parametrization windows. See GlvParamListDialog_Open::open.
-* The optional data is not stored in the GlvParamListDialog instance.*/
-template <class Tlist, class Toption = void>
-class GlvParamListDialog;
-
-class GlvParametrizationDialog_base;
-class QWidget;
-
-/*! Specialization with Tlist to use dedicated macro. Use by GlvParamListDialog_Open.*/
-template <class Tlist>
-struct GlvParamListDialog_Open_Spec {
-    /*! Creates new GlvParametrizationDialog.
-    * Only replace preprocessor macro.
-    * Not implemented, just provides method signature.*/
-    template <class Toption>
-    static bool build_parametrization_templated(GlvParametrizationDialog_base*& _parametrization_dialog, std::string _item_name, const Toption* _option, bool _l_show_parametrization_dialog, QWidget* _parent);
-    /*! Creates new GlvParametrizationDialog.
-    * Only replace preprocessor macro.
-    * Not implemented, just provides method signature.*/
-    template <class Toption>
-    static GlvParametrizationDialog_base* build_parametrization(std::string _item_name, QWidget* _parent);
-    /*! Applies changes to the created parametrization widget.
-    * Not implemented, just provides method signature.*/
-    template <class Toption>
-    static void configuration(GlvParametrizationDialog_base* _parametrization_dialog, std::string _item_name, const Toption* _option);
-};
-
-/*! Needs specialization for each Tlist, because a macro in charge of mapping names to types should go with it.*/
-template <class Tlist, class Toption = void>
-struct GlvParamListDialog_Open {
-    /*! Returns true if a new parametrization widget has been created.
-    No implementation. Specialization has to be provided to map type names listed into types.
-    See provided example: sample003.*/
-    static bool open(GlvParametrizationDialog_base*& _parametrization_dialog, const std::string& _parametrization_name, const Toption* _option, bool _l_show_parametrization_dialog, QWidget* _parent) {
-
-        bool l_created = false;
-
-        if (Tlist::is_templated(_parametrization_name)) {
-
-            l_created = GlvParamListDialog_Open_Spec<Tlist>::template build_parametrization_templated<Toption>(_parametrization_dialog, _parametrization_name, _option, _l_show_parametrization_dialog, _parent);
-
-        } else {
-
-            if (_parametrization_dialog && _parametrization_dialog->get_parametrization_base()->get_name() == _parametrization_name) {
-                // nothing to do
-            } else {
-                if (_parametrization_dialog) delete _parametrization_dialog;
-
-                _parametrization_dialog = GlvParamListDialog_Open_Spec<Tlist>::template build_parametrization<Toption>(_parametrization_name, _parent);
-
-                l_created = true;
-
-                GlvParamListDialog_Open_Spec<Tlist>::template configuration<Toption>(_parametrization_dialog, _parametrization_name, _option);
-            }
-
-            if (_l_show_parametrization_dialog) {
-                _parametrization_dialog->show();
-            }
-
-        }
-
-        return l_created;
+/*! Get name of template type. Specialization. Name SlvPool.*/
+template <class Tvalue>
+struct SlvDataName< SlvPool<Tvalue> > {
+    static std::string name() {
+        std::string name = "SlvPool";
+        name += "<";
+        name += SlvDataName<Tvalue>::name();
+        name += ">";
+        return name;
     }
 };
-
-/*! Used when a list "List" (class_name) is defined, along with its macro: glvm_List_instruction_name_to_type.*/
-#define glvm_instruction_base_to_dcast(class_name, instruction_front, parametization_base, instruction_end) \
-glvm_##class_name##_instruction_name_to_type(instruction_front dynamic_cast<, parametization_base->get_name(), *>(parametization_base) instruction_end)
-
-/*! Used when a list "List" (class_name) is defined, along with its macro: glvm_List_instruction_name_to_type.*/
-#define glvm_instruction_base_to_dcast_const(class_name, instruction_front, parametization_base, instruction_end) \
-glvm_##class_name##_instruction_name_to_type(instruction_front dynamic_cast<const, parametization_base->get_name(), *>(parametization_base) instruction_end)
-
-template <class Tparametrization>
-class GlvParametrizationDialog;
-
-/*! Configuration list of Tlist type.
-* Tlist must have:
-* - static const std::vector<std::string>& list() method
-* - static const std::string& name() method
-* Toption is the type of the optional data provided for the parametrization windows. See GlvParamListDialog_Open::open.
-* The optional data is not stored in the GlvParamListDialog instance.*/
-template <class Tlist, class Toption>
-class GlvParamListDialog : public GlvParamListDialog_base {
-
-private:
-
-    const Toption* optional_data;
-
-public:
-
-    /*! \p _list : Instance to convert to list.
-    * \p _optional_data : pointer to optional data to be managed by all the parametrizations.
-    * \p _l_dialog: Whether QDialog functionalities are activated or not (buttons, accept/reject).
-    * \p _l_visible_config : If true, configure button is displayed. Otherwise, parametrization is triggered when changing QComboBox item.*/
-    GlvParamListDialog(QWidget* _parent, const Toption* _optional_data, bool _l_dialog = true, bool _l_visible_config = true);
-    GlvParamListDialog(QWidget* _parent = NULL, bool _l_dialog = true, bool _l_visible_config = true);
-    ~GlvParamListDialog();
-
-    /*! Get parametrization widget. The parametrization type must match the type currently selected/configured. Otherwise returns NULL.*/
-    template <class Tparametrization>
-    GlvParametrizationDialog<Tparametrization>* get_parametrization_dialog();
-
-    /*! Set optional data for parametrization windows.*/
-    void set_optional_data(const Toption* _optional_data);
-
-public:
-
-    /*! Applies default parametrization (if none is configured yet) and accepts QDialog.*/
-    void accept();
-
-    /*! Enables or disables items in QComboBox depending on whether types of the list are compatible with T1 according to Tfiltering.*/
-    template < template <class T1, class T2, class Tenable> class Tfiltering, class T1 = Toption>
-    void filter_list();//this method is also GlvListDialogTlist. I didn't restructred inheritance yet (can't virtual inherit QWidget)
-
-private:
-
-    /*! Implements pure virtual slot of GlvParamListDialog_base.*/
-    void make_parametrization_dialog();
-    /*! Implements pure virtual slot of GlvParamListDialog_base.*/
-    void make_parametrization_dialog(const QString& _item_name);
-
-    /*! Creates new parametrization window. \p _parametrization_name is the name of the parametrization type.
-    * The parametrization window can be displayed or not using \p _l_show.*/
-    void new_parametrization_dialog(const QString& _parametrization_name, bool l_show);
-
-};
-
-template <class Tlist, class Toption>
-GlvParamListDialog<Tlist, Toption>::GlvParamListDialog(QWidget* _parent, const Toption* _optional_data, bool _l_dialog, bool _l_visible_config) :\
-GlvParamListDialog_base(Tlist::list(), Tlist::name(), _parent, _l_dialog, _l_visible_config) {
-
-    set_optional_data(_optional_data);
-
-}
-
-template <class Tlist, class Toption>
-GlvParamListDialog<Tlist, Toption>::GlvParamListDialog(QWidget* _parent, bool _l_dialog, bool _l_visible_config) :\
-GlvParamListDialog<Tlist, Toption>(_parent, (Toption*)(NULL), _l_dialog, _l_visible_config) {
-
-}
-
-template <class Tlist, class Toption>
-GlvParamListDialog<Tlist, Toption>::~GlvParamListDialog() {
-
-}
-
-template <class Tlist, class Toption>
-template <class Tparametrization>
-GlvParametrizationDialog<Tparametrization>* GlvParamListDialog<Tlist, Toption>::get_parametrization_dialog() {
-
-    return dynamic_cast<GlvParametrizationDialog<Tparametrization>*>(parametrization_dialog);//ddynamic_cast
-
-}
-
-template <class Tlist, class Toption>
-void GlvParamListDialog<Tlist, Toption>::set_optional_data(const Toption* _optional_data) {
-
-    optional_data = _optional_data;
-}
-
-template <class Tlist, class Toption>
-void GlvParamListDialog<Tlist, Toption>::accept() {
-
-    // Do not call new_parametrization_dialog if a parametrization widget already exists.
-    // Avoids getting list items value that are by default not the ones that may be configured
-    // Call it if combo item name differs from the current parametrization (ex: combo item has changed and direct 'ok') 
-    if (!parametrization_dialog || parametrization_dialog->get_parametrization_base()->get_name() != combo_list->currentText().toStdString()) {
-        bool l_show = false;
-        new_parametrization_dialog(combo_list->currentText(), l_show);
-    }
-
-    GlvListDialog::accept();
-
-}
-
-template <class Tlist, class Toption>
-template < template <class T1, class T2, class Tenable> class Tfiltering, class T1 >
-void GlvParamListDialog<Tlist, Toption>::filter_list() {
-
-    int Nitems;
-    GlvParamListDialog_Filtering::filter_list<Tlist, Tfiltering, T1>(combo_list, &Nitems);
-
-    if (Nitems == 0) {
-        setOkButtonEnabled(false);
-    } else {
-        setOkButtonEnabled(true);
-    }
-
-}
-
-template <class Tlist, class Toption>
-void GlvParamListDialog<Tlist, Toption>::make_parametrization_dialog(const QString& _item_name) {
-
-    bool l_show = true;
-    new_parametrization_dialog(_item_name, l_show);
-
-}
-
-template <class Tlist, class Toption>
-void GlvParamListDialog<Tlist, Toption>::make_parametrization_dialog() {
-
-    make_parametrization_dialog(combo_list->currentText());
-
-}
-
-template <class Tlist, class Toption>
-void GlvParamListDialog<Tlist, Toption>::new_parametrization_dialog(const QString& _parametrization_name, bool l_show) {
-
-    /*! This is where specialization occurs.*/
-    bool l_created = GlvParamListDialog_Open<Tlist, Toption>::open(parametrization_dialog, _parametrization_name.toStdString(), optional_data, l_show, this);
-
-    if (l_created) emit configure(_parametrization_name);
-}
-
-// Needed most of the time when using glv lists
-
-/*! GlvWidgetData for type SlvParametrization*/
-template <class Tparametrization>
-class GlvWidgetData<Tparametrization, typename std::enable_if<std::is_base_of<SlvParametrization_base, Tparametrization>::value>::type> : public GlvParametrizationWidget<Tparametrization> {
-
-public:
-    GlvWidgetData(Tparametrization _value = Tparametrization(), QWidget* _parent = 0) :GlvParametrizationWidget<Tparametrization>(_value, true, _parent) {
-        this->set_checkable_collapse(true);
-        this->set_scrollable(false);
-    }
-    ~GlvWidgetData() {}
-
-};
-
-template <class Tparametrization>
-struct GlvWidgetMakerConnect<Tparametrization, typename std::enable_if<std::is_base_of<SlvParametrization_base, Tparametrization>::value>::type> {
-    static void connect(GlvWidgetData<Tparametrization>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(parameterChanged(std::string)), _widget_connector, SLOT(valueChanged_slot(std::string)));
-    }
-};
-
-// Include all GlvWidgetData specializations
-
-// Include necessary headers for managing parametrization widgets
-
-/*! Widget to add in a GlvWidgetData specialization. Manages save and load of Tdata in a binary file.
-* See example sample009.*/
-template <class Tdata>
-class GlvWidgetSaveLoad : public GlvWidgetSaveLoad_base {
-
-private:
-
-    /*! Handled widget in regular case.*/
-    GlvWidget<Tdata>* widget;
-    /*! Handled widget in specialization case.*/
-    GlvWidgetData<Tdata>* widget_data;
-
-public:
-
-    /*! \p _widget : direct integration to the GlvWidget. Nothing else to do.
-    * \p _allowed_extensions : file extensions the file can read and write to. Allowed extensions contains by default the static name of Tdata.
-    * \p _orientation : Orientation of Save/Load buttons. Stacked or side-by-side (default). */
-    GlvWidgetSaveLoad(GlvWidget<Tdata>* _widget, SlvFileExtensions _allowed_extensions = {}, const  Qt::Orientation _orientation = Qt::Orientation::Horizontal);
-private:
-    /*! Same, but allows integration directly in a GlvWidgetData. Recommended to use only in case of GlvWidgetData specialization.*/
-    GlvWidgetSaveLoad(GlvWidgetData<Tdata>* _widget_data, SlvFileExtensions _allowed_extensions = {}, const  Qt::Orientation _orientation = Qt::Orientation::Horizontal);
-public:
-    ~GlvWidgetSaveLoad();
-
-    /*! Save data to file \p _file_name.*/
-    void save(const std::string& _file_name);
-    /*! Load data from file \p _file_name.*/
-    SlvStatus load(const std::string& _file_name);
-
-private:
-
-    /*! Friend class for specific case manaing GlvWidgetData.*/
-    template <class T, typename>
-    friend class GlvWidgetData;
-
-};
-
-template <class Tdata>
-GlvWidgetSaveLoad<Tdata>::GlvWidgetSaveLoad(GlvWidget<Tdata>* _widget, SlvFileExtensions _allowed_extensions, Qt::Orientation _orientation) : GlvWidgetSaveLoad_base((_allowed_extensions.add(SlvFileMgr::replace_forbidden_file_characters(SlvDataName<Tdata>::name(), '_', true, true)), _allowed_extensions), _orientation, SlvDataName<Tdata>::name()) {
-
-    widget = _widget;
-    _widget->set_save_load_widget(this);
-    widget_data = NULL;
-
-}
-
-template <class Tdata>
-GlvWidgetSaveLoad<Tdata>::GlvWidgetSaveLoad(GlvWidgetData<Tdata>* _widget_data, SlvFileExtensions _allowed_extensions, Qt::Orientation _orientation) : GlvWidgetSaveLoad_base((_allowed_extensions.add(SlvFileMgr::replace_forbidden_file_characters(SlvDataName<Tdata>::name(), '_', true, true)), _allowed_extensions), _orientation, SlvDataName<Tdata>::name()) {
-
-    widget_data = _widget_data;
-    widget = NULL;
-
-}
-
-template <class Tdata>
-GlvWidgetSaveLoad<Tdata>::~GlvWidgetSaveLoad() {
-
-    widget->set_save_load_widget(NULL);
-
-}
-
-template <class Tdata>
-void GlvWidgetSaveLoad<Tdata>::save(const std::string& _file_name) {
-
-    Tdata value;
-    if (widget) {
-        value = widget->get_value();
-    } else if (widget_data) {
-        value = widget_data->get_value();
-    }
-    SlvFileMgr::write_binary(value, _file_name);
-
-}
-
-template <class Tdata>
-SlvStatus GlvWidgetSaveLoad<Tdata>::load(const std::string& _file_name) {
-
-    Tdata value;
-    SlvStatus status = SlvFileMgr::read_binary(value, _file_name);
-    if (status) {
-        if (widget) {
-            widget->set_value(value);
-        } else if (widget_data) {
-            widget_data->set_value(value);
-        }
-    }
-
-    return status;
-}
-
-/*! Convenience methods to make Glv widgets out of Tdata.*/
-class GlvWidgetAuto {
-
-public:
-
-    template <class Tdata>
-    static GlvWidget<Tdata>* make(const Tdata _value = Tdata(), bool l_editable = true, QWidget* _parent = 0);
-
-    template <class Tdata>
-    static GlvDescribedWidget<Tdata>* make_described(const Tdata _value = Tdata(), std::string _data_name = "", std::string _description = "", bool l_editable = true, QWidget* _parent = 0);
-
-    template <class Tparametrization>
-    static GlvParametrizationWidget<Tparametrization>* make_parametrization(const Tparametrization _parametrization = Tparametrization(), bool l_editable = true, QWidget* _parent = 0);
-
-};
-
-template <class Tdata>
-GlvWidget<Tdata>* GlvWidgetAuto::make(const Tdata _value, bool l_editable, QWidget* _parent) {
-
-    GlvWidget<Tdata>* widget = new GlvWidget<Tdata>(_value, l_editable, _parent);
-    return widget;
-}
-
-template <class Tdata>
-GlvDescribedWidget<Tdata>* GlvWidgetAuto::make_described(const Tdata _value, std::string _data_name, std::string _description, bool l_editable, QWidget* _parent) {
-
-    GlvDescribedWidget<Tdata>* widget = new GlvDescribedWidget<Tdata>(_value, _data_name, _description, l_editable, _parent);
-    return widget;
-}
-
-template <class Tparametrization>
-GlvParametrizationWidget<Tparametrization>* GlvWidgetAuto::make_parametrization(const Tparametrization _parametrization, bool l_editable, QWidget* _parent) {
-
-    GlvParametrizationWidget<Tparametrization>* widget = new GlvParametrizationWidget<Tparametrization>(_parametrization, l_editable, _parent);
-    return widget;
-}
-
-#endif
-
-/*! Sort management of a list of template data. Not to be used directly. Use SlvSortAscending or SlvSortDescending.
-* Sort data as soon as they are added.
-* Tdata is the type of data to sort, and Trange is the type by which two Tdata are being compared.
-* Range is the maximal range between data. Range value must be positive.
-* Maximum number of datas sorted is always 1 at minimum.
-* Possibility to limit the number of data.
-* Ascending: Input priority (front of datas) to the lowest values.
-* Descending: Input priority (front of datas) to the highest values.*/
-template <class Tdata, class Trange = Tdata>
-class SlvSort : public SlvParametrization2<unsigned int, Trange>, virtual public SlvIOS {
-
-    glvm_parameter_ruled(1, Ndatas_max, unsigned int, "Maximum number of elements", "Maximum number the sort instance can contain.", (unsigned int)-1)
-    glvm_parameter_add_rule(min, 1)
-    glvm_parameter_end
-    glvm_parameter_ruled(2, range, Trange, "Maximum range", "Maximum delta from the front element.", 0)
-    glvm_parameter_add_rule(min, 0)
-    glvm_parameter_end
-
-protected:
-
-    std::vector<Tdata> datas;
-
-public:
-
-    SlvSort() :glvm_parametrization_constructor(Ndatas_max, range) {}
-    /*! \p _Ndatas_max is the maximum number of elements in the instance.
-    * \p _range is the maximum delta from the front element.*/
-    SlvSort(unsigned int _Ndatas_max, Trange _range = 0);
-    ~SlvSort();
-
-    /*! Clear sorted datas. Keeps parameters.*/
-    void clear();
-
-    unsigned int size() const;
-    const Tdata& operator[] (const unsigned int i) const;
-
-    /*! Access datas vector.*/
-    const std::vector<Tdata>& get() const;
-    /*! Access datas vector.*/
-    std::vector<Tdata>& get();
-
-    /*! Get index where \p _data should belong.*/
-    unsigned int get_index(const Tdata& _data) const;
-    /*! Add \p _data. Return true if successfully added.*/
-    bool add(const Tdata& _data);
-
-    /*! Comparison test between two datas. Implemented in SlvSortAscending and SlvSortDescending.*/
-    virtual bool test_data(const Tdata& _data1, const Tdata& _data2) const = 0;
-    /*! Return true if \p _data is in the proper range, comparing from front sorted data.*/
-    virtual bool check_range(const Tdata& _data) const = 0;
-
-    void writeB(std::ofstream& _output_file) const;
-    bool readB(std::ifstream& _input_file);
-
-private:
-
-    void ostream(std::ostream& _os) const;
-    void istream(std::istream& _is);
-
-};
-
-template <class Tdata, class Trange>
-SlvSort<Tdata, Trange>::SlvSort(unsigned int _Ndatas_max, Trange _range) :SlvSort() {
-    set_Ndatas_max(_Ndatas_max);
-    set_range(_range);
-}
-
-template <class Tdata, class Trange>
-SlvSort<Tdata, Trange>::~SlvSort() {
-
-}
-
-template <class Tdata, class Trange>
-void SlvSort<Tdata, Trange>::clear() {
-
-    datas.clear();
-}
-
-template <class Tdata, class Trange>
-unsigned int SlvSort<Tdata, Trange>::size() const {
-
-    return (unsigned int)datas.size();
-}
-
-template <class Tdata, class Trange>
-const Tdata& SlvSort<Tdata, Trange>::operator[] (const unsigned int i) const {
-
-    return datas[i];
-}
-
-template <class Tdata, class Trange>
-const std::vector<Tdata>& SlvSort<Tdata, Trange>::get() const {
-    return datas;
-}
-
-template <class Tdata, class Trange>
-std::vector<Tdata>& SlvSort<Tdata, Trange>::get() {
-    return datas;
-}
-
-template <class Tdata, class Trange>
-unsigned int SlvSort<Tdata, Trange>::get_index(const Tdata& _data) const {
-
-    unsigned int i = 0;
-    unsigned int i_lower = 0;
-    unsigned int i_upper = (unsigned int)datas.size();
-
-    while (i_lower + 1 < i_upper) {
-
-        i = i_lower + (i_upper - i_lower) / 2;
-
-        if (test_data(datas[i], _data)) {
-            i_lower = i;
-        } else {
-            i_upper = i;
-        }
-
-    }
-
-    if (i_lower != i_upper) {
-        if (test_data(datas[i_lower], _data)) {
-            i = i_upper;
-        } else {
-            i = i_lower;
-        }
-    }
-
-    return i;
-
-}
-
-template <class Tdata, class Trange>
-bool SlvSort<Tdata, Trange>::add(const Tdata& _data) {
-
-    bool l_return = true;
-
-    //get index where _data should belong
-    unsigned int i = get_index(_data);
-
-    if (i == 0) {
-
-        datas.insert(datas.begin(), _data);
-        if (datas.size() > get_Ndatas_max()) {
-            datas.pop_back();
-        } else if (get_range() != Trange(0)) {// range reference may have changed
-            while (!check_range(datas.back())) {
-                datas.pop_back();
-            }
-        }
-
-    } else {
-
-        if (i == datas.size()) {
-
-            if (i < get_Ndatas_max() && (get_range() == Trange(0) || check_range(_data))) {
-                datas.push_back(_data);
-            } else {
-                l_return = false;
-            }
-
-        } else {
-
-            datas.insert(datas.begin() + i, _data);
-            if (datas.size() > get_Ndatas_max()) {
-                datas.pop_back();
-            }
-
-        }
-
-    }
-
-    return l_return;
-}
-
-template <class Tdata, class Trange>
-void SlvSort<Tdata, Trange>::writeB(std::ofstream& _output_file) const {
-    slv::rw::writeB(datas, _output_file);
-}
-
-template <class Tdata, class Trange>
-void SlvSort<Tdata, Trange>::ostream(std::ostream& _os) const {
-    _os << datas;
-}
-
-template <class Tdata, class Trange>
-bool SlvSort<Tdata, Trange>::readB(std::ifstream& _input_file) {
-    return slv::rw::readB(datas, _input_file);
-}
-
-template <class Tdata, class Trange>
-void SlvSort<Tdata, Trange>::istream(std::istream& _is) {
-    _is >> datas;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
-//////////////////// Ascending/Descending ///////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-
-template <class Tdata, class Trange = Tdata>
-class SlvSortDescending : public SlvSort<Tdata, Trange> {
-
-    glvm_parametrization2_inherited_template_init(SlvSort<Tdata COMMA Trange>)// Required for GCC
-    glvm_parametrization2_init("Sort descending")
-
-public:
-
-    /*! \p _Ndatas_max is the maximum number of elements in the instance.
-    * \p _range is the maximum delta from the front element.*/
-    SlvSortDescending(unsigned int _Ndatas_max = -1, Trange _range = Trange(0));
-    ~SlvSortDescending();
-
-private:
-
-    bool test_data(const Tdata& _data1, const Tdata& _data2) const;
-    bool check_range(const Tdata& _data) const;
-
-};
-
-template <class Tdata, class Trange>
-SlvSortDescending<Tdata, Trange>::SlvSortDescending(unsigned int _Ndatas_max, Trange _range) :SlvSort<Tdata, Trange>(_Ndatas_max, _range) {
-
-}
-
-template <class Tdata, class Trange>
-SlvSortDescending<Tdata, Trange>::~SlvSortDescending() {
-
-}
-
-template <class Tdata, class Trange>
-bool SlvSortDescending<Tdata, Trange>::test_data(const Tdata& _data1, const Tdata& _data2) const {
-    return _data1 >= _data2;
-}
-
-template <class Tdata, class Trange>
-bool SlvSortDescending<Tdata, Trange>::check_range(const Tdata& _data) const {
-    return this->datas.front() - _data <= this->get_range();
-}
-
-template <class Tdata, class Trange = Tdata>
-class SlvSortAscending : public SlvSort<Tdata, Trange> {
-
-    glvm_parametrization2_inherited_template_init(SlvSort<Tdata COMMA Trange>)// Required for GCC
-    glvm_parametrization2_init("Sort ascending")
-
-public:
-
-    /*! \p _Ndatas_max is the maximum number of elements in the instance.
-    * \p _range is the maximum delta from the front element.*/
-    SlvSortAscending(unsigned int _Ndatas_max = -1, Trange _range = Trange(0));
-    ~SlvSortAscending();
-
-private:
-
-    bool test_data(const Tdata& _data1, const Tdata& _data2) const;
-    bool check_range(const Tdata& _data) const;
-
-};
-
-template <class Tdata, class Trange>
-SlvSortAscending<Tdata, Trange>::SlvSortAscending(unsigned int _Ndatas_max, Trange _range) :SlvSort<Tdata, Trange>(_Ndatas_max, _range) {
-
-}
-
-template <class Tdata, class Trange>
-SlvSortAscending<Tdata, Trange>::~SlvSortAscending() {
-
-}
-
-template <class Tdata, class Trange>
-bool SlvSortAscending<Tdata, Trange>::test_data(const Tdata& _data1, const Tdata& _data2) const {
-    return _data1 <= _data2;
-}
-
-template <class Tdata, class Trange>
-bool SlvSortAscending<Tdata, Trange>::check_range(const Tdata& _data) const {
-    return _data - this->datas.front() <= this->get_range();
-}
 
 #ifndef GLOVE_DISABLE_QT
 
@@ -20087,355 +18146,6 @@ public:
 
 };
 
-#endif
-
-/*! This class is a sort of std::map, with "factory" features.
-Tvalue must inherit SlvLabeling<Tlabel>, with Tlabel being the 'key'.
-Therefore, unlike std::map, the key (Tlabel) is owned by Tvalue.
-The instance owns the elements (no shared pointer).*/
-template <class Tvalue, class Tlabel = typename Tvalue::Tlabeling>
-class SlvPool : virtual public SlvOS {
-
-private:
-
-	std::vector<Tvalue*> elements;
-
-public:
-
-	SlvPool();
-	SlvPool(const SlvPool<Tvalue, Tlabel>& _pool);
-	~SlvPool();
-
-	/*! Clear the instance. Delete owned elements.*/
-	void clear();
-
-	typedef typename std::vector<Tvalue*>::const_iterator const_iterator;
-	/*! Iterator to the first element.*/
-	const_iterator begin() const;
-	/*! Iterator to the last element.*/
-	const_iterator end() const;
-
-	typedef typename std::vector<Tvalue*>::iterator iterator;
-	/*! Iterator to the first element.*/
-	iterator begin();
-	/*! Iterator to the last element.*/
-	iterator end();
-
-	/*! Create and delete elements to match \p _pool.*/
-	SlvPool<Tvalue, Tlabel>& operator=(const SlvPool<Tvalue, Tlabel>& _pool);
-
-	/*! Get number of elements. Size of the pool.*/
-	unsigned int psize() const;
-
-	/*! Add an element created externally.
-	* Checks if an element with the same label already exists.
-	* The pool instance will own the element (possible deletion).*/
-	bool add(Tvalue* _element);
-
-	/*! Get the element which label is equal to \p _label.
-	* Return NULL if not found.
-	* Template label argument for flexibility in the == operator.*/
-	template <class Tlabel2>
-	const Tvalue* get(const Tlabel2& _label) const;
-	/*! Get the element which label is equal to \p _label.
-	* Return NULL if not found.
-	* Template label argument for flexibility in the == operator.*/
-	template <class Tlabel2>
-	Tvalue* get(const Tlabel2& _label);
-
-	/*! Get vector of elements.*/
-	const std::vector<Tvalue*>& get_elements() const;
-
-	/*! Create and return an element labelled \p _label.
-	* If an element with this _label already exists, returns it.*/
-	Tvalue* new_element(const Tlabel& _label);
-	/*! Delete element labelled \p _label.
-	* Template label argument for flexibility in the == operator.*/
-	template <class Tlabel2>
-	bool delete_element(const Tlabel2& _label);
-	/*! Delete element which label is the same as the one of \p _element.
-	* If \p _l_owned is true, delete only if _element is part of the pool.
-	* Ambiguous if Tlabel is the same type as Tvalue*. Unlikely though.*/
-	template <class Tvalue2>
-	bool delete_element(Tvalue2* _element, bool _l_owned = true);
-	/*! Delete element at index \p el.
-	* _at suffix for disambiguation with Tlabel/Tvalue */
-	bool delete_element_at(const unsigned int el);
-
-	/*! Returns the elements index where the element with label \p _label is located.
-	* Returns -1 if \p _label is not found.
-	* Template label argument for flexibility in the == operator.*/
-	template <class Tlabel2>
-	unsigned int get_n(const Tlabel2& _label) const;
-
-	/* Returns the iterator of element which label is \p _label.
-	* If not found, returns end().*/
-	template <class Tlabel2>
-	iterator find(const Tlabel2& _label);
-	/* Returns the iterator of element which label is \p _label.
-	* If not found, returns end().*/
-	template <class Tlabel2>
-	const_iterator find(const Tlabel2& _label) const;
-
-	/*! Get element at index \p el.*/
-	Tvalue* operator[](const unsigned int el);
-	/*! Get element at index \p el.*/
-	const Tvalue* operator[](const unsigned int el) const;
-
-protected:
-
-	void ostream(std::ostream& _os) const;
-
-};
-
-template <class Tvalue, class Tlabel>
-SlvPool<Tvalue, Tlabel>::SlvPool() {
-
-}
-
-template <class Tvalue, class Tlabel>
-SlvPool<Tvalue, Tlabel>::SlvPool(const SlvPool<Tvalue, Tlabel>& _pool) {
-
-	*this = _pool;
-
-}
-
-template <class Tvalue, class Tlabel>
-SlvPool<Tvalue, Tlabel>::~SlvPool() {
-
-	clear();
-
-}
-
-template <class Tvalue, class Tlabel>
-void SlvPool<Tvalue, Tlabel>::clear() {
-
-	for (iterator it = begin(); it != end(); ++it) {
-		delete* it;
-	}
-	elements.clear();
-
-}
-
-template <class Tvalue, class Tlabel>
-typename SlvPool<Tvalue, Tlabel>::const_iterator SlvPool<Tvalue, Tlabel>::begin() const {
-
-	return elements.begin();
-
-}
-
-template <class Tvalue, class Tlabel>
-typename SlvPool<Tvalue, Tlabel>::const_iterator SlvPool<Tvalue, Tlabel>::end() const {
-
-	return elements.end();
-
-}
-
-template <class Tvalue, class Tlabel>
-typename SlvPool<Tvalue, Tlabel>::iterator SlvPool<Tvalue, Tlabel>::begin() {
-
-	return elements.begin();
-
-}
-
-template <class Tvalue, class Tlabel>
-typename SlvPool<Tvalue, Tlabel>::iterator SlvPool<Tvalue, Tlabel>::end() {
-
-	return elements.end();
-
-}
-
-template <class Tvalue, class Tlabel>
-SlvPool<Tvalue, Tlabel>& SlvPool<Tvalue, Tlabel>::operator=(const SlvPool<Tvalue, Tlabel>& _pool) {
-
-	clear();
-
-	for (const_iterator it = _pool.elements.begin(); it != _pool.elements.end(); ++it) {
-		(*new_element(static_cast<const SlvLabeling<Tlabel>*>(*it)->get_label())) = **it;
-	}
-
-	return *this;
-}
-
-template <class Tvalue, class Tlabel>
-unsigned int SlvPool<Tvalue, Tlabel>::psize() const {
-
-	return (unsigned int)elements.size();
-
-}
-
-template <class Tvalue, class Tlabel>
-bool SlvPool<Tvalue, Tlabel>::add(Tvalue* _element) {
-
-	// Static cast to prevent get_label shadowing
-	if (!get(static_cast<const SlvLabeling<Tlabel>*>(_element)->get_label())) {
-		elements.push_back(_element);
-		return true;
-	} else {
-		slv::flag::ISSUE(slv::flag::FlagType::Warning, "Can not add the element ", *_element, " in the pool, an element with the same label ", static_cast<const SlvLabeling<Tlabel>*>(_element)->get_label(), " already exists");
-		return false;
-	}
-
-}
-
-template <class Tvalue, class Tlabel>
-template <class Tlabel2>
-Tvalue* SlvPool<Tvalue, Tlabel>::get(const Tlabel2& _label) {
-
-	iterator it = find(_label);
-	if (it != end()) {
-		return *it;
-	} else {
-		return NULL;
-	}
-
-}
-
-template <class Tvalue, class Tlabel>
-template <class Tlabel2>
-const Tvalue* SlvPool<Tvalue, Tlabel>::get(const Tlabel2& _label) const {
-
-	return const_cast<SlvPool<Tvalue, Tlabel>*>(this)->get(_label);
-
-}
-
-template <class Tvalue, class Tlabel>
-template <class Tlabel2>
-unsigned int SlvPool<Tvalue, Tlabel>::get_n(const Tlabel2& _label) const {
-
-	const_iterator it = find(_label);
-
-	if (it != end()) {
-		return std::distance(begin(), it);
-	} else {
-		return -1;
-	}
-
-}
-
-template <class Tvalue, class Tlabel>
-const std::vector<Tvalue*>& SlvPool<Tvalue, Tlabel>::get_elements() const {
-	return elements;
-}
-
-template <class Tvalue, class Tlabel>
-Tvalue* SlvPool<Tvalue, Tlabel>::new_element(const Tlabel& _label) {
-
-	Tvalue* value = get(_label);
-	if (!value) {
-		value = new Tvalue(_label);
-		elements.push_back(value);
-	} else {
-		slv::flag::ISSUE(slv::flag::FlagType::Warning, "Can not create the element ", *value, " in the pool, an element with the same label ", value->get_label(), " already exists");
-	}
-
-	return value;
-}
-
-template <class Tvalue, class Tlabel>
-template <class Tlabel2>
-bool SlvPool<Tvalue, Tlabel>::delete_element(const Tlabel2& _label) {
-
-	iterator it = find(_label);
-	if (it != end()) {
-		delete* it;
-		elements.erase(it);
-		return true;
-	} else {
-		slv::flag::ISSUE(slv::flag::FlagType::Warning, "Can not delete. The element labelled ", _label, " does not exist.");
-		return false;
-	}
-
-}
-
-template <class Tvalue, class Tlabel>
-template <class Tvalue2>
-bool SlvPool<Tvalue, Tlabel>::delete_element(Tvalue2* _element, bool _l_owned) {
-
-	if (!_l_owned || slv::vector::find(static_cast<Tvalue*>(_element), elements)) {
-		return delete_element(_element->get_label());
-	} else {
-		return false;
-	}
-
-}
-
-template <class Tvalue, class Tlabel>
-bool SlvPool<Tvalue, Tlabel>::delete_element_at(const unsigned int el) {
-
-	if (el < psize()) {
-		delete elements[el];
-		elements.erase(elements.begin() + el);
-		return true;
-	} else {
-		return false;
-	}
-
-}
-
-template <class Tvalue, class Tlabel>
-template <class Tlabel2>
-typename SlvPool<Tvalue, Tlabel>::iterator SlvPool<Tvalue, Tlabel>::find(const Tlabel2& _label) {
-
-	bool l_found = false;
-	iterator it = begin();
-	while (it != end() && !l_found) {
-		l_found = (static_cast<const SlvLabeling<Tlabel>*>(*it)->get_label() == _label);
-		if (!l_found) ++it;
-	}
-
-	return it;
-
-}
-
-template <class Tvalue, class Tlabel>
-template <class Tlabel2>
-typename SlvPool<Tvalue, Tlabel>::const_iterator SlvPool<Tvalue, Tlabel>::find(const Tlabel2& _label) const {
-
-	bool l_found = false;
-	const_iterator it = begin();
-	while (it != end() && !l_found) {
-		l_found = (static_cast<const SlvLabeling<Tlabel>*>(*it)->get_label() == _label);
-		if (l_found) ++it;
-	}
-
-	return it;
-
-}
-
-template <class Tvalue, class Tlabel>
-Tvalue* SlvPool<Tvalue, Tlabel>::operator[](const unsigned int el) {
-	return elements[el];
-}
-
-template <class Tvalue, class Tlabel>
-const Tvalue* SlvPool<Tvalue, Tlabel>::operator[](const unsigned int el) const {
-	return elements[el];
-}
-
-template <class Tvalue, class Tlabel>
-void SlvPool<Tvalue, Tlabel>::ostream(std::ostream& _os) const {
-
-	for (const_iterator it = begin(); it != end(); ++it) {
-		_os << **it << ", " << (*it)->get_label() << std::endl;
-	}
-
-}
-
-/*! Get name of template type. Specialization. Name SlvPool.*/
-template <class Tvalue>
-struct SlvDataName< SlvPool<Tvalue> > {
-    static std::string name() {
-        std::string name = "SlvPool";
-        name += "<";
-        name += SlvDataName<Tvalue>::name();
-        name += ">";
-        return name;
-    }
-};
-
-#ifndef GLOVE_DISABLE_QT
-
 /*! Specialization of QStandardItemModelMaker for SlvPool.
 First column: label.
 Second colum: value.*/
@@ -20452,7 +18162,7 @@ public:
 
         if (_model && (_index == QModelIndex() || _index.model() == _model)) {
 
-            glv::resize(_model, _pool.psize(), 2, _index);
+            glv::resize(_model, (unsigned int)(_pool.psize()), 2, _index);
 
             QModelIndex index;
             for (unsigned int i = 0; i < _pool.psize(); i++) {
@@ -20475,7 +18185,7 @@ public:
             }
 
             if (_index != QModelIndex()) {
-                QString root_text = get_root_text(_pool.psize());
+                QString root_text = get_root_text((unsigned int)(_pool.psize()));
                 if (_model->itemFromIndex(_index)->text() != root_text) {
                     _model->itemFromIndex(_index)->setText(root_text);
                 }
@@ -20527,6 +18237,39 @@ public:
     }
 
 };
+
+class QComboBox;
+class QWidget;
+
+namespace glv {
+
+	/*! Create a QComboBox from a Tdata. Displayed values are the first template argument.*/
+	template <class Tdata>
+	QComboBox* toQComboBox(const Tdata& _data, QString _name = "", QWidget* _parent = 0);
+	/*! Assign a Tdata to a QComboBox. Displayed values are the first template argument.*/
+	template <class Tdata>
+	void toQComboBox(QComboBox* _combo_box, const Tdata& _data, QString _name = "");
+
+}
+
+template <class Tdata>
+QComboBox* glv::toQComboBox(const Tdata& _data, QString _name, QWidget* _parent) {
+
+	QComboBox* combo_box = new QComboBox(_parent);
+	toQComboBox(combo_box, _data, _name);
+	return combo_box;
+
+}
+
+template <class Tdata>
+void glv::toQComboBox(QComboBox* _combo_box, const Tdata& _data, QString _name) {
+
+	QStandardItemModel* model = glv::tdata::toQStandardItemModel(_data);
+	_combo_box->clear();
+	_combo_box->setObjectName(_name);
+	_combo_box->setModel(model);
+
+}
 
 #endif
 
@@ -20580,155 +18323,2474 @@ Tvalue* SlvPoolFactory<Tvalue, Tlabel>::get(const Tlabel& _label) {
 
 #ifndef GLOVE_DISABLE_QT
 
-class QComboBox;
+class SlvParametrization_base;
+class QDialogButtonBox;
+class QVBoxLayout;
+class GlvParametersWidget_base;
+class QPushButton;
+
+/*! Dialog widget managing parametrization widget.
+* This is the main widget (with GlvParametrizationWidget) to use for parametrization management in the framework.
+* Accept : set the parametrization has the one configured by the widget.
+* Reject : does not modify the parametrization. */
+class GlvParametrizationDialog_base : public QDialog {
+
+    Q_OBJECT
+
+protected:
+
+    QDialogButtonBox* button_box;
+    QPushButton* abide_rules_button;
+    bool l_dialog;//whether has buttons. if so, parent's activation depends on "this" state. Also QDialog::accept/reject is activated
+    bool l_deny_invalid_parameters;
+    SlvParametrization_base* parametrization_base;//usefull to cast to correct child type (see macros)
+    /*! Base pointer to manage dialog's size depending on parameters visibility.*/
+    GlvParametersWidget_base* parameters_widget_base;
+    QVBoxLayout* m_layout;
+
+    GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent);
+public:
+    virtual ~GlvParametrizationDialog_base();
+
+    /*! Returns base pointer to the stored parameterization, so it can be casted to the real parametrization provided its type is known.*/
+    const SlvParametrization_base* get_parametrization_base() const;
+    void addWidget(QWidget* _widget);
+
+    /*! Show or hide the button controlling rules complying, next to 'Ok' and 'Cancel'.*/
+    void enable_abide_rules_button(bool _l_enable);
+
+protected :
+    void set_parameters_widget_base(GlvParametersWidget_base* _parameters_widget_base);
+    void resizeEvent(QResizeEvent* _event);
+public slots:
+    /*! Apply parametrization widget. QDialog's accept slot only if l_dialog is true.*/
+    virtual void accept() = 0;
+    /*! Reset parametrization widget with current parametrization value. QDialog's reject slot only if l_dialog is true.*/
+    virtual void reject() = 0;
+    /*! Apply parametrization widget and check parameters.*/
+    virtual SlvStatus apply() = 0;
+
+private slots:
+    /*! Update parametrization according to current values contained in parametrization_widget*/
+    virtual void update_parametrization() = 0;
+    void parametrizationChanged_slot(std::string _parameter_name);
+    void abide_slot();
+    /*! Set free maximum height depending on parameters visibility.*/
+    void maximum_height_slot();
+protected slots:
+    // Check parameters by updating parametrization before
+    void check_parameters_slot();
+signals:
+    void parametrizationChanged(std::string _parameter_name);
+
+private:
+    /*! Returns true if the parametrization has rules.*/
+    virtual bool has_rules() = 0;
+    virtual bool abide_rules() = 0;
+    virtual const SlvParametrization_base* new_parametrization_base() const = 0;
+
+};
+
+/*! Widget managing SlvParameter.*/
+class GlvParameterWidget_base : public QObject {
+
+    Q_OBJECT
+
+protected:
+
+    GlvParameterWidget_base() {}
+    virtual ~GlvParameterWidget_base() {}
+
+signals:
+    /*! Emitted when the widget interface related to the value of the parameter is modified.*/
+    void parameterChanged(std::string _parameter_name);
+
+private slots:
+    virtual void valueChanged_slot() = 0;
+
+};
+
+/*! Widget managing SlvParameter.*/
+template <class Tparam>
+class GlvParameterWidget : public GlvDescribedWidget<Tparam>, public GlvParameterWidget_base {
+
+public:
+
+    GlvParameterWidget(const SlvParameter<Tparam>& _parameter, bool l_editable = true, QWidget* _parent = 0);
+    ~GlvParameterWidget();
+
+    /*! Set value.*/
+    void set(const SlvParameter<Tparam>& _parameter);
+    /*! Set as editable or not.*/
+    void set_editable(bool l_editable);
+    /*! Apply all rules of \p _parameter.*/
+    void abide_rules(const SlvParameter<Tparam>& _parameter);
+
+private:
+    /*! Apply \p _parameter_rule.*/
+    void abide_rule(const SlvParameterRuleT<Tparam>& _parameter_rule);
+    void valueChanged_slot();
+    /*! Get description of rules. One rule description per line.*/
+    std::string get_rules_description(const SlvParameter<Tparam>& _parameter) const;
+
+};
+
+template <class Tparam>
+GlvParameterWidget<Tparam>::GlvParameterWidget(const SlvParameter<Tparam>& _parameter, bool l_editable, QWidget* _parent) :GlvDescribedWidget<Tparam>(_parameter.get_value(), _parameter.get_name(), _parameter.get_description(), l_editable, _parent) {
+
+    QObject::connect(this->data_widget, SIGNAL(valueChanged()), static_cast<GlvParameterWidget_base*>(this), SLOT(valueChanged_slot()));
+
+    abide_rules(_parameter);
+
+    GlvDescribedWidget<Tparam>::append_tool_tip(get_rules_description(_parameter));
+
+}
+
+template <class Tparam>
+GlvParameterWidget<Tparam>::~GlvParameterWidget() {
+
+}
+
+template <class Tparam>
+void GlvParameterWidget<Tparam>::set(const SlvParameter<Tparam>& _parameter) {
+
+    this->data_widget->set_value(_parameter.get_value());
+}
+
+template <class Tparam>
+void GlvParameterWidget<Tparam>::set_editable(bool l_editable) {
+
+    this->data_widget->set_editable(l_editable);
+}
+
+template <class Tparam>
+void GlvParameterWidget<Tparam>::abide_rules(const SlvParameter<Tparam>& _parameter) {
+
+    for (unsigned int r = 0; r < _parameter.get_rules().size(); r++) {
+        abide_rule(_parameter.get_rules()[r]);
+    }
+}
+
+template <class Tparam>
+void GlvParameterWidget<Tparam>::abide_rule(const SlvParameterRuleT<Tparam>& _parameter_rule) {
+
+    GlvParameterRuleAbiding<Tparam>::abide(_parameter_rule, this->data_widget->get_widget());
+
+}
+
+template <class Tparam>
+void GlvParameterWidget<Tparam>::valueChanged_slot() {
+
+    emit parameterChanged(this->data_name);
+
+}
+
+template <class Tparam>
+std::string GlvParameterWidget<Tparam>::get_rules_description(const SlvParameter<Tparam>& _parameter) const {
+
+    std::string description;
+
+    std::vector<std::string> descriptions = _parameter.get_rules_description();
+
+    for (typename std::vector<std::string>::const_iterator it = descriptions.begin(); it != descriptions.end(); ++it) {
+        description += *it;
+        if (std::next(it) != descriptions.end() && !it->empty()) {
+            description += "\n";
+        }
+    }
+
+    return description;
+}
+
+class QVBoxLayout;
+class QGridLayout;
+template <class Tparam>
+class GlvParameterWidget;
+
+/*! Widget managing the parameters of classes SlvParametrization**.*/
+class GlvParametersWidget_base : public QGroupBox, public GlvSaveLoad {
+
+	Q_OBJECT
+
+private:
+	glvm_staticVariable(const, int, grid_horizontal_spacing, 10);
+	glvm_staticVariable_def(const, int, layout_margin);
+private :
+	/*! Whether the parameters are set in a scroll area or not.*/
+	bool l_scrollable;
+	class ScrollArea;
+	/*! Scroll area of parameters.*/
+	ScrollArea* scroll_area;
+	/*! Whether last resize update was a height decrease.*/
+	bool l_height_decreased;
+	/*! If true, max height will apply whenever scroll bar appears.
+	* If false (default), the widget can still be resized up to the last height before parameters size reduction.
+	* i.e.: Update height hint to fit to parameters widget.*/
+	bool l_adapt_max_height;
+public:
+	enum LayoutType { Vertical, Grid };
+protected:
+	LayoutType layout_type = LayoutType::Vertical;
+	QVBoxLayout* vertical_layout;
+	QGridLayout* grid_layout;
+	QVBoxLayout* main_layout;
+	QWidget* parameters_widget;
+
+	GlvParametersWidget_base();
+	virtual ~GlvParametersWidget_base();
+public:
+
+	/*! Set layout of parameters widget to vertical, ie a stack of the parameter widgets.
+	* More intuitive, but lacks aligment of names and data widgets
+	* It is possible to switch from set_layout_grid() to set_layout_vertical() and vice versa.*/
+	void set_layout_vertical();
+	/*! Set layout of parameters widget as a grid layout.Names and data widgets are aligned, but their ownsership is moved.
+	* It is possible to switch from set_layout_grid() to set_layout_vertical() and vice versa.*/
+	void set_layout_grid();
+	/*! Set layout type either to LayoutType::Vertical or LayoutType::Grid.*/
+	virtual void set_layout_type(LayoutType _layout_type) = 0;
+	/*! Display or hide data type information in 'whatsthis'.*/
+	virtual void enable_data_type_info(bool _l_enable) = 0;
+
+	/*! Returns true if the parameters are fully visible (no scroll bars).*/
+	bool is_fully_visible() const;
+	/*! Returns true if the parameters widget last resize update was a height decrease.*/
+	bool has_height_decreased() const;
+	/*! Set parameters to be scrollable or not.
+	* Default state is true.*/
+	void set_scrollable(bool _l_scrollable);
+	/*! Advanced setting.
+	* If true, max height will apply whenever scroll bar appears.
+	* If false (default), the widget can still be resized up to the last height before parameters size reduction.
+	* i.e.: Update height hint to fit to parameters widget.*/
+	void set_adapt_max_height(bool _l_adapt);
+
+protected:
+	/*! Add the parameter widget to the parameters.*/
+	void add_parameter_widget_to_vertical_layout(QWidget* _parameter_widget);
+	template <class Tdata>
+	void set_parameter_widget_to_grid_layout(GlvParameterWidget<Tdata>* _parameter_widget, int i);
+	/*! Set layout type, protected.*/
+	void set_layout_type_protected(LayoutType _layout_type);
+	/*! Set save/load widget. Called in GlvParametrizationSaveLoad.*/
+	void set_save_load_widget(GlvWidgetSaveLoad_base* _save_load_widget);
+	/*! Enable/disable possibility to show/hide parameters.*/
+	void set_checkable_collapse(bool _l_checkable);
+	
+private:
+	/*! Add to row \p i :
+	* Column 0 : \p _dataname_label.
+	* Column 1 : \p _data_widget.
+	* Column 2 : \p _optional_text.*/
+	void add_parameter_widget_to_grid_layout(QWidget* _dataname_label, QWidget* _data_widget, QWidget* _optional_text_label, int i);
+	/*! Get number of parameters.*/
+	virtual int get_Nparameters() const = 0;
+	bool eventFilter(QObject* object, QEvent* _event);
+private slots:
+	/*! Show parameters or not.*/
+	void show_parameters(bool _l_show);
+signals:
+	/*! Emitted when the parameter named \p _parameter_name has changed.*/
+	void parameterChanged(std::string _parameter_name);
+	/*! Emitted when the widget containing the parameters (only) is being resized vertically.*/
+	void heightChanged();
+};
+
+template <class Tdata>
+void GlvParametersWidget_base::set_parameter_widget_to_grid_layout(GlvParameterWidget<Tdata>* _parameter_widget, int i) {
+
+	add_parameter_widget_to_grid_layout(reinterpret_cast<QWidget*>(_parameter_widget->data_name_label), \
+		_parameter_widget->get_widget(), \
+		reinterpret_cast<QWidget*>(_parameter_widget->optional_text_label), i);
+
+}
+
+template <class T>
+class GlvParametersWidget;
+
+/*! Widget managing the parameters of classes SlvParametrization**.*/
+template <>
+class GlvParametersWidget<SlvParametrization0> : public GlvParametersWidget_base {
+
+public:
+    GlvParametersWidget(const SlvParametrization0& _parametered_object, bool l_editable);
+    ~GlvParametersWidget();
+    /*! Set parametrization.*/
+    void set(const SlvParametrization0& _parametered_object);
+    /*! Get parametrization. Tparametrization is the class inheriting from SlvParametrization.*/
+    template <class Tparametrization>
+    Tparametrization get() const;
+    /*! Set the parameters as editable or not.*/
+    void set_editable(bool l_editable);
+protected:
+    void assign_recursive(SlvParametrization0& _parametrization) const;
+    /*! Set the layout of parameters as either
+    * Vertical : stack of widgets
+    * Grid : parameters name are in the first column, their respective interaction widget on the second one.*/
+    void set_layout_type(LayoutType _layout_type);
+    /*! Enable or not display of parameter types in WhatsThis.*/
+    void enable_data_type_info(bool _l_enable);
+private:
+    int get_Nparameters() const;
+};
+
+inline GlvParametersWidget<SlvParametrization0>::GlvParametersWidget(const SlvParametrization0& _parametered_object, bool l_editable) {
+
+}
+
+inline GlvParametersWidget<SlvParametrization0>::~GlvParametersWidget() {
+
+}
+
+inline void GlvParametersWidget<SlvParametrization0>::set(const SlvParametrization0& _parametered_object) {}
+
+template <class Tparametrization>
+Tparametrization GlvParametersWidget<SlvParametrization0>::get() const {
+    return Tparametrization();
+}
+
+inline void GlvParametersWidget<SlvParametrization0>::set_editable(bool l_editable) {}
+
+inline void GlvParametersWidget<SlvParametrization0>::assign_recursive(SlvParametrization0& _parametrization) const {}
+
+inline void GlvParametersWidget<SlvParametrization0>::set_layout_type(LayoutType _layout_type) {
+    GlvParametersWidget_base::set_layout_type_protected(_layout_type);
+}
+
+inline void GlvParametersWidget<SlvParametrization0>::enable_data_type_info(bool _l_enable) {}
+
+inline int GlvParametersWidget<SlvParametrization0>::get_Nparameters() const {
+    return 0;
+}
+
+#define glvm_pv_GlvParametersWidget_make_parameter(i) \
+parameter##i = new GlvParameterWidget<Tparam##i>(_parametered_object.get_parameter##i(), l_editable);\
+this->connect(static_cast<GlvParameterWidget_base*>(parameter##i), SIGNAL(parameterChanged(std::string)), this, SIGNAL(parameterChanged(std::string)));\
+GlvParametersWidget_base::add_parameter_widget_to_vertical_layout(parameter##i);
+
+#define glvm_pv_GlvParametersWidget_get_parameter(i) \
+GlvParameterWidget<Tparam##i>* parameter_widget##i = dynamic_cast<GlvParameterWidget<Tparam##i>*>(this->layout()->itemAt(i-1)->widget());\
+Tparam##i parameter_value##i;\
+parameter_value##i = parameter_widget##i->get_value();
+
+/*! Macro in charge of defining the template class parameter widget for i parameters.*/
+#define glvm_pv_GlvParametersWidget(i, meta_Tparameters_current, spec_Tparameters_current)\
+template <meta_Tparameters_current>\
+class GlvParametersWidget< SlvParametrization##i<spec_Tparameters_current> > : public GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower> {\
+    private:\
+    GlvParameterWidget<Tparam##i>* parameter##i;\
+    protected:\
+    Tparam##i get_value##i() const {\
+        return parameter##i->get_value();\
+    }\
+    public:\
+    GlvParametersWidget(const SlvParametrization##i<spec_Tparameters_current>& _parametered_object, bool l_editable):GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>(_parametered_object, l_editable) {\
+        glvm_pv_GlvParametersWidget_make_parameter(i)\
+    }\
+    ~GlvParametersWidget() {}\
+    const GlvParameterWidget<Tparam##i>* get_parameter##i() const {return parameter##i;}\
+	GlvParameterWidget<Tparam##i>* get_parameter##i() {return parameter##i;}\
+    void set(const SlvParametrization##i<spec_Tparameters_current>& _parametered_object) {\
+        GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>::set(_parametered_object);\
+        parameter##i->set(_parametered_object.get_parameter##i());\
+    }\
+    protected:\
+    void assign_recursive(SlvParametrization##i<spec_Tparameters_current>& _parametrization) const {\
+        GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>::assign_recursive(_parametrization);\
+        const_cast<SlvParameter<Tparam##i>*>(&const_cast<const SlvParametrization##i<spec_Tparameters_current>*>(&_parametrization)->get_parameter##i())->set_value(get_value##i());\
+    }\
+    public:\
+    template <class Tparametrization>\
+    Tparametrization get() const {\
+        Tparametrization parametrization;\
+        assign_recursive(parametrization);\
+        static_cast<SlvParametrization_base*>(&parametrization)->param_init();\
+        return parametrization;\
+    }\
+    void set_editable(bool l_editable) {\
+        GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>::set_editable(l_editable);\
+        parameter##i->set_editable(l_editable);\
+    }\
+    void set_layout_type(GlvParametersWidget_base::LayoutType _layout_type) {\
+        GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>::set_layout_type(_layout_type);\
+        if (_layout_type == GlvParametersWidget_base::LayoutType::Vertical) {\
+            GlvParametersWidget_base::add_parameter_widget_to_vertical_layout(parameter##i);\
+            parameter##i->reclaim_widgets_ownership();\
+        } else if (_layout_type == GlvParametersWidget_base::LayoutType::Grid) {\
+            GlvParametersWidget_base::set_parameter_widget_to_grid_layout(parameter##i, i - 1);\
+        }\
+    }\
+    void enable_data_type_info(bool _l_enable) {\
+        GlvParametersWidget<typename SlvParametrization##i<spec_Tparameters_current>::Tparametrization_lower>::enable_data_type_info(_l_enable);\
+        parameter##i->enable_data_type_info(_l_enable);\
+    }\
+private:\
+    int get_Nparameters() const {\
+        return i;\
+    }\
+};
+
+glvm_pv_GlvParametersWidget(1, class Tparam1, \
+Tparam1)
+
+glvm_pv_GlvParametersWidget(2, class Tparam1 COMMA class Tparam2, \
+Tparam1 COMMA Tparam2)
+
+glvm_pv_GlvParametersWidget(3, class Tparam1 COMMA class Tparam2 COMMA class Tparam3, \
+Tparam1 COMMA Tparam2 COMMA Tparam3)
+
+glvm_pv_GlvParametersWidget(4, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4)
+
+glvm_pv_GlvParametersWidget(5, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5)
+
+glvm_pv_GlvParametersWidget(6, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6)
+
+glvm_pv_GlvParametersWidget(7, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7)
+
+glvm_pv_GlvParametersWidget(8, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8)
+
+glvm_pv_GlvParametersWidget(9, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9)
+
+glvm_pv_GlvParametersWidget(10, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10)
+
+glvm_pv_GlvParametersWidget(11, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11)
+
+glvm_pv_GlvParametersWidget(12, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12)
+
+glvm_pv_GlvParametersWidget(13, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13)
+
+glvm_pv_GlvParametersWidget(14, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14)
+
+glvm_pv_GlvParametersWidget(15, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15)
+
+glvm_pv_GlvParametersWidget(16, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16)
+
+glvm_pv_GlvParametersWidget(17, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17)
+
+glvm_pv_GlvParametersWidget(18, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18)
+
+glvm_pv_GlvParametersWidget(19, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19)
+
+glvm_pv_GlvParametersWidget(20, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20)
+
+glvm_pv_GlvParametersWidget(21, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20 COMMA class Tparam21, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20 COMMA Tparam21)
+
+glvm_pv_GlvParametersWidget(22, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20 COMMA class Tparam21 COMMA class Tparam22, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20 COMMA Tparam21 COMMA Tparam22)
+
+glvm_pv_GlvParametersWidget(23, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20 COMMA class Tparam21 COMMA class Tparam22 COMMA class Tparam23, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20 COMMA Tparam21 COMMA Tparam22 COMMA Tparam23)
+
+glvm_pv_GlvParametersWidget(24, class Tparam1 COMMA class Tparam2 COMMA class Tparam3 COMMA class Tparam4 COMMA class Tparam5 COMMA class Tparam6 COMMA class Tparam7 COMMA class Tparam8 COMMA class Tparam9 COMMA class Tparam10 COMMA class Tparam11 COMMA class Tparam12 COMMA class Tparam13 COMMA class Tparam14 COMMA class Tparam15 COMMA class Tparam16 COMMA class Tparam17 COMMA class Tparam18 COMMA class Tparam19 COMMA class Tparam20 COMMA class Tparam21 COMMA class Tparam22 COMMA class Tparam23 COMMA class Tparam24, \
+Tparam1 COMMA Tparam2 COMMA Tparam3 COMMA Tparam4 COMMA Tparam5 COMMA Tparam6 COMMA Tparam7 COMMA Tparam8 COMMA Tparam9 COMMA Tparam10 COMMA Tparam11 COMMA Tparam12 COMMA Tparam13 COMMA Tparam14 COMMA Tparam15 COMMA Tparam16 COMMA Tparam17 COMMA Tparam18 COMMA Tparam19 COMMA Tparam20 COMMA Tparam21 COMMA Tparam22 COMMA Tparam23 COMMA Tparam24)
+
+template <class Tparametrization>
+class GlvParametrizationSaveLoad;
+
+/*! Widget managing SlvParametrization to widget, and vice versa.
+* Tparametrization is a class inheriting from SlvParametrization.
+* Member values not belonging to SlvParametrization are ignored here (constructor values).
+* This is the main widget (with GlvParametrizationDialog) to use for parametrization management in the framework.*/
+template <class Tparametrization>
+class GlvParametrizationWidget : public GlvParametersWidget<typename Tparametrization::Tparametrization> {
+
+public:
+
+    GlvParametrizationWidget(const Tparametrization _parametrization = Tparametrization(), bool l_editable = true, QWidget* _parent = 0);
+    ~GlvParametrizationWidget();
+
+    /*! Get parametrization.*/
+    Tparametrization get_parametrization() const;
+    /*! Set parametrization.*/
+    void set_parametrization(const Tparametrization& _parametrization);
+
+    /*! Same as get_parametrization(), to be compliant with GlvWidgetMaker.*/
+    Tparametrization get_value() const;
+    /*! Same as set_parametrization(), to be compliant with GlvWidgetMaker.*/
+    void set_value(const Tparametrization& _parametrization);
+
+    friend class GlvParametrizationSaveLoad<Tparametrization>;
+};
+
+/*! Convenience macro to access widget (GlvWidgetData) of parameter number 'parameter_index'.
+* See example in sample001.cpp.*/
+#define glvm_get_parameter_GlvWidgetData(glv_parametrization_widget, parameter_index) glv_parametrization_widget->get_parameter##parameter_index()->get_widget()->get_widget()
+/*! Convenience macro to access widget (GlvWidget) of parameter number 'parameter_index'.*/
+#define glvm_get_parameter_GlvWidget(glv_parametrization_widget, parameter_index) glv_parametrization_widget->get_parameter##parameter_index()->get_widget()
+
+template <class Tparametrization>
+GlvParametrizationWidget<Tparametrization>::GlvParametrizationWidget(const Tparametrization _parametrization, bool l_editable, QWidget* _parent) :GlvParametersWidget<typename Tparametrization::Tparametrization>(_parametrization, l_editable) {
+
+    this->setTitle(QString(Tparametrization::name().c_str()));
+    // Set grid layout by default. More ergonomic.
+    GlvParametersWidget_base::set_layout_grid();
+
+}
+
+template <class Tparametrization>
+GlvParametrizationWidget<Tparametrization>::~GlvParametrizationWidget() {
+
+}
+
+template <class Tparametrization>
+Tparametrization GlvParametrizationWidget<Tparametrization>::get_parametrization() const {
+
+    return this->template get<Tparametrization>();
+
+}
+
+template <class Tparametrization>
+void GlvParametrizationWidget<Tparametrization>::set_parametrization(const Tparametrization& _parametrization) {
+
+    return this->set(_parametrization);
+}
+
+template <class Tparametrization>
+Tparametrization GlvParametrizationWidget<Tparametrization>::get_value() const {
+    return get_parametrization();
+}
+
+template <class Tparametrization>
+void GlvParametrizationWidget<Tparametrization>::set_value(const Tparametrization& _parametrization) {
+    set_parametrization(_parametrization);
+}
+
 class QWidget;
 
 namespace glv {
+	/*! Flag functions for Glv*/
+	namespace flag {
+		/*! Calls QMessageBox according to \p _status most critical type.
+		* \p _l_show_all : if false displays only most critical message (if any). If true displays all messages.
+		* Return true if message box was being clicked its Ok button.*/
+		bool showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent = NULL);
+		/*! Calls QMessageBox according to \p _status most critical type.
+		* \p _message : preceding message.
+		* \p _l_show_all : if false displays only most critical message (if any). If true displays all messages.
+		* Return true if message box was being clicked its Ok button.*/
+		bool showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent = NULL);
+		/*! Calls QMessageBox::critical with message \p _message and breaks.*/
+		void BREAK(std::string warning_message, QWidget* _parent = NULL);
+		/*! Calls QMessageBox::information with message \p _message.*/
+		void INFO(std::string warning_message, QWidget* _parent = NULL);
+	}
+}
 
-	/*! Create a QComboBox from a Tdata. Displayed values are the first template argument.*/
-	template <class Tdata>
-	QComboBox* toQComboBox(const Tdata& _data, QString _name = "", QWidget* _parent = 0);
-	/*! Assign a Tdata to a QComboBox. Displayed values are the first template argument.*/
-	template <class Tdata>
-	void toQComboBox(QComboBox* _combo_box, const Tdata& _data, QString _name = "");
+/*! Dialog widget managing parametrization widget.
+* Tparametrization is a class inheriting from SlvParametrization.
+* Member values not belonging to SlvParametrization are ignored here (constructor values).
+* This is the main widget (with GlvParametrizationWidget) to use for parametrization management in the framework.
+* Accept : set the parametrization has the one configured by the widget.
+* Reject : does not modify the parametrization. */
+template <class Tparametrization>
+class GlvParametrizationDialog : public GlvParametrizationDialog_base {
+
+private:
+
+    /*! Widget managing SlvParametrization to widget, and vice versa.*/
+    GlvParametrizationWidget<Tparametrization>* parametrization_widget;
+
+public:
+
+    /*! \p _parametrization : Initial parametrization.
+    * \p _l_dialog: Whether the widget enables QDialog properties or not, such as button box, and related signals.
+    * \p _l_deny_invalid_parameters : if true, acceptance of the parametrization is not possible if one of the parameters is invalid.*/
+    GlvParametrizationDialog(Tparametrization _parametrization = Tparametrization(), bool _l_dialog = true, bool _l_deny_invalid_parameters = true, QWidget* _parent = NULL);
+    GlvParametrizationDialog(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent = NULL);
+    GlvParametrizationDialog(bool _l_dialog, QWidget* _parent = NULL);
+    GlvParametrizationDialog(QWidget* _parent);
+    ~GlvParametrizationDialog();
+
+    /*! Get current parametrization in memory. Does not return the parametrization currently displayed in the parametrization widget.*/
+    const Tparametrization& get_parametrization() const;
+    /*! Set parameterization. If \p _l_param_only is true, then only the parameters are set. If false, the whole instance is assigned (not recommended, must be a special case).*/
+    void set_parametrization(const Tparametrization& _parametrization, bool _l_param_only = true);
+
+    /*! Get the widget managing the parametrization interface.*/
+    GlvParametrizationWidget<Tparametrization>* get_parametrization_widget();
+
+    /*! Apply parametrization widget and check parameters.*/
+    SlvStatus apply();
+
+    /*! Apply parametrization widget. QDialog's accept slot only if l_dialog is true.*/
+    void accept();
+    /*! Reset parametrization widget with current parametrization value. QDialog's reject slot only if l_dialog is true.*/
+    void reject();
+    /*! Closing the widget means rejection.*/
+    void closeEvent(QCloseEvent* _event);
+
+private:
+
+    /*! Update parametrization according to current values contained in parametrization_widget*/
+    void update_parametrization();
+    /*! Returns true if the parametrization has rules.*/
+    bool has_rules();
+    /*! Returns false if the rules were not abided, meaning there was a modification of the parametrization*/
+    /*! Returns true if rules are abided, meaning there was no modification of the parameterization*/
+    bool abide_rules();
+    /*! Create a new parametrization instance from the parametrization widget. Deletion must be managed after using this method.*/
+    const SlvParametrization_base* new_parametrization_base() const;
+
+};
+
+template <class Tparametrization>
+GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(Tparametrization _parametrization, bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :GlvParametrizationDialog_base(_l_dialog, _l_deny_invalid_parameters, _parent) {
+
+    parametrization_base = new Tparametrization;
+    parametrization_widget = new GlvParametrizationWidget<Tparametrization>;
+    set_parameters_widget_base(parametrization_widget);
+    set_parametrization(_parametrization);
+
+    connect(parametrization_widget, SIGNAL(parameterChanged(std::string)), this, SLOT(parametrizationChanged_slot(std::string)));
+    addWidget(parametrization_widget);
+
+    // Rules are actually static, but rtti is needed to access the actual parameters
+    enable_abide_rules_button(parametrization_base->has_rules());
+
+}
+
+template <class Tparametrization>
+GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :GlvParametrizationDialog(Tparametrization(), _l_dialog, _l_deny_invalid_parameters, _parent) {
+    
+}
+
+template <class Tparametrization>
+GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(bool _l_dialog, QWidget* _parent) :GlvParametrizationDialog(Tparametrization(), _l_dialog, true, _parent) {
+    
+}
+
+template <class Tparametrization>
+GlvParametrizationDialog<Tparametrization>::GlvParametrizationDialog(QWidget* _parent) : GlvParametrizationDialog(Tparametrization(), true, _parent) {
+
+}
+
+template <class Tparametrization>
+GlvParametrizationDialog<Tparametrization>::~GlvParametrizationDialog() {
+
+}
+
+template <class Tparametrization>
+const Tparametrization& GlvParametrizationDialog<Tparametrization>::get_parametrization() const {
+
+    return (*dynamic_cast<Tparametrization*>(parametrization_base));
+
+}
+
+template <class Tparametrization>
+void GlvParametrizationDialog<Tparametrization>::set_parametrization(const Tparametrization& _parametrization, bool _l_param_only) {
+
+    if (_l_param_only) {
+        dynamic_cast<Tparametrization*>(parametrization_base)->param_assign(_parametrization);
+    } else {
+        (*dynamic_cast<Tparametrization*>(parametrization_base)) = _parametrization;
+    }
+    dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget)->set_parametrization(_parametrization);
+    check_parameters_slot();
+
+}
+
+template <class Tparametrization>
+void GlvParametrizationDialog<Tparametrization>::update_parametrization() {
+
+    // no param_cast() assignment here because the updated parametrization is supposed to be equal to an instance freshly created
+    (*dynamic_cast<Tparametrization*>(parametrization_base)) = dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget)->get_parametrization();
+
+}
+
+template <class Tparametrization>
+bool GlvParametrizationDialog<Tparametrization>::has_rules() {
+
+    return Tparametrization::has_rules();
+
+}
+
+template <class Tparametrization>
+bool GlvParametrizationDialog<Tparametrization>::abide_rules() {
+
+    // Update parametrization
+    update_parametrization();
+    // Abide rules
+    bool l_abide = parametrization_base->abide_rules();
+
+    // If rules were not abided (parametrization was modified)
+    if (!l_abide) {
+        // Assign to widget
+        dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget)->set_parametrization(*dynamic_cast<Tparametrization*>(parametrization_base));
+    }
+
+    return l_abide;
+}
+
+template <class Tparametrization>
+GlvParametrizationWidget<Tparametrization>* GlvParametrizationDialog<Tparametrization>::get_parametrization_widget() {
+
+    return dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget);
+
+}
+
+template <class Tparametrization>
+const SlvParametrization_base* GlvParametrizationDialog<Tparametrization>::new_parametrization_base() const {
+
+    Tparametrization* parametrization = new Tparametrization;
+    *parametrization = dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget)->get_parametrization();
+    return parametrization;
+}
+
+template <class Tparametrization>
+void GlvParametrizationDialog<Tparametrization>::accept() {
+
+    SlvStatus status = apply();
+
+    if (status || !l_deny_invalid_parameters) {
+
+        if (l_dialog) {
+            QDialog::accept();
+        }
+
+    }
+
+}
+
+template <class Tparametrization>
+void GlvParametrizationDialog<Tparametrization>::reject() {
+
+    // Set previous parametrization
+    dynamic_cast<GlvParametrizationWidget<Tparametrization>*>(parametrization_widget)->set_parametrization(*dynamic_cast<Tparametrization*>(parametrization_base));
+    if (l_dialog) QDialog::reject();
+}
+
+template <class Tparametrization>
+SlvStatus GlvParametrizationDialog<Tparametrization>::apply() {
+
+    update_parametrization();
+
+    SlvStatus status = parametrization_base->check_parameters();
+    if (!status && l_deny_invalid_parameters) {
+        glv::flag::showQMessageBox(status, false, this);
+    }
+    return status;
+}
+
+template <class Tparametrization>
+void GlvParametrizationDialog<Tparametrization>::closeEvent(QCloseEvent* _event) {
+
+    reject();
+
+}
+
+template <class Tparametrization>
+class GlvParametrizationWidget;
+
+/*! Manages save and load of Tparametrization in a binary file.
+* See example sample009.*/
+template <class Tparametrization>
+class GlvParametrizationSaveLoad : public GlvWidgetSaveLoad_base {
+
+private:
+
+    GlvParametrizationWidget<Tparametrization>* parametrization_widget;
+
+public:
+
+    /*! \p _widget : direct integration to the GlvWidget. Nothing else to do.
+    * \p _allowed_extensions : file extensions the file can read and write to. Allowed extensions contains by default the static name of the parametrization.
+    * \p _orientation : Orientation of Save/Load buttons. Stacked (default) or side-by-side. */
+    GlvParametrizationSaveLoad(GlvParametrizationWidget<Tparametrization>* _parametrization_widget, SlvFileExtensions _allowed_extensions = {}, Qt::Orientation _orientation = Qt::Orientation::Horizontal);
+    ~GlvParametrizationSaveLoad();
+
+    /*! Save parametrization to file \p _file_name.*/
+    void save(const std::string& _file_name);
+    /*! Load parametrization from file \p _file_name.*/
+    SlvStatus load(const std::string& _file_name);
+
+private :
+
+    static SlvFileExtensions allowed_extensions_constructor(SlvFileExtensions _allowed_extensions);
+
+    friend class GlvParametrizationWidget<Tparametrization>;
+};
+
+template <class Tparametrization>
+GlvParametrizationSaveLoad<Tparametrization>::GlvParametrizationSaveLoad(GlvParametrizationWidget<Tparametrization>* _parametrization_widget, SlvFileExtensions _allowed_extensions, Qt::Orientation _orientation) : GlvWidgetSaveLoad_base(allowed_extensions_constructor(_allowed_extensions), _orientation, Tparametrization::name()) {
+
+    parametrization_widget = _parametrization_widget;
+    parametrization_widget->set_save_load_widget(this);
+
+}
+
+template <class Tparametrization>
+GlvParametrizationSaveLoad<Tparametrization>::~GlvParametrizationSaveLoad() {
+
+    parametrization_widget->set_save_load_widget(NULL);
+
+}
+
+template <class Tparametrization>
+void GlvParametrizationSaveLoad<Tparametrization>::save(const std::string& _file_name) {
+
+    bool l_write_default_binary = true;
+
+#if OPTION_USE_THIRDPARTY_JSON==1
+    if (SlvFileMgr::get_extension(_file_name) == ".json") {
+        if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
+
+            l_write_default_binary = false;
+
+            std::ofstream file_stream;
+            SlvStatus status = SlvFileMgr::open_file(file_stream, _file_name);
+            if (status) {
+                nlohmann::json json_value;
+                slv::rw::json::ReadWrite<Tparametrization>::writeJson(parametrization_widget->get_value(), json_value);
+                file_stream << json_value.dump(4);
+                file_stream.close();
+            }
+
+        } else {
+            SlvStatus status_tmp(SlvStatus::statusType::warning, "Json parser is not managed for this type.\nUsing default binary parser.");
+            glv::flag::showQMessageBox(status_tmp, false, this);
+        }
+    }
+#endif
+
+    if (l_write_default_binary) {
+        SlvFileMgr::write_binary(parametrization_widget->get_value().param_cast(), _file_name);
+    }
+
+}
+
+template <class Tparametrization>
+SlvStatus GlvParametrizationSaveLoad<Tparametrization>::load(const std::string& _file_name) {
+
+    SlvStatus status;
+    Tparametrization value;
+
+    bool l_read_default_binary = true;
+
+#if OPTION_USE_THIRDPARTY_JSON==1
+    if (SlvFileMgr::get_extension(_file_name) == ".json") {
+        if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
+
+            l_read_default_binary = false;
+
+            std::ifstream file_stream;
+            status = SlvFileMgr::open_file(file_stream, _file_name);
+            if (status) {
+
+                nlohmann::json json_value;
+                file_stream >> json_value;
+                if (!json_value.empty()) {
+                    status = slv::rw::json::ReadWrite<Tparametrization>::readJson(value, json_value);
+                    bool l_set_parameters = interactive_load_parameters(_file_name, status);
+                    if (l_set_parameters) {
+                        value.param_init();
+                        parametrization_widget->set_value(value);
+                    }
+
+                }
+
+            }
+
+        } else {
+            SlvStatus status_tmp(SlvStatus::statusType::warning, "Json parser is not managed for this type.\nUsing default binary parser.");
+            glv::flag::showQMessageBox(status_tmp, false, this);
+        }
+    }
+#endif
+
+    if (l_read_default_binary) {
+
+        status = SlvFileMgr::read_binary(value.param_cast(), _file_name);
+        if (status) {
+            value.param_init();
+            parametrization_widget->set_value(value);
+        }
+
+    }
+
+    return status;
+}
+
+template <class Tparametrization>
+SlvFileExtensions GlvParametrizationSaveLoad<Tparametrization>::allowed_extensions_constructor(SlvFileExtensions _allowed_extensions) {
+
+    SlvFileExtensions allowed_extensions = _allowed_extensions;
+    allowed_extensions.add(SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true));
+#if OPTION_USE_THIRDPARTY_JSON==1
+    if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
+        allowed_extensions.add(".json");
+    }
+#endif
+    return allowed_extensions;
+
+}
+
+class GlvProgression;
+class SlvProgressionQt;
+class QVBoxLayout;
+
+/*! Widget to manage easily and directly SlvProgressionQt.
+* Closing the widget cancels the managed progressions.*/
+class GlvProgressMgr : public QWidget {
+
+    Q_OBJECT
+
+private:
+
+    std::vector<GlvProgression*> progressions;
+    QVBoxLayout* m_layout;
+
+    /*! Whether widget will close as soon as possible.*/
+    bool l_close;
+
+public:
+
+    GlvProgressMgr(QWidget* _parent = 0);
+    ~GlvProgressMgr();
+
+    /*! Add progression. Optional: hide the progression when over. Not recommended if the progression is meant to end and start over (update issue when mouse is not on the widget).*/
+    GlvProgression* add_progression(SlvProgressionQt* _progression, bool _l_hide_when_over = false);
+    /*! Clear progressions.*/
+    void clear();
+
+private:
+
+    void remove_progression(GlvProgression* _progression);
+
+    /*! Check if all progressions are over.*/
+    bool is_over() const;
+
+    friend class GlvProgression;
+
+protected:
+    /*! Implemented as a workaround to QProgressDialog::setDuration.*/
+    void paintEvent(QPaintEvent* _event);
+    /*! Cancel progressions.*/
+    void closeEvent(QCloseEvent* _event);
+
+public slots:
+
+    /*! Cancel all progressions.*/
+    void cancel();
+
+private slots:
+
+    void check_close();
+
+};
+
+class SlvStatus;
+
+/*! Class for status message display using message boxes.*/
+class GlvStatusMgr : public QObject {
+
+	Q_OBJECT
+
+private:
+
+	std::vector<const SlvStatus*> statuses;
+	/*! Manage state of returned message boxes accpetance.*/
+	bool l_continue;
+
+public:
+
+	GlvStatusMgr();
+	~GlvStatusMgr();
+
+	/*! Clear statuses from the instance.*/
+	void clear();
+
+	void add(const SlvStatus* _status);
+
+	/*! Forbid continuation.*/
+	void set_frozen();
+	/*! Whether continue is possible or not.*/
+	bool proceeed() const;
+
+private slots:
+
+	/*! Show all status messages as Qt message boxes.*/
+	void show_status();
+
+signals:
+
+	/*! Signal request to show all status messages. Convenient for threads context.*/
+	void display();
+
+};
+
+/*! Use a parameter named \p parameter_name of the CLI parametrization as a location where to save the configuration file.
+* If such a parameter does not exist, return empty string.*/
+#define GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(Tparametrization, parameter_name)\
+template <>\
+struct GlvApp::ParamOutput<Tparametrization> {\
+		static std::string get_path(const Tparametrization& _parametrization) {\
+			const SlvParameter_base* parameter = _parametrization.find_first(parameter_name, false);\
+			if (parameter) {\
+				return parameter->get_stream_value();\
+			} else {\
+				return std::string();\
+			}\
+	}\
+};
+
+/*! Use a parameter of the CLI parametrization as a location where to save the configuration file.
+* The parameter is defined by its declaration name.
+* The parameter can be nested into other parameters. Can accept parameter nested up to 3 levels (ie: 4 parameter declarations specification).*/
+#define GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(Tparametrization, ...) EXPAND( glvm_pv_get_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(__VA_ARGS__, glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4, glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3, glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2, glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1)(Tparametrization, __VA_ARGS__))
+#define EXPAND(arg) arg
+#define glvm_pv_get_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(_1, _2, _3, _4, macro_arg, ...) macro_arg
+#define glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1(Tparametrization, parameter_name)\
+template <>\
+struct GlvApp::ParamOutput<Tparametrization> {\
+		static std::string get_path(const Tparametrization& _parametrization) {\
+			std::ostringstream stream;\
+			stream << _parametrization.get_##parameter_name();\
+			return stream.str();\
+	}\
+};
+
+#define glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2(Tparametrization, parameter_name1, parameter_name2)\
+template <>\
+struct GlvApp::ParamOutput<Tparametrization> {\
+		static std::string get_path(const Tparametrization& _parametrization) {\
+			std::ostringstream stream;\
+			stream << _parametrization.get_##parameter_name1().get_##parameter_name2();\
+			return stream.str();\
+	}\
+};
+
+#define glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3(Tparametrization, parameter_name1, parameter_name2, parameter_name3)\
+template <>\
+struct GlvApp::ParamOutput<Tparametrization> {\
+		static std::string get_path(const Tparametrization& _parametrization) {\
+			std::ostringstream stream;\
+			stream << _parametrization.get_##parameter_name1().get_##parameter_name2().get_##parameter_name3();\
+			return stream.str();\
+	}\
+};
+
+#define glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4(Tparametrization, parameter_name1, parameter_name2, parameter_name3, parameter_name4)\
+template <>\
+struct GlvApp::ParamOutput<Tparametrization> {\
+		static std::string get_path(const Tparametrization& _parametrization) {\
+			std::ostringstream stream;\
+			stream << _parametrization.get_##parameter_name1().get_##parameter_name2().get_##parameter_name3().get_##parameter_name4();\
+			return stream.str();\
+	}\
+};
+
+/* ------------------------------
+*  GLOVE_APP macro
+*  ------------------------------
+Transform a program into a GUI application. To be used at the very beginning of the main.
+- GLOVE_APP : by setting -glove as CLI argument
+- GLOVE_APP_AUTO : no need to set -glove => turn program into GUI as default
+- GLOVE_APP_PARAM(Tparametrization) : same as GLOVE_APP, adds CLI arguments by-pass through a parametrization widget defined by Tparametrization.
+- GLOVE_APP_PARAM_AUTO(Tparametrization) : same as GLOVE_APP_AUTO, adds CLI arguments by-pass through a parametrization widget defined by Tparametrization.
+*/
+
+/*! Transform a program into a GUI application by setting -glove as CLI argument. To be used at the very beginning of the main.
+* Provide two additional variables:
+* - bool is_glove : whether -glove cli argument was used or not.
+* - Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one.*/
+#define GLOVE_APP_PARAM(Tparametrization) \
+glvm_pv_GLOVE_APP(Tparametrization, false)
+
+#define GLOVE_APP \
+glvm_pv_GLOVE_APP(GLOVE_APP_default_parametrization, false)
+
+/*! Same as GLOVE_APP macro, but forces use of glove (ie: -glove is set by default).
+* Transform a program into a GUI application. To be used at the very beginning of the main.
+* Provide two additional variables:
+* - bool is_glove : whether -glove cli argument was used or not.
+* - Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one.*/
+#define GLOVE_APP_PARAM_AUTO(Tparametrization) \
+glvm_pv_GLOVE_APP(Tparametrization, true)
+
+#define GLOVE_APP_AUTO \
+glvm_pv_GLOVE_APP(GLOVE_APP_default_parametrization, true)
+
+glvm_parametrization(GLOVE_APP_default_parametrization, "default");
+
+/*! Optional: Disable program execution in a separate thread. Progressions and status display can not be managed in this mode, only input parametrization can.
+* Can be convenient if one wants to execute the program in the closest conditions as the initial program is.
+* The program being 'gloved' remains fully compliant with thread mode deactivated.
+* Default is : true.
+* To be set just before calling GLOVE_APP.*/
+#define GLOVE_APP_THREAD_MODE true
+
+#define glvm_pv_GLOVE_APP(Tparametrization, _l_auto_glove) \
+return GlvApp::main<Tparametrization>(argc, argv, _l_auto_glove, GLOVE_APP_THREAD_MODE);\
+}\
+template <>\
+int glv_cli_main(int argc, char* argv[], bool is_glove, const Tparametrization& glove_parametrization) {
+
+template <class Tparametrization>
+int glv_cli_main(int argc, char* argv[], bool _l_gloved, const Tparametrization& _parametrization);//forward declare for gcc
+
+#define GLOVE_APP_MSVC_NO_CONSOLE \
+comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+
+class GlvProgressMgr;
+class GlvStatusMgr;
+class SlvProgressionQt;
+
+class GlvApp {
+	
+public:
+
+	template <class Tparametrization>
+	static int main(int _argc, char* _argv[], bool _l_auto_glove = false, bool _l_threaded = true);
+
+private:
+
+	/*! Class to specialize to provide output path for parameters file.*/
+	template <class Tparametrization>
+	struct ParamOutput {
+		static std::string get_path(const Tparametrization& _parametrization) {
+			return "";
+		}
+	};
+
+	/*! Progressions managed by GLOVE_APP_CLI.*/
+	glvm_staticVariable_def(, SlvPoolFactory<SlvProgressionQt COMMA slv::lbl::Name>, progressions);
+	glvm_staticVariable(, SlvStatus, status, {});
+	glvm_staticVariable(, GlvStatusMgr*, status_mgr, NULL);
+
+public :
+
+	static SlvProgressionQt* get_progression(const slv::lbl::Name& _name);
+	/*! Show a status widget as a QMesssageBox. Does nothing if GLOVE_APP is not used.
+	* \p _l_wait : if ture, the program will not continue until 'Ok' is clicked.
+	* Caution, in case \p _l_wait is false, showing many QMessageBoxes (~40) altogether can produce an overflow.*/
+	static void show(const SlvStatus& _status, bool _l_wait = true);
+
+};
+
+template <class Tparametrization>
+int GlvApp::main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_threaded) {
+
+	if (SlvCLI::has_glove(_argc, _argv) || _l_auto_glove) {
+
+		QApplication q_app(_argc, _argv);
+
+		std::string autosave_file_name = SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true);
+#if OPTION_USE_THIRDPARTY_JSON==1
+		autosave_file_name += ".json";
+#endif
+
+		GlvParametrizationDialog<Tparametrization> dialog;
+		GlvParametrizationSaveLoad<Tparametrization>* save_load_widget = new GlvParametrizationSaveLoad<Tparametrization>(dialog.get_parametrization_widget());
+
+		SlvCLI::Arguments arguments(_argc, _argv);
+
+		if (!arguments.get_glove_argument().empty()) {
+
+			save_load_widget->load(arguments.get_glove_argument());
+
+		}
+
+		Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
+		SlvStatus status;
+
+		if (!arguments.is_empty()) {
+
+			status = SlvCLI::parse(parametrization, arguments);
+
+			glv::flag::showQMessageBox(QObject::tr("Arguments conflict"), status, true);
+
+			dialog.set_parametrization(parametrization);
+
+		} else if (SlvFile(autosave_file_name).exists() && arguments.get_glove_argument().empty()) {
+
+			save_load_widget->load(autosave_file_name);
+
+		}
+
+		int result;
+		if (Tparametrization::Nparameters() > 0) {
+			result = dialog.exec();
+		} else {
+			result = QDialog::Accepted;
+		}
+
+		if (result == QDialog::Accepted) {
+
+			save_load_widget->save(autosave_file_name);
+			
+			SlvDirectory directory(ParamOutput<Tparametrization>::get_path(dialog.get_parametrization()));
+			if (directory.exists()) {
+				save_load_widget->save(SlvFile(directory, autosave_file_name).get_path());
+			}
+
+			std::vector< std::pair<std::string, std::string> > parameter_arguments = dialog.get_parametrization().get_string_serialization_bool().first;
+			for (SlvCLI::Arguments::Tparameters::const_iterator it = arguments.get_parameter_arguments().begin(); it != arguments.get_parameter_arguments().end(); ++it) {
+				parameter_arguments.push_back({ it->first, it->second[0] });
+			}
+
+			std::vector<std::string> solo_arguments = dialog.get_parametrization().get_string_serialization_bool().second;
+			slv::vector::add(solo_arguments, arguments.get_solo_arguments());
+
+			std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(parameter_arguments, solo_arguments);
+			cli_arguments.second[0] = _argv[0];
+
+#ifdef GLOVE_DEBUG
+			if (!_l_threaded && !GlvApp::progressions().empty()) {
+
+				glv::flag::showQMessageBox(QObject::tr("Thread issue"), SlvStatus(SlvStatus::statusType::critical, "Can not manage progressions if thread mode is not active."), true);
+				return 0;
+
+			} else {
+#endif
+
+				if (_l_threaded) {
+
+					status_mgr() = new GlvStatusMgr;
+					status_mgr()->add(&GlvApp::status());
+
+					GlvProgressMgr progress_mgr;
+					for (int i = 0; i < progressions().psize(); i++) {
+						bool l_hide_when_over = !progressions()[i]->is_recurrent();
+						progress_mgr.add_progression(progressions()[i], l_hide_when_over);
+					}
+					progress_mgr.show();
+
+					QFuture<int> future = QtConcurrent::run(&glv_cli_main<Tparametrization>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization());
+					QFutureWatcher<int> future_watcher;
+					QObject::connect(&future_watcher, SIGNAL(finished()), &q_app, SLOT(closeAllWindows()));
+					future_watcher.setFuture(future);
+
+					return q_app.exec();
+				} else {
+					status_mgr() = NULL;
+					return glv_cli_main(cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization());
+				}
+
+#ifdef GLOVE_DEBUG
+			}
+#endif
+
+		} else {
+			return 0;
+		}
+
+	} else {
+		return glv_cli_main(_argc, _argv, false, Tparametrization());
+	}
+
+}
+
+class QVBoxLayout;
+class QGridLayout;
+class QComboBox;
+class QLabel;
+class QDialogButtonBox;
+
+class GlvListDialog_base : public QDialog {
+
+    Q_OBJECT
+
+protected:
+
+    /*! Whether QDialog functionalities are activated or not (buttons, accept/reject).*/
+    bool l_dialog;
+
+    /*! Main layout.*/
+    QVBoxLayout* layout;
+    QGridLayout* list_layout;
+
+    QLabel* text_widget;
+    QLabel* list_name_widget;
+    QComboBox* combo_list;
+    QDialogButtonBox* button_box;
+
+    /*! \p _parent : If not NULL, then the widget is modal.
+    * \p _l_dialog : Whether the list enables QDialog properties or not, such as button box, and related signals.*/
+    GlvListDialog_base(QWidget* _parent, bool _l_dialog);
+    virtual ~GlvListDialog_base();
+
+public:
+
+    /*! Get combo's current text.*/
+    std::string get_currentText();
+    /*! Set combo's current index to the one corresponding to \p _name. If \p _name is not found, returns false.*/
+    bool set_currentText(const std::string& _name);
+
+    /*! Set descriptive text of the widget.*/
+    void set_text(const QString& _text);
+
+    /*! Add \p _widget to the main layout while keeping QDialogButtonBox on the bottom.*/
+    void addWidget(QWidget* _widget);
+
+    /*! QDialog's accept slot only if l_dialog is true.*/
+    void accept();
+    /*! QDialog's reject slot only if l_dialog is true.*/
+    void reject();
+
+protected:
+    /*! Enables or disables Ok button (if dialog button box is activated).
+    * Usefull to clear items which have been filtered by GlvParamListDialog_Filtering.*/
+    void setOkButtonEnabled(bool _l_enable);
+
+public slots:
+
+    /*! Enables all items in the QComboBox list.*/
+    void enable_combo_items();
+
+};
+
+/*! QDialog list of a list of names. See sample003 for example.*/
+class GlvListDialog : public GlvListDialog_base {
+
+public:
+    /*! \p _names : List of names to fill the combo list.
+    * \p _list_name : name of the list used for display.
+    * \p _parent : If not NULL, then the widget is modal.
+    * \p _l_dialog: Whether the list enables QDialog properties or not, such as button box, and related signals.*/
+    GlvListDialog(const std::vector<std::string>& _names, const std::string _list_name, QWidget* _parent, bool _l_dialog = true);
+    ~GlvListDialog();
+
+};
+
+/*! Default filtering structure. Any Toption is compatible with any Telement.*/
+template <class Telement, class Toption, typename = void>
+struct GlvListFilterDefault {
+    static constexpr bool is_compatible = true;//whether Toption is compatible with Telement
+};
+
+/*! Structure in charge of filtering (disabling) QComboBox items in GlvParamListDialog and GlvListDialogTlist.
+* If the type associated to a QComboBox item name is not compatible with another type (Toption), then the item is being disabled.*/
+struct GlvParamListDialog_Filtering {
+
+public:
+
+    /*! Filters.
+    * \p _combo_list : QComboBox to process.
+    * \p _Nitems : if not NULL, returns the number of enabled items.*/
+    template <class Tlist, template <class Tlist_item, class Toption, class _Tenable> class Tfiltering, class Toption>
+    static SlvStatus filter_list(QComboBox* _combo_list, int* _Nitems);
+
+private:
+
+    /*! Specialization with Tlist to use dedicated macro. See example in sample003_1 and sample003_2.*/
+    template <class Tlist>
+    struct Spec;
+
+    /*! Returns true if set as enabled. False if the item is filtered (disabled).
+    * Tfiltering is the filtering structure
+    * T1 is the type associated to item cointained in _combo_list at index
+    * T2 is the filtering argument.*/
+    template < template <class T1, class T2, typename = void> class Tfiltering, class T1, class T2 >
+    static bool filter(QComboBox* _combo_list, unsigned int _index);
+
+    /*! Sets current index to first item not deactivated.*/
+    static void update_current_item(QComboBox* _combo_list);
+
+};
+
+template <class Tlist, template <class Tlist_item, class Toption, class _Tenable> class Tfiltering, class Toption>
+SlvStatus GlvParamListDialog_Filtering::filter_list(QComboBox* _combo_list, int* _Nitems) {
+
+    SlvStatus status;
+    std::string item_name;
+    bool l_enabled;
+    if (_Nitems) *_Nitems = 0;
+    for (int i = 0; i < _combo_list->count(); i++) {
+
+        item_name = _combo_list->itemText(i).toStdString();
+        l_enabled = Spec<Tlist>::template filter<Tfiltering, Toption>(item_name, _combo_list, i);
+
+        if (l_enabled && _Nitems) (*_Nitems)++;
+    }
+
+    update_current_item(_combo_list);
+
+    return status;
+}
+
+template <class Tlist>
+struct GlvParamListDialog_Filtering::Spec {
+    template <template <class Tlist_item, class Toption, class _Tenable> class Tfiltering, class Toption>
+    static bool filter(const std::string& _item_name, QComboBox* _combo_list, int i) {
+        return true;
+    }
+};
+
+template < template <class T1, class T2, typename = void> class Tfiltering, class T1, class T2 >
+bool GlvParamListDialog_Filtering::filter(QComboBox* _combo_list, unsigned int _index) {
+
+    if (!Tfiltering<T1, T2>::is_compatible) {
+        qobject_cast<QStandardItemModel*>(_combo_list->model())->item(_index)->setEnabled(false);
+        return false;
+    } else {
+        qobject_cast<QStandardItemModel*>(_combo_list->model())->item(_index)->setEnabled(true);
+        return true;
+    }
+
+}
+
+/*! QDialog list of Tlist type.
+* Tlist must have:
+* - static const std::vector<std::string>& list() method
+* - static const std::string& name() method
+* No GlvParametrizationDialog management as compared to GlvParamListDialog.*/
+template <class Tlist>
+class GlvListDialogTlist : public GlvListDialog {
+
+public:
+
+    GlvListDialogTlist(QWidget* _parent, bool _l_dialog = true);
+    ~GlvListDialogTlist() {}
+
+    /*! Enables or disables items in QComboBox depending on whether types of the list are compatible with T1 according to Tfiltering.*/
+    template < template <class T1, class T2, class Tenable> class Tfiltering, class T1 >
+    void filter_list();// This method is also in GlvParamListDialog. Factorization is not straightfoward because it is impossible to virtually inherit QObject.
+
+};
+
+template <class Tlist>
+GlvListDialogTlist<Tlist>::GlvListDialogTlist(QWidget* _parent, bool _l_dialog) :GlvListDialog(Tlist::list(), Tlist::name(), _parent, _l_dialog) {
+
+}
+
+template <class Tlist>
+template < template <class T1, class T2, class Tenable> class Tfiltering, class T1 >
+void GlvListDialogTlist<Tlist>::filter_list() {
+
+    int Nitems;
+    GlvParamListDialog_Filtering::filter_list<Tlist, Tfiltering, T1>(combo_list, &Nitems);
+
+    if (Nitems == 0) {
+        setOkButtonEnabled(false);
+    } else {
+        setOkButtonEnabled(true);
+    }
+
+}
+
+template <class Tbase, class Tsublist, class Toption>
+class GlvParamListDialog_Open_TemplateObject;
+
+/*! Specialization with Tlist to use dedicated macro. Use by GlvParamListDialog_Open_TemplateObject.*/
+template <class Tsublist>
+struct GlvParamListDialog_Open_TemplateObject_Spec {
+    template <class Tbase, class Toption>
+    static bool build_parametrization_templated(GlvParametrizationDialog_base*& _configure_window, std::string _item_name, const Toption* _option, bool _l_show, QWidget* _parent);
+    /*! Calls and return GlvParamListDialog_Open_TemplateObject::cast_check.
+    * Only replace preprocessor macro.
+    * Not implemented, just provides method signature.*/
+    template <class Tbase, class Toption>
+    static GlvParametrizationDialog_base* cast_check(std::string _item_name, const GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>* _list);
+    /*! Creates new GlvParametrizationDialog.
+    * Only replace preprocessor macro.
+    * Not implemented, just provides method signature.*/
+    template <class Tbase, class Toption>
+    static GlvParametrizationDialog_base* build_parametrization(std::string _item_name, QWidget* _parent);
+    /*! Applies changes to the created parametrization widget.
+    * Not implemented, just provides method signature.*/
+    template <class Tbase, class Toption>
+    static void configuration(std::string _item_name, const GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>* _list);
+};
+
+/*! List to select the type among Tsublist.
+Tbase: base type of the template object. Tbase::Tderived<Telement, Toption> to be the 'real' type.*/
+template <class Tbase, class Tsublist, class Toption>
+class GlvParamListDialog_Open_TemplateObject : public GlvListDialogTlist<Tsublist> {
+
+private:
+    /*! Pointer to the reference parametrization widget.*/
+    GlvParametrizationDialog_base*& parametrization_dialog;
+    /*! Whether the parametrization widget is shown or not.*/
+    const bool l_show_parametrization_dialog;
+    /*! Option.*/
+    const Toption* option;
+public:
+    /*! Whether a parametrization widget has been created or not.*/
+    bool l_created = false;
+public:
+    GlvParamListDialog_Open_TemplateObject(QWidget* _parent, GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_parametrization_dialog);
+    ~GlvParamListDialog_Open_TemplateObject();
+
+    /*! Casts parametrization widget with a type (Targ) of the list.*/
+    template <class Targ>
+    GlvParametrizationDialog_base* cast_check() const;
+
+    /*! Rejects QDialog and sets parametrization widget creation status to false.*/
+    void reject();
+    /*! Accepts the selected type of the list, and creates the parametrization widget.
+    * Sets parametrization widget creation status to true.*/
+    void accept();
+
+    friend struct GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>;
+};
+
+template <class Tbase, class Tsublist, class Toption>
+GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>::GlvParamListDialog_Open_TemplateObject(QWidget* _parent, GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_parametrization_dialog)
+    :GlvListDialogTlist<Tsublist>(_parent), parametrization_dialog(_parametrization_dialog), l_show_parametrization_dialog(_l_show_parametrization_dialog) {
+
+    option = _option;
+}
+
+template <class Tbase, class Tsublist, class Toption>
+GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>::~GlvParamListDialog_Open_TemplateObject() {}
+
+template <class Tbase, class Tsublist, class Toption>
+template <class Targ>
+GlvParametrizationDialog_base* GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>::cast_check() const {
+
+    GlvParametrizationDialog_base* parametrization_dialog_cast_check;
+    parametrization_dialog_cast_check = dynamic_cast<GlvParametrizationDialog<typename Tbase::template Tderived<Targ, Toption> >*>(parametrization_dialog);
+
+    return parametrization_dialog_cast_check;
+}
+
+template <class Tbase, class Tsublist, class Toption>
+void GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>::reject() {
+    GlvListDialogTlist<Tsublist>::reject();
+
+    l_created = false;
+}
+
+template <class Tbase, class Tsublist, class Toption>
+void GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>::accept() {
+
+    l_created = false;
+
+    GlvListDialogTlist<Tsublist>::accept();
+    std::string item_name = this->get_currentText();
+
+    if (Tsublist::is_templated(item_name)) {
+
+        l_created = GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>::template build_parametrization_templated<Tbase, Toption>(parametrization_dialog, item_name, option, l_show_parametrization_dialog, this);
+
+    } else {
+
+        GlvParametrizationDialog_base* parametrization_dialog_cast_check;
+
+        parametrization_dialog_cast_check = GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>::template cast_check<Tbase, Toption>(item_name, this);
+
+        if (parametrization_dialog_cast_check) {
+            //means that parametrization type hasn't change from previously created parametrization_dialog
+
+        } else {
+            //means that parametrization type has changed, or simply that there was no parametrization_dialog created yet
+
+            if (parametrization_dialog) {
+                delete parametrization_dialog;
+            }
+
+            parametrization_dialog = GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>::template build_parametrization<Tbase, Toption>(item_name, this->parentWidget());
+
+            l_created = true;
+
+            GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>::configuration(item_name, this);
+
+        }
+
+        if (l_show_parametrization_dialog) parametrization_dialog->show();
+
+    }
+
+}
+
+/*! In charge of opening a secondary list to select a secondary type. Target type is sort of: Tbase<Tsublist-pick>.
+* Not supposed to be specialized.*/
+template <class Tbase, class Tsublist, class Toption>
+struct GlvParamListDialog_Open_Templated {
+
+    template <template <class _Tlist_item, class _Toption, class _Tenable> class Tfiltering = GlvListFilterDefault>
+    static bool open(GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_parametrization_dialog, QWidget* _parent) {
+
+        GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>* sublist;
+        sublist = new GlvParamListDialog_Open_TemplateObject<Tbase, Tsublist, Toption>(_parent, _parametrization_dialog, _option, _l_show_parametrization_dialog);
+        sublist->template filter_list<Tfiltering, Toption>();
+
+        sublist->set_text(glv::toQString("Select " + Tbase::name() + "'s " + Tsublist::item_description()));
+
+        if (_l_show_parametrization_dialog) {
+            sublist->exec();
+        } else {
+            sublist->accept();
+        }
+        bool l_created = sublist->l_created;
+
+        delete sublist;
+
+        return l_created;
+
+    }
+
+};
+
+template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
+class GlvParamListDialog_Open_TemplateTemplateObject;
+
+template <class Tsublist>
+struct GlvParamListDialog_Open_TemplateTemplateObject_Spec {
+    template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Toption>
+    static bool build_parametrization_templated(GlvParametrizationDialog_base*& _configure_window, std::string _item_name, const Toption* _option, bool _l_show, QWidget* _parent);
+    /*! Calls and return GlvParamListDialog_Open_TemplateObject::cast_check.
+    * Only replace preprocessor macro.
+    * Not implemented, just provides method signature.*/
+    template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Toption>
+    static GlvParametrizationDialog_base* cast_check(std::string _item_name, const GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>* _list);
+    /*! Creates new GlvParametrizationDialog.
+    * Only replace preprocessor macro.
+    * Not implemented, just provides method signature.*/
+    template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Toption>
+    static GlvParametrizationDialog_base* build_parametrization(std::string _item_name, QWidget* _parent);
+    /*! Applies changes to the created parametrization widget.
+    * Not implemented, just provides method signature.*/
+    template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Toption>
+    static void configuration(std::string _item_name, const GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>* _list);
+};
+
+/*! List to select the type among Tsublist.
+Tbase: base type of the template object. Tclass<Tbase::Tderived<Telement, Toption>, Toption> to be the 'real' type.*/
+template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
+class GlvParamListDialog_Open_TemplateTemplateObject : public GlvListDialogTlist<Tsublist> {
+
+private:
+    /*! Pointer to the reference parametrization widget.*/
+    GlvParametrizationDialog_base*& parametrization_dialog;
+    /*! Whether the parametrization widget is shown or not.*/
+    const bool l_show_parametrization_dialog;
+    /*! Option.*/
+    const Toption* option;
+public:
+    /*! Whether a parametrization widget has been created or not.*/
+    bool l_created = false;
+public:
+    GlvParamListDialog_Open_TemplateTemplateObject(QWidget* _parent, GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_configure_window);
+    ~GlvParamListDialog_Open_TemplateTemplateObject();
+
+    /*! Cast parametrization widget with a type (Targ) of the list.*/
+    template <class Targ>
+    GlvParametrizationDialog_base* cast_check() const;
+
+    /*! Rejects QDialog and sets parametrization widget creation status to false.*/
+    void reject();
+    /*! Accepts the selected type of the list, and creates the parametrization widget.
+    * Sets parametrization widget creation status to true.*/
+    void accept();
+
+    friend struct GlvParamListDialog_Open_TemplateObject_Spec<Tsublist>;
+};
+
+template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
+GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>::GlvParamListDialog_Open_TemplateTemplateObject(QWidget* _parent, GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_parametrization_dialog)
+    :GlvListDialogTlist<Tsublist>(_parent), parametrization_dialog(_parametrization_dialog), l_show_parametrization_dialog(_l_show_parametrization_dialog) {
+
+    option = _option;
+}
+
+template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
+GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>::~GlvParamListDialog_Open_TemplateTemplateObject() {}
+
+template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
+template <class Targ>
+GlvParametrizationDialog_base* GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>::cast_check() const {
+
+    GlvParametrizationDialog_base* parametrization_dialog_cast_check;
+    parametrization_dialog_cast_check = dynamic_cast<GlvParametrizationDialog<Tclass<typename Tbase::template Tderived<Targ, Toption>, Toption > >*>(parametrization_dialog);
+
+    return parametrization_dialog_cast_check;
+}
+
+template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
+void GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>::reject() {
+    GlvListDialogTlist<Tsublist>::reject();
+
+    l_created = false;
+}
+
+template < template <class Tbase_derived, class Toption> class Tclass, class Tbase, class Tsublist, class Toption>
+void GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>::accept() {
+
+    l_created = false;
+
+    GlvListDialogTlist<Tsublist>::accept();
+    std::string item_name = this->get_currentText();
+
+    if (Tsublist::is_templated(item_name)) {
+
+        l_created = GlvParamListDialog_Open_TemplateTemplateObject_Spec<Tsublist>::template build_parametrization_templated<Tclass, Tbase, Toption>(parametrization_dialog, item_name, option, l_show_parametrization_dialog, this);
+
+    } else {
+
+        GlvParametrizationDialog_base* parametrization_dialog_cast_check;
+
+        parametrization_dialog_cast_check = GlvParamListDialog_Open_TemplateTemplateObject_Spec<Tsublist>::template cast_check<Tclass, Tbase, Toption>(item_name, this);
+
+        if (parametrization_dialog_cast_check) {
+            //means that parametrization type hasn't change from previously created parametrization_dialog
+
+        } else {
+            //means that parametrization type has changed, or simply that there was no parametrization_dialog created yet
+
+            if (parametrization_dialog) {
+                delete parametrization_dialog;
+            }
+
+            parametrization_dialog = GlvParamListDialog_Open_TemplateTemplateObject_Spec<Tsublist>::template build_parametrization<Tclass, Tbase, Toption>(item_name, this->parentWidget()->parentWidget());
+
+            l_created = true;
+
+            GlvParamListDialog_Open_TemplateTemplateObject_Spec<Tsublist>::configuration(item_name, this);
+
+        }
+
+        if (l_show_parametrization_dialog) parametrization_dialog->show();
+
+    }
+
+}
+
+/*! In charge of opening a tertiary list to select a tertiary type. Target type is sort of: Tclass<Tbase<Tsublist-pick>>.
+* Not supposed to be specialized.*/
+template < template <class Tbase_derived, class _Toption> class Tclass, class Tbase, class Tsublist, class Toption>
+struct GlvParamListDialog_Open_TemplatedTemplated {
+
+    template <template <class _Tlist_item, class _Toption, class _Tenable> class Tfiltering = GlvListFilterDefault>
+    static bool open(GlvParametrizationDialog_base*& _parametrization_dialog, const Toption* _option, bool _l_show_parametrization_dialog, QWidget* _parent) {
+
+        GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>* sublist;
+        sublist = new GlvParamListDialog_Open_TemplateTemplateObject<Tclass, Tbase, Tsublist, Toption>(_parent, _parametrization_dialog, _option, _l_show_parametrization_dialog);
+        sublist->template filter_list<Tfiltering, Toption>();
+
+        sublist->set_text(glv::toQString("Select " + Tbase::name() + "'s " + Tsublist::item_description()));
+
+        if (_l_show_parametrization_dialog) {
+            sublist->exec();
+        } else {
+            sublist->accept();
+        }
+        bool l_created = sublist->l_created;
+
+        delete sublist;
+
+        return l_created;
+
+    }
+
+};
+
+class GlvParametrizationDialog_base;
+class SlvParametrization_base;
+
+class GlvParamListDialog_base : public GlvListDialog {
+
+	Q_OBJECT
+
+protected:
+	/*! \p _names : List of names to fill the combo list.
+	* \p _list_name : name of the list used for display.
+	* \p _l_dialog: Whether QDialog functionalities are activated or not (buttons, accept/reject).
+	* \p _l_visible_config : If true, configure button is displayed. Otherwise, parametrization is triggered when changing QComboBox item.*/
+	GlvParamListDialog_base(const std::vector<std::string>& _names, const std::string _list_name, QWidget* _parent, bool _l_dialog, bool _l_visible_config);
+public:
+	virtual ~GlvParamListDialog_base();
+protected:
+
+	/*! Whether configuration is displayed below list, or accessible by configure button.*/
+	bool l_visible_config;
+
+	/*! Parametrization widget.*/
+	GlvParametrizationDialog_base* parametrization_dialog;
+
+	/*! Delete parametrization widget.*/
+	void delete_parametrization_dialog();
+
+public:
+
+	/*! Get base parametrization widget.*/
+	GlvParametrizationDialog_base* get_parametrization_dialog_base();
+	/*! Get base parametrization.*/
+	const SlvParametrization_base* get_parametrization_base() const;
+
+private slots:
+
+	virtual void make_parametrization_dialog() = 0;
+	virtual void make_parametrization_dialog(const QString& _item_name) = 0;
+
+signals:
+	/*! Emitted when a parametrization widget is requested in GlvParamListDialog (ex: creation).*/
+	void configure(QString _item_name);
+
+};
+
+template <class Tparametrization>
+class GlvParametrizationDialog;
+
+/*! Configuration list of Tlist type.
+* Tlist must have:
+* - static const std::vector<std::string>& list() method
+* - static const std::string& name() method
+* Toption is the type of the optional data provided for the parametrization windows. See GlvParamListDialog_Open::open.
+* The optional data is not stored in the GlvParamListDialog instance.*/
+template <class Tlist, class Toption = void>
+class GlvParamListDialog;
+
+class GlvParametrizationDialog_base;
+class QWidget;
+
+/*! Specialization with Tlist to use dedicated macro. Use by GlvParamListDialog_Open.*/
+template <class Tlist>
+struct GlvParamListDialog_Open_Spec {
+    /*! Creates new GlvParametrizationDialog.
+    * Only replace preprocessor macro.
+    * Not implemented, just provides method signature.*/
+    template <class Toption>
+    static bool build_parametrization_templated(GlvParametrizationDialog_base*& _parametrization_dialog, std::string _item_name, const Toption* _option, bool _l_show_parametrization_dialog, QWidget* _parent);
+    /*! Creates new GlvParametrizationDialog.
+    * Only replace preprocessor macro.
+    * Not implemented, just provides method signature.*/
+    template <class Toption>
+    static GlvParametrizationDialog_base* build_parametrization(std::string _item_name, QWidget* _parent);
+    /*! Applies changes to the created parametrization widget.
+    * Not implemented, just provides method signature.*/
+    template <class Toption>
+    static void configuration(GlvParametrizationDialog_base* _parametrization_dialog, std::string _item_name, const Toption* _option);
+};
+
+/*! Needs specialization for each Tlist, because a macro in charge of mapping names to types should go with it.*/
+template <class Tlist, class Toption = void>
+struct GlvParamListDialog_Open {
+    /*! Returns true if a new parametrization widget has been created.
+    No implementation. Specialization has to be provided to map type names listed into types.
+    See provided example: sample003.*/
+    static bool open(GlvParametrizationDialog_base*& _parametrization_dialog, const std::string& _parametrization_name, const Toption* _option, bool _l_show_parametrization_dialog, QWidget* _parent) {
+
+        bool l_created = false;
+
+        if (Tlist::is_templated(_parametrization_name)) {
+
+            l_created = GlvParamListDialog_Open_Spec<Tlist>::template build_parametrization_templated<Toption>(_parametrization_dialog, _parametrization_name, _option, _l_show_parametrization_dialog, _parent);
+
+        } else {
+
+            if (_parametrization_dialog && _parametrization_dialog->get_parametrization_base()->get_name() == _parametrization_name) {
+                // nothing to do
+            } else {
+                if (_parametrization_dialog) delete _parametrization_dialog;
+
+                _parametrization_dialog = GlvParamListDialog_Open_Spec<Tlist>::template build_parametrization<Toption>(_parametrization_name, _parent);
+
+                l_created = true;
+
+                GlvParamListDialog_Open_Spec<Tlist>::template configuration<Toption>(_parametrization_dialog, _parametrization_name, _option);
+            }
+
+            if (_l_show_parametrization_dialog) {
+                _parametrization_dialog->show();
+            }
+
+        }
+
+        return l_created;
+    }
+};
+
+/*! Used when a list "List" (class_name) is defined, along with its macro: glvm_List_instruction_name_to_type.*/
+#define glvm_instruction_base_to_dcast(class_name, instruction_front, parametization_base, instruction_end) \
+glvm_##class_name##_instruction_name_to_type(instruction_front dynamic_cast<, parametization_base->get_name(), *>(parametization_base) instruction_end)
+
+/*! Used when a list "List" (class_name) is defined, along with its macro: glvm_List_instruction_name_to_type.*/
+#define glvm_instruction_base_to_dcast_const(class_name, instruction_front, parametization_base, instruction_end) \
+glvm_##class_name##_instruction_name_to_type(instruction_front dynamic_cast<const, parametization_base->get_name(), *>(parametization_base) instruction_end)
+
+template <class Tparametrization>
+class GlvParametrizationDialog;
+
+/*! Configuration list of Tlist type.
+* Tlist must have:
+* - static const std::vector<std::string>& list() method
+* - static const std::string& name() method
+* Toption is the type of the optional data provided for the parametrization windows. See GlvParamListDialog_Open::open.
+* The optional data is not stored in the GlvParamListDialog instance.*/
+template <class Tlist, class Toption>
+class GlvParamListDialog : public GlvParamListDialog_base {
+
+private:
+
+    const Toption* optional_data;
+
+public:
+
+    /*! \p _list : Instance to convert to list.
+    * \p _optional_data : pointer to optional data to be managed by all the parametrizations.
+    * \p _l_dialog: Whether QDialog functionalities are activated or not (buttons, accept/reject).
+    * \p _l_visible_config : If true, configure button is displayed. Otherwise, parametrization is triggered when changing QComboBox item.*/
+    GlvParamListDialog(QWidget* _parent, const Toption* _optional_data, bool _l_dialog = true, bool _l_visible_config = true);
+    GlvParamListDialog(QWidget* _parent = NULL, bool _l_dialog = true, bool _l_visible_config = true);
+    ~GlvParamListDialog();
+
+    /*! Get parametrization widget. The parametrization type must match the type currently selected/configured. Otherwise returns NULL.*/
+    template <class Tparametrization>
+    GlvParametrizationDialog<Tparametrization>* get_parametrization_dialog();
+
+    /*! Set optional data for parametrization windows.*/
+    void set_optional_data(const Toption* _optional_data);
+
+public:
+
+    /*! Applies default parametrization (if none is configured yet) and accepts QDialog.*/
+    void accept();
+
+    /*! Enables or disables items in QComboBox depending on whether types of the list are compatible with T1 according to Tfiltering.*/
+    template < template <class T1, class T2, class Tenable> class Tfiltering, class T1 = Toption>
+    void filter_list();//this method is also GlvListDialogTlist. I didn't restructred inheritance yet (can't virtual inherit QWidget)
+
+private:
+
+    /*! Implements pure virtual slot of GlvParamListDialog_base.*/
+    void make_parametrization_dialog();
+    /*! Implements pure virtual slot of GlvParamListDialog_base.*/
+    void make_parametrization_dialog(const QString& _item_name);
+
+    /*! Creates new parametrization window. \p _parametrization_name is the name of the parametrization type.
+    * The parametrization window can be displayed or not using \p _l_show.*/
+    void new_parametrization_dialog(const QString& _parametrization_name, bool l_show);
+
+};
+
+template <class Tlist, class Toption>
+GlvParamListDialog<Tlist, Toption>::GlvParamListDialog(QWidget* _parent, const Toption* _optional_data, bool _l_dialog, bool _l_visible_config) :\
+GlvParamListDialog_base(Tlist::list(), Tlist::name(), _parent, _l_dialog, _l_visible_config) {
+
+    set_optional_data(_optional_data);
+
+}
+
+template <class Tlist, class Toption>
+GlvParamListDialog<Tlist, Toption>::GlvParamListDialog(QWidget* _parent, bool _l_dialog, bool _l_visible_config) :\
+GlvParamListDialog<Tlist, Toption>(_parent, (Toption*)(NULL), _l_dialog, _l_visible_config) {
+
+}
+
+template <class Tlist, class Toption>
+GlvParamListDialog<Tlist, Toption>::~GlvParamListDialog() {
+
+}
+
+template <class Tlist, class Toption>
+template <class Tparametrization>
+GlvParametrizationDialog<Tparametrization>* GlvParamListDialog<Tlist, Toption>::get_parametrization_dialog() {
+
+    return dynamic_cast<GlvParametrizationDialog<Tparametrization>*>(parametrization_dialog);//ddynamic_cast
+
+}
+
+template <class Tlist, class Toption>
+void GlvParamListDialog<Tlist, Toption>::set_optional_data(const Toption* _optional_data) {
+
+    optional_data = _optional_data;
+}
+
+template <class Tlist, class Toption>
+void GlvParamListDialog<Tlist, Toption>::accept() {
+
+    // Do not call new_parametrization_dialog if a parametrization widget already exists.
+    // Avoids getting list items value that are by default not the ones that may be configured
+    // Call it if combo item name differs from the current parametrization (ex: combo item has changed and direct 'ok') 
+    if (!parametrization_dialog || parametrization_dialog->get_parametrization_base()->get_name() != combo_list->currentText().toStdString()) {
+        bool l_show = false;
+        new_parametrization_dialog(combo_list->currentText(), l_show);
+    }
+
+    GlvListDialog::accept();
+
+}
+
+template <class Tlist, class Toption>
+template < template <class T1, class T2, class Tenable> class Tfiltering, class T1 >
+void GlvParamListDialog<Tlist, Toption>::filter_list() {
+
+    int Nitems;
+    GlvParamListDialog_Filtering::filter_list<Tlist, Tfiltering, T1>(combo_list, &Nitems);
+
+    if (Nitems == 0) {
+        setOkButtonEnabled(false);
+    } else {
+        setOkButtonEnabled(true);
+    }
+
+}
+
+template <class Tlist, class Toption>
+void GlvParamListDialog<Tlist, Toption>::make_parametrization_dialog(const QString& _item_name) {
+
+    bool l_show = true;
+    new_parametrization_dialog(_item_name, l_show);
+
+}
+
+template <class Tlist, class Toption>
+void GlvParamListDialog<Tlist, Toption>::make_parametrization_dialog() {
+
+    make_parametrization_dialog(combo_list->currentText());
+
+}
+
+template <class Tlist, class Toption>
+void GlvParamListDialog<Tlist, Toption>::new_parametrization_dialog(const QString& _parametrization_name, bool l_show) {
+
+    /*! This is where specialization occurs.*/
+    bool l_created = GlvParamListDialog_Open<Tlist, Toption>::open(parametrization_dialog, _parametrization_name.toStdString(), optional_data, l_show, this);
+
+    if (l_created) emit configure(_parametrization_name);
+}
+
+// Needed most of the time when using glv lists
+
+/*! GlvWidgetData for type SlvParametrization*/
+template <class Tparametrization>
+class GlvWidgetData<Tparametrization, typename std::enable_if<std::is_base_of<SlvParametrization_base, Tparametrization>::value>::type> : public GlvParametrizationWidget<Tparametrization> {
+
+public:
+    GlvWidgetData(Tparametrization _value = Tparametrization(), QWidget* _parent = 0) :GlvParametrizationWidget<Tparametrization>(_value, true, _parent) {
+        this->set_checkable_collapse(true);
+        this->set_scrollable(false);
+    }
+    ~GlvWidgetData() {}
+
+};
+
+template <class Tparametrization>
+struct GlvWidgetMakerConnect<Tparametrization, typename std::enable_if<std::is_base_of<SlvParametrization_base, Tparametrization>::value>::type> {
+    static void connect(GlvWidgetData<Tparametrization>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(parameterChanged(std::string)), _widget_connector, SLOT(valueChanged_slot(std::string)));
+    }
+};
+
+// Include all GlvWidgetData specializations
+
+// Include necessary headers for managing parametrization widgets
+
+/*! Widget to add in a GlvWidgetData specialization. Manages save and load of Tdata in a binary file.
+* See example sample009.*/
+template <class Tdata>
+class GlvWidgetSaveLoad : public GlvWidgetSaveLoad_base {
+
+private:
+
+    /*! Handled widget in regular case.*/
+    GlvWidget<Tdata>* widget;
+    /*! Handled widget in specialization case.*/
+    GlvWidgetData<Tdata>* widget_data;
+
+public:
+
+    /*! \p _widget : direct integration to the GlvWidget. Nothing else to do.
+    * \p _allowed_extensions : file extensions the file can read and write to. Allowed extensions contains by default the static name of Tdata.
+    * \p _orientation : Orientation of Save/Load buttons. Stacked or side-by-side (default). */
+    GlvWidgetSaveLoad(GlvWidget<Tdata>* _widget, SlvFileExtensions _allowed_extensions = {}, const  Qt::Orientation _orientation = Qt::Orientation::Horizontal);
+private:
+    /*! Same, but allows integration directly in a GlvWidgetData. Recommended to use only in case of GlvWidgetData specialization.*/
+    GlvWidgetSaveLoad(GlvWidgetData<Tdata>* _widget_data, SlvFileExtensions _allowed_extensions = {}, const  Qt::Orientation _orientation = Qt::Orientation::Horizontal);
+public:
+    ~GlvWidgetSaveLoad();
+
+    /*! Save data to file \p _file_name.*/
+    void save(const std::string& _file_name);
+    /*! Load data from file \p _file_name.*/
+    SlvStatus load(const std::string& _file_name);
+
+private:
+
+    /*! Friend class for specific case manaing GlvWidgetData.*/
+    template <class T, typename>
+    friend class GlvWidgetData;
+
+};
+
+template <class Tdata>
+GlvWidgetSaveLoad<Tdata>::GlvWidgetSaveLoad(GlvWidget<Tdata>* _widget, SlvFileExtensions _allowed_extensions, Qt::Orientation _orientation) : GlvWidgetSaveLoad_base((_allowed_extensions.add(SlvFileMgr::replace_forbidden_file_characters(SlvDataName<Tdata>::name(), '_', true, true)), _allowed_extensions), _orientation, SlvDataName<Tdata>::name()) {
+
+    widget = _widget;
+    _widget->set_save_load_widget(this);
+    widget_data = NULL;
 
 }
 
 template <class Tdata>
-QComboBox* glv::toQComboBox(const Tdata& _data, QString _name, QWidget* _parent) {
+GlvWidgetSaveLoad<Tdata>::GlvWidgetSaveLoad(GlvWidgetData<Tdata>* _widget_data, SlvFileExtensions _allowed_extensions, Qt::Orientation _orientation) : GlvWidgetSaveLoad_base((_allowed_extensions.add(SlvFileMgr::replace_forbidden_file_characters(SlvDataName<Tdata>::name(), '_', true, true)), _allowed_extensions), _orientation, SlvDataName<Tdata>::name()) {
 
-	QComboBox* combo_box = new QComboBox(_parent);
-	toQComboBox(combo_box, _data, _name);
-	return combo_box;
+    widget_data = _widget_data;
+    widget = NULL;
 
 }
 
 template <class Tdata>
-void glv::toQComboBox(QComboBox* _combo_box, const Tdata& _data, QString _name) {
+GlvWidgetSaveLoad<Tdata>::~GlvWidgetSaveLoad() {
 
-	QStandardItemModel* model = glv::tdata::toQStandardItemModel(_data);
-	_combo_box->clear();
-	_combo_box->setObjectName(_name);
-	_combo_box->setModel(model);
+    widget->set_save_load_widget(NULL);
 
+}
+
+template <class Tdata>
+void GlvWidgetSaveLoad<Tdata>::save(const std::string& _file_name) {
+
+    Tdata value;
+    if (widget) {
+        value = widget->get_value();
+    } else if (widget_data) {
+        value = widget_data->get_value();
+    }
+    SlvFileMgr::write_binary(value, _file_name);
+
+}
+
+template <class Tdata>
+SlvStatus GlvWidgetSaveLoad<Tdata>::load(const std::string& _file_name) {
+
+    Tdata value;
+    SlvStatus status = SlvFileMgr::read_binary(value, _file_name);
+    if (status) {
+        if (widget) {
+            widget->set_value(value);
+        } else if (widget_data) {
+            widget_data->set_value(value);
+        }
+    }
+
+    return status;
+}
+
+/*! Convenience methods to make Glv widgets out of Tdata.*/
+class GlvWidgetAuto {
+
+public:
+
+    template <class Tdata>
+    static GlvWidget<Tdata>* make(const Tdata _value = Tdata(), bool l_editable = true, QWidget* _parent = 0);
+
+    template <class Tdata>
+    static GlvDescribedWidget<Tdata>* make_described(const Tdata _value = Tdata(), std::string _data_name = "", std::string _description = "", bool l_editable = true, QWidget* _parent = 0);
+
+    template <class Tparametrization>
+    static GlvParametrizationWidget<Tparametrization>* make_parametrization(const Tparametrization _parametrization = Tparametrization(), bool l_editable = true, QWidget* _parent = 0);
+
+};
+
+template <class Tdata>
+GlvWidget<Tdata>* GlvWidgetAuto::make(const Tdata _value, bool l_editable, QWidget* _parent) {
+
+    GlvWidget<Tdata>* widget = new GlvWidget<Tdata>(_value, l_editable, _parent);
+    return widget;
+}
+
+template <class Tdata>
+GlvDescribedWidget<Tdata>* GlvWidgetAuto::make_described(const Tdata _value, std::string _data_name, std::string _description, bool l_editable, QWidget* _parent) {
+
+    GlvDescribedWidget<Tdata>* widget = new GlvDescribedWidget<Tdata>(_value, _data_name, _description, l_editable, _parent);
+    return widget;
+}
+
+template <class Tparametrization>
+GlvParametrizationWidget<Tparametrization>* GlvWidgetAuto::make_parametrization(const Tparametrization _parametrization, bool l_editable, QWidget* _parent) {
+
+    GlvParametrizationWidget<Tparametrization>* widget = new GlvParametrizationWidget<Tparametrization>(_parametrization, l_editable, _parent);
+    return widget;
 }
 
 #endif
 
-/*! Enable if not of specified type in an other file. For instance SlvParameterRuleT_spec_ParameterArithmetic.h*/
-#define Tenable typename std::enable_if<\
-(!slv::ts::is_arithmetic<Tparam>::value || \
-std::is_same<Tparam, bool>::value)\
->::type
+/*! Sort management of a list of template data. Not to be used directly. Use SlvSortAscending or SlvSortDescending.
+* Sort data as soon as they are added.
+* Tdata is the type of data to sort, and Trange is the type by which two Tdata are being compared.
+* Range is the maximal range between data. Range value must be positive.
+* Maximum number of datas sorted is always 1 at minimum.
+* Possibility to limit the number of data.
+* Ascending: Input priority (front of datas) to the lowest values.
+* Descending: Input priority (front of datas) to the highest values.*/
+template <class Tdata, class Trange = Tdata>
+class SlvSort : public SlvParametrization2<unsigned int, Trange>, virtual public SlvIOS {
 
-/*! Rule that a parameter SlvParameter is supposed to abide.
-* Same as SlvParameterRuleT_spec_Arithmetic, but instead of using static values for rule, uses a dynamic value in a SlvParameter. See dynamic_rules in SlvParameter.*/
-template <class Tparam>
-class SlvParameterRuleT<SlvParameter<Tparam>, Tenable> {
+    glvm_parameter_ruled(1, Ndatas_max, unsigned int, "Maximum number of elements", "Maximum number the sort instance can contain.", (unsigned int)-1)
+    glvm_parameter_add_rule(min, 1)
+    glvm_parameter_end
+    glvm_parameter_ruled(2, range, Trange, "Maximum range", "Maximum delta from the front element.", 0)
+    glvm_parameter_add_rule(min, 0)
+    glvm_parameter_end
+
+protected:
+
+    std::vector<Tdata> datas;
 
 public:
-	enum RuleType { valid, exception };
+
+    SlvSort() :glvm_parametrization_constructor(Ndatas_max, range) {}
+    /*! \p _Ndatas_max is the maximum number of elements in the instance.
+    * \p _range is the maximum delta from the front element.*/
+    SlvSort(unsigned int _Ndatas_max, Trange _range = 0);
+    ~SlvSort();
+
+    /*! Clear sorted datas. Keeps parameters.*/
+    void clear();
+
+    unsigned int size() const;
+    const Tdata& operator[] (const unsigned int i) const;
+
+    /*! Access datas vector.*/
+    const std::vector<Tdata>& get() const;
+    /*! Access datas vector.*/
+    std::vector<Tdata>& get();
+
+    /*! Get index where \p _data should belong.*/
+    unsigned int get_index(const Tdata& _data) const;
+    /*! Add \p _data. Return true if successfully added.*/
+    bool add(const Tdata& _data);
+
+    /*! Comparison test between two datas. Implemented in SlvSortAscending and SlvSortDescending.*/
+    virtual bool test_data(const Tdata& _data1, const Tdata& _data2) const = 0;
+    /*! Return true if \p _data is in the proper range, comparing from front sorted data.*/
+    virtual bool check_range(const Tdata& _data) const = 0;
+
+    void writeB(std::ofstream& _output_file) const;
+    bool readB(std::ifstream& _input_file);
 
 private:
-	RuleType rule_type;
-	const SlvParameter<Tparam>* rule_parameter;
 
-public:
-	SlvParameterRuleT();
-	SlvParameterRuleT(RuleType _rule_type, const SlvParameter<Tparam>* _rule_parameter);
-	~SlvParameterRuleT();
-
-	/*! Get rule type of this parameter. Only one per rule instance.*/
-	const RuleType& get_rule_type() const;
-	/*! Return value the parameter this rule is associated to.*/
-	const Tparam& get_rule_value() const;
-
-	/*! Get string description of the rule.*/
-	std::string get_rule_description() const;
-
-	/*! Whether \p _parameter abides the rule or not.*/
-	SlvStatus is_abided(const SlvParameter<Tparam>* _parameter) const;
-	/*! Enforce rule to \p _parameter. Return true if the parameters was abiding the rule. Return false if the parameter was changed.*/
-	bool abide(SlvParameter<Tparam>* _parameter) const;
-};
-
-template <class Tparam>
-SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::SlvParameterRuleT() :SlvParameterRuleT(valid, 0) {
-
-}
-
-template <class Tparam>
-SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::SlvParameterRuleT(RuleType _rule_type, const SlvParameter<Tparam>* _rule_parameter) {
-
-	rule_type = _rule_type;
-	rule_parameter = _rule_parameter;
-}
-
-template <class Tparam>
-SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::~SlvParameterRuleT() {
-
-}
-
-template <class Tparam>
-const typename SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::RuleType& SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_type() const {
-
-	return rule_type;
-}
-
-template <class Tparam>
-const Tparam& SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_value() const {
-	return rule_parameter->get_value();
-}
-
-template <class Tparam>
-std::string SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_description() const {
-
-	return std::string();
-
-}
-
-template <class Tparam>
-SlvStatus SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::is_abided(const SlvParameter<Tparam>* _parameter) const {
-
-	return SlvStatus();
-}
-
-template <class Tparam>
-bool SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::abide(SlvParameter<Tparam>* _parameter) const {
-	return true;
-}
-
-#undef Tenable
-
-class SlvParametrization_base;
-
-/*! Rule that a parameter SlvParameter is supposed to abide. Specialization for template type which is a SlvParametrization.*/
-template <class Tparam>
-class SlvParameterRuleT<Tparam, typename std::enable_if<std::is_base_of<SlvParametrization_base, Tparam>::value>::type> {
-
-public:
-    SlvParameterRuleT() {}
-    ~SlvParameterRuleT() {}
-
-    /*! Whether \p _parameter abides the rule or not.*/
-    SlvStatus is_abided(const SlvParameter<Tparam>* _parameter) const {
-        return _parameter->get_value().check_parameters();
-    }
-    /*! Enforce rule to \p _parameter. Return true if the parameters was abiding the rule. Return false if the parameter was changed.*/
-    bool abide(SlvParameter<Tparam>* _parameter) const {
-        //return true;
-        Tparam parametrization = _parameter->get_value();
-        bool l_abide = parametrization.abide_rules();
-        _parameter->set_value(parametrization);
-        return l_abide;
-    }
-
-    /*! Get string description of the rule.*/
-    std::string get_rule_description() const {
-        return std::string();
-    }
+    void ostream(std::ostream& _os) const;
+    void istream(std::istream& _is);
 
 };
+
+template <class Tdata, class Trange>
+SlvSort<Tdata, Trange>::SlvSort(unsigned int _Ndatas_max, Trange _range) :SlvSort() {
+    set_Ndatas_max(_Ndatas_max);
+    set_range(_range);
+}
+
+template <class Tdata, class Trange>
+SlvSort<Tdata, Trange>::~SlvSort() {
+
+}
+
+template <class Tdata, class Trange>
+void SlvSort<Tdata, Trange>::clear() {
+
+    datas.clear();
+}
+
+template <class Tdata, class Trange>
+unsigned int SlvSort<Tdata, Trange>::size() const {
+
+    return (unsigned int)datas.size();
+}
+
+template <class Tdata, class Trange>
+const Tdata& SlvSort<Tdata, Trange>::operator[] (const unsigned int i) const {
+
+    return datas[i];
+}
+
+template <class Tdata, class Trange>
+const std::vector<Tdata>& SlvSort<Tdata, Trange>::get() const {
+    return datas;
+}
+
+template <class Tdata, class Trange>
+std::vector<Tdata>& SlvSort<Tdata, Trange>::get() {
+    return datas;
+}
+
+template <class Tdata, class Trange>
+unsigned int SlvSort<Tdata, Trange>::get_index(const Tdata& _data) const {
+
+    unsigned int i = 0;
+    unsigned int i_lower = 0;
+    unsigned int i_upper = (unsigned int)datas.size();
+
+    while (i_lower + 1 < i_upper) {
+
+        i = i_lower + (i_upper - i_lower) / 2;
+
+        if (test_data(datas[i], _data)) {
+            i_lower = i;
+        } else {
+            i_upper = i;
+        }
+
+    }
+
+    if (i_lower != i_upper) {
+        if (test_data(datas[i_lower], _data)) {
+            i = i_upper;
+        } else {
+            i = i_lower;
+        }
+    }
+
+    return i;
+
+}
+
+template <class Tdata, class Trange>
+bool SlvSort<Tdata, Trange>::add(const Tdata& _data) {
+
+    bool l_return = true;
+
+    //get index where _data should belong
+    unsigned int i = get_index(_data);
+
+    if (i == 0) {
+
+        datas.insert(datas.begin(), _data);
+        if (datas.size() > get_Ndatas_max()) {
+            datas.pop_back();
+        } else if (get_range() != Trange(0)) {// range reference may have changed
+            while (!check_range(datas.back())) {
+                datas.pop_back();
+            }
+        }
+
+    } else {
+
+        if (i == datas.size()) {
+
+            if (i < get_Ndatas_max() && (get_range() == Trange(0) || check_range(_data))) {
+                datas.push_back(_data);
+            } else {
+                l_return = false;
+            }
+
+        } else {
+
+            datas.insert(datas.begin() + i, _data);
+            if (datas.size() > get_Ndatas_max()) {
+                datas.pop_back();
+            }
+
+        }
+
+    }
+
+    return l_return;
+}
+
+template <class Tdata, class Trange>
+void SlvSort<Tdata, Trange>::writeB(std::ofstream& _output_file) const {
+    slv::rw::writeB(datas, _output_file);
+}
+
+template <class Tdata, class Trange>
+void SlvSort<Tdata, Trange>::ostream(std::ostream& _os) const {
+    _os << datas;
+}
+
+template <class Tdata, class Trange>
+bool SlvSort<Tdata, Trange>::readB(std::ifstream& _input_file) {
+    return slv::rw::readB(datas, _input_file);
+}
+
+template <class Tdata, class Trange>
+void SlvSort<Tdata, Trange>::istream(std::istream& _is) {
+    _is >> datas;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+//////////////////// Ascending/Descending ///////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
+template <class Tdata, class Trange = Tdata>
+class SlvSortDescending : public SlvSort<Tdata, Trange> {
+
+    glvm_parametrization2_inherited_template_init(SlvSort<Tdata COMMA Trange>)// Required for GCC
+    glvm_parametrization2_init("Sort descending")
+
+public:
+
+    /*! \p _Ndatas_max is the maximum number of elements in the instance.
+    * \p _range is the maximum delta from the front element.*/
+    SlvSortDescending(unsigned int _Ndatas_max = -1, Trange _range = Trange(0));
+    ~SlvSortDescending();
+
+private:
+
+    bool test_data(const Tdata& _data1, const Tdata& _data2) const;
+    bool check_range(const Tdata& _data) const;
+
+};
+
+template <class Tdata, class Trange>
+SlvSortDescending<Tdata, Trange>::SlvSortDescending(unsigned int _Ndatas_max, Trange _range) :SlvSort<Tdata, Trange>(_Ndatas_max, _range) {
+
+}
+
+template <class Tdata, class Trange>
+SlvSortDescending<Tdata, Trange>::~SlvSortDescending() {
+
+}
+
+template <class Tdata, class Trange>
+bool SlvSortDescending<Tdata, Trange>::test_data(const Tdata& _data1, const Tdata& _data2) const {
+    return _data1 >= _data2;
+}
+
+template <class Tdata, class Trange>
+bool SlvSortDescending<Tdata, Trange>::check_range(const Tdata& _data) const {
+    return this->datas.front() - _data <= this->get_range();
+}
+
+template <class Tdata, class Trange = Tdata>
+class SlvSortAscending : public SlvSort<Tdata, Trange> {
+
+    glvm_parametrization2_inherited_template_init(SlvSort<Tdata COMMA Trange>)// Required for GCC
+    glvm_parametrization2_init("Sort ascending")
+
+public:
+
+    /*! \p _Ndatas_max is the maximum number of elements in the instance.
+    * \p _range is the maximum delta from the front element.*/
+    SlvSortAscending(unsigned int _Ndatas_max = -1, Trange _range = Trange(0));
+    ~SlvSortAscending();
+
+private:
+
+    bool test_data(const Tdata& _data1, const Tdata& _data2) const;
+    bool check_range(const Tdata& _data) const;
+
+};
+
+template <class Tdata, class Trange>
+SlvSortAscending<Tdata, Trange>::SlvSortAscending(unsigned int _Ndatas_max, Trange _range) :SlvSort<Tdata, Trange>(_Ndatas_max, _range) {
+
+}
+
+template <class Tdata, class Trange>
+SlvSortAscending<Tdata, Trange>::~SlvSortAscending() {
+
+}
+
+template <class Tdata, class Trange>
+bool SlvSortAscending<Tdata, Trange>::test_data(const Tdata& _data1, const Tdata& _data2) const {
+    return _data1 <= _data2;
+}
+
+template <class Tdata, class Trange>
+bool SlvSortAscending<Tdata, Trange>::check_range(const Tdata& _data) const {
+    return _data - this->datas.front() <= this->get_range();
+}
 
 template <class T>
 class SlvSize2d : public SlvIOS {
@@ -21204,10 +21266,6 @@ bool slv::rw::readB<char>(char* _dat, std::ifstream& _input_file);
 #ifndef GLOVE_DISABLE_QT
 
 class QPushButton;
-
-#if QT_VERSION_MAJOR < 6
-Q_DECLARE_METATYPE(std::string)
-#endif
 class SlvProgressionQt;
 class GlvProgressMgr;
 
@@ -21224,11 +21282,17 @@ private:
     QPushButton* cancel_button;
 
     /*! Automatically hide the progression once ended.*/
-    bool l_auto_hide;
+    const bool l_auto_hide;
+    /*! Show before the progress has started.*/
+    const bool l_show_before_start;
+    /*! Whether progress has started or not.*/
+    bool l_has_started;
+    /*! If progress is not cancelable, keep cancel request for end.*/
+    bool l_cancel_requested;
 
 public:
 
-    GlvProgression(GlvProgressMgr* _progress_mgr, SlvProgressionQt* _progression = 0, bool _l_auto_hide = false, QWidget* _parent = 0);
+    GlvProgression(GlvProgressMgr* _progress_mgr, SlvProgressionQt* _progression = 0, bool _l_auto_hide = false, bool _l_show_before_start = false, QWidget* _parent = 0);
     ~GlvProgression();
 
     /*! Associate progression to this progress instance.*/
@@ -21236,57 +21300,27 @@ public:
     /*! Get progression.*/
     const SlvProgressionQt* get_progression() const;
 
-    /*! Whether the progression as reached its maximum or not.*/
+    /*! Whether the progression has reached its maximum or not.*/
     bool is_over() const;
+
+    /*! Whether the progression is showable based on start status or shoability before start.
+    * Workaround to manage QProgressDialog::minimumDuration().*/
+    bool is_showable() const;
+
+public slots:
+
+    void cancel();
 
 private slots:
 
-    /*! Start/reset GlvProgression. Update QProgressDialog::text with \p _message.
+    /*! Start/reset GlvProgression.
     * Enable or diable Cancel button depending on the attached progression..*/
-    void start(std::string _message);
+    void start();
     /*! Auto hide if enabled.*/
     void end();
     /*! Remove progression from GlvProgressMgr.*/
     void final();
 
-private slots:
-
-    void cancel();
-
-};
-
-class GlvProgression;
-class SlvProgressionQt;
-class QVBoxLayout;
-
-/*! Widget to manage easily and directly SlvProgressionQt.*/
-class GlvProgressMgr : public QWidget {
-
-    Q_OBJECT
-
-private:
-
-    std::vector<GlvProgression*> progressions;
-    QVBoxLayout* m_layout;
-
-public:
-
-    GlvProgressMgr(QWidget* _parent = 0);
-    ~GlvProgressMgr();
-
-    /*! Add progression. Optional: hide the progression when over. Not recommended if the progression is meant to end and start over (update issue when mouse is not on the widget).*/
-    GlvProgression* add_progression(const SlvProgressionQt* _progression, bool _l_hide_when_over = false);
-    /*! Clear progressions.*/
-    void clear();
-
-    /*! Reimplementation to keep every progressions at the same width.*/
-    void setFixedWidth(int _width);
-
-private:
-
-    void remove_progression(GlvProgression* _progression);
-
-    friend class GlvProgression;
 };
 
 class QTreeView;
@@ -21917,6 +21951,23 @@ inline void slv::string::istream(std::istream& _is, std::string& _string) {
 
 }
 
+inline std::string slv::string::format_va_list(const char* _format, std::va_list _args) {
+
+    std::string string;
+
+    va_list args;
+    va_copy(args, _args);
+
+    size_t length = vsnprintf(0, 0, _format, args);
+    string.resize(length + 1);
+
+    vsnprintf(&string[0], length + 1, _format, _args);
+    string.resize(length);
+
+    return string;
+
+}
+
 inline SlvFile::SlvFile() {
 
 }
@@ -22423,6 +22474,18 @@ inline SlvStatus::SlvStatus(statusType _type, std::string _message) {
     status_signals = new std::vector<SlvStatusSignal>;
 
     push(_type, _message);
+
+}
+
+inline SlvStatus::SlvStatus(statusType _type, const char* _format, ...) {
+
+    std::va_list args;
+    va_start(args, _format);
+    std::string string{ slv::string::format_va_list(_format, args) };
+    va_end(args);
+
+    status_signals = new std::vector<SlvStatusSignal>;
+    push(_type, string);
 
 }
 
@@ -23639,260 +23702,19 @@ inline std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair
 
 }
 
-#ifndef GLOVE_DISABLE_QT
-
-inline GlvParametrizationDialog_base::GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :QDialog(_parent, Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint) {
-
-    if (_parent) this->setModal(true);
-    //setWindowFlags(Qt::Dialog);
-    //setWindowModality(Qt::ApplicationModal);
-
-    l_dialog = _l_dialog;
-    l_deny_invalid_parameters =_l_deny_invalid_parameters;
-    parametrization_base = NULL;
-
-    // To avoid sending message "setGeometry: Unable to set geometry"
-    setMinimumSize(10, 10);
-
-    m_layout = new QVBoxLayout;
-    m_layout->setSizeConstraint(QLayout::SetMinimumSize);
-
-    if (l_dialog) {
-        button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-        connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
-        connect(button_box, SIGNAL(rejected()), this, SLOT(reject()));
-
-        abide_rules_button = button_box->addButton(tr("Abide rules"), QDialogButtonBox::ButtonRole::ApplyRole);
-        connect(abide_rules_button, SIGNAL(clicked(bool)), this, SLOT(abide_slot()));
-
-        connect(this, SIGNAL(parametrizationChanged(std::string)), this, SLOT(check_parameters_slot()));
-
-        m_layout->addWidget(button_box);
-    } else {
-        button_box = NULL;
-        abide_rules_button = NULL;
-    }
-
-    this->setLayout(m_layout);
-}
-
-inline GlvParametrizationDialog_base::~GlvParametrizationDialog_base() {
-
-    delete parametrization_base;
+inline SlvParameter_base::SlvParameter_base(SlvParametrization_base* _parametrization) : parametrization(_parametrization) {
 
 }
 
-inline void GlvParametrizationDialog_base::enable_abide_rules_button(bool _l_enable) {
-
-    if (abide_rules_button) {
-        if (_l_enable) {
-            abide_rules_button->show();
-        } else {
-            abide_rules_button->hide();
-        }
-    }
+inline SlvParameter_base::~SlvParameter_base() {
 
 }
 
-inline void GlvParametrizationDialog_base::set_parameters_widget_base(GlvParametersWidget_base* _parameters_widget_base) {
+inline bool SlvParameter_base::is_param_init_auto() const {
 
-    parameters_widget_base = _parameters_widget_base;
-    connect(parameters_widget_base, SIGNAL(heightChanged()), this, SLOT(maximum_height_slot()));
-
-}
-
-inline void GlvParametrizationDialog_base::parametrizationChanged_slot(std::string _parameter_name) {
-    emit parametrizationChanged(_parameter_name);
-}
-
-inline const SlvParametrization_base* GlvParametrizationDialog_base::get_parametrization_base() const {
-
-    return parametrization_base;
+	return parametrization->is_param_init_auto();
 
 }
-
-inline void GlvParametrizationDialog_base::addWidget(QWidget* _widget) {
-    m_layout->insertWidget(m_layout->count() - 1, _widget);
-}
-
-inline void GlvParametrizationDialog_base::abide_slot() {
-
-    bool l_abide_rules = abide_rules();
-
-    if (!l_abide_rules) {
-        QMessageBox::warning(this, tr("Abide rules"), tr("Rules have been abided."));
-    }
-
-}
-
-inline void GlvParametrizationDialog_base::check_parameters_slot() {
-
-    if (l_dialog && has_rules()) {
-        const SlvParametrization_base* parametrization_tmp = new_parametrization_base();
-        SlvStatus status = parametrization_tmp->check_parameters();
-        if (status) {
-            abide_rules_button->setEnabled(false);
-            abide_rules_button->setToolTip(tr("Abide rules of each parameter (exceptions, dependencies..)\nDisabled if the parameterization complies with the rules."));
-        } else {
-            abide_rules_button->setEnabled(true);
-            abide_rules_button->setToolTip(glv::toQString(status.get_message()));
-        }
-
-        delete parametrization_tmp;
-    }
-    
-}
-
-inline void GlvParametrizationDialog_base::resizeEvent(QResizeEvent* _event) {
-
-    if (parameters_widget_base->is_fully_visible() && !parameters_widget_base->has_height_decreased()) {
-
-        int height = parameters_widget_base->size().height();
-        height += button_box->size().height();
-        height += this->layout()->contentsMargins().top() + this->layout()->contentsMargins().bottom();
-        height += m_layout->spacing();
-        setMaximumHeight(height);
-
-    }
-}
-
-inline void GlvParametrizationDialog_base::maximum_height_slot() {
-
-    if (!parameters_widget_base->is_fully_visible()) {
-        setMaximumHeight(QWIDGETSIZE_MAX);
-    }
-
-}
-
-inline GlvVectorWidget_base::GlvVectorWidget_base(QWidget* _parent) : QWidget(_parent) {
-
-    QString info;
-
-    buttons_widget = new QWidget;
-    QVBoxLayout* buttons_layout = new QVBoxLayout;
-    buttons_widget->setLayout(buttons_layout);
-    buttons_widget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-
-    QWidget* pushpop_widget = new QWidget;
-    QHBoxLayout* pushpop_layout = new QHBoxLayout;
-    pushpop_widget->setLayout(pushpop_layout);
-    button_push = new QPushButton(tr("Push"));
-    info = QString(tr("Add a new element at the end of the vector"));
-    button_push->setWhatsThis(info);
-    button_push->setToolTip(info);
-    pushpop_layout->addWidget(button_push);
-    button_pop = new QPushButton(tr("Pop"));
-    button_pop->setEnabled(false);
-    info = QString(tr("Remove the element at the end of the vector"));
-    button_pop->setWhatsThis(info);
-    button_pop->setToolTip(info);
-    pushpop_layout->addWidget(button_pop);
-    buttons_layout->addWidget(pushpop_widget);
-
-    QWidget* insert_widget = new QWidget;
-    QHBoxLayout* insert_layout = new QHBoxLayout;
-    insert_widget->setLayout(insert_layout);
-    button_insert = new QPushButton(tr("Insert"));
-    info = QString(tr("Insert an element at the specified index"));
-    button_insert->setWhatsThis(info);
-    button_insert->setToolTip(info);
-    insert_layout->addWidget(button_insert);
-    index_spinbox = new QSpinBox;
-    info = QString(tr("Index where to insert an element"));
-    index_spinbox->setWhatsThis(info);
-    index_spinbox->setToolTip(info);
-    insert_layout->addWidget(index_spinbox);
-    buttons_layout->addWidget(insert_widget);
-    buttons_layout->setContentsMargins(0, 9, 0, 0);
-
-    pushpop_layout->setContentsMargins(0, 0, 0, 0);
-    insert_layout->setContentsMargins(0, 0, 0, 0);
-
-    index_spinbox->setMinimum(0);
-
-    widget_scroll = new QWidget;
-    layout_items = new QVBoxLayout;
-
-    widget_scroll->setLayout(layout_items);
-    connect(button_push, SIGNAL(clicked()), this, SLOT(pushValue()));
-    connect(button_pop, SIGNAL(clicked()), this, SLOT(popValue()));
-    connect(button_insert, SIGNAL(clicked()), this, SLOT(insertValue()));
-
-    QWidget* widget_vector = new QWidget;
-    QScrollArea* scroll_area = glv::widget::make_scrollable(widget_scroll, widget_vector);
-    scroll_area->setFrameShape(QFrame::Panel);
-    widget_vector->layout()->setContentsMargins(0, 0, 0, 0);
-
-    QHBoxLayout* layout = new QHBoxLayout;
-    layout->addWidget(widget_vector);
-    layout->addWidget(buttons_widget, 0, Qt::AlignTop);
-    setLayout(layout);
-
-    layout->setContentsMargins(0, 0, 0, 0);
-}
-
-inline GlvVectorWidget_base::~GlvVectorWidget_base() {
-
-}
-
-inline void GlvVectorWidget_base::set_editable(bool l_editable) {
-    QWidget::setEnabled(l_editable);
-}
-
-inline void GlvVectorWidget_base::insertValue() {
-
-    insertValue(index_spinbox->value());
-
-}
-
-inline GlvVectorWidgetItem_base::GlvVectorWidgetItem_base() {
-
-	layout = new QHBoxLayout;
-	setLayout(layout);
-	layout->setContentsMargins(0, 0, 0, 0);
-
-}
-
-inline GlvVectorWidgetItem_base::~GlvVectorWidgetItem_base() {
-
-}
-
-inline void GlvVectorWidgetItem_base::show_remove_button(bool _l_show) {
-
-	if (_l_show) {
-		remove_button->show();
-	} else {
-		remove_button->hide();
-	}
-
-}
-
-template <>
-inline QString glv::toQString<std::string>(const std::string& _value) {
-	return QString(_value.c_str());
-}
-template <>
-inline QString glv::toQString<double>(const double& _value) {
-	return QString(slv::string::value_to_string(_value).c_str());
-}
-template <>
-inline QString glv::toQString<float>(const float& _value) {
-	return QString(slv::string::value_to_string(_value).c_str());
-}
-template <>
-inline QString glv::toQString<int>(const int& _value) {
-	return QString(slv::string::number_to_string_auto(_value).c_str());
-}
-template <>
-inline QString glv::toQString<unsigned int>(const unsigned int& _value) {
-	return QString(slv::string::number_to_string_auto(_value).c_str());
-}
-template <>
-inline QString glv::toQString<unsigned long>(const unsigned long& _value) {
-	return QString(slv::string::number_to_string_auto(_value).c_str());
-}
-
-#endif
 
 inline SlvStatus SlvParameterRuleValidation<SlvFile>::is_valid(const SlvParameter<SlvFile>* _parameter) {
 	if (!_parameter->get_value().get_path().empty()) {//if file is 'empty' then invalid status is being ignored. Assumption: the file was net at all.
@@ -24218,6 +24040,134 @@ inline GlvWidgetData<Tdata>::~GlvWidgetData() {
 
 #undef Tdata
 
+inline GlvVectorWidget_base::GlvVectorWidget_base(QWidget* _parent) : QWidget(_parent) {
+
+    QString info;
+
+    buttons_widget = new QWidget;
+    QVBoxLayout* buttons_layout = new QVBoxLayout;
+    buttons_widget->setLayout(buttons_layout);
+    buttons_widget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+
+    QWidget* pushpop_widget = new QWidget;
+    QHBoxLayout* pushpop_layout = new QHBoxLayout;
+    pushpop_widget->setLayout(pushpop_layout);
+    button_push = new QPushButton(tr("Push"));
+    info = QString(tr("Add a new element at the end of the vector"));
+    button_push->setWhatsThis(info);
+    button_push->setToolTip(info);
+    pushpop_layout->addWidget(button_push);
+    button_pop = new QPushButton(tr("Pop"));
+    button_pop->setEnabled(false);
+    info = QString(tr("Remove the element at the end of the vector"));
+    button_pop->setWhatsThis(info);
+    button_pop->setToolTip(info);
+    pushpop_layout->addWidget(button_pop);
+    buttons_layout->addWidget(pushpop_widget);
+
+    QWidget* insert_widget = new QWidget;
+    QHBoxLayout* insert_layout = new QHBoxLayout;
+    insert_widget->setLayout(insert_layout);
+    button_insert = new QPushButton(tr("Insert"));
+    info = QString(tr("Insert an element at the specified index"));
+    button_insert->setWhatsThis(info);
+    button_insert->setToolTip(info);
+    insert_layout->addWidget(button_insert);
+    index_spinbox = new QSpinBox;
+    info = QString(tr("Index where to insert an element"));
+    index_spinbox->setWhatsThis(info);
+    index_spinbox->setToolTip(info);
+    insert_layout->addWidget(index_spinbox);
+    buttons_layout->addWidget(insert_widget);
+    buttons_layout->setContentsMargins(0, 9, 0, 0);
+
+    pushpop_layout->setContentsMargins(0, 0, 0, 0);
+    insert_layout->setContentsMargins(0, 0, 0, 0);
+
+    index_spinbox->setMinimum(0);
+
+    widget_scroll = new QWidget;
+    layout_items = new QVBoxLayout;
+
+    widget_scroll->setLayout(layout_items);
+    connect(button_push, SIGNAL(clicked()), this, SLOT(pushValue()));
+    connect(button_pop, SIGNAL(clicked()), this, SLOT(popValue()));
+    connect(button_insert, SIGNAL(clicked()), this, SLOT(insertValue()));
+
+    QWidget* widget_vector = new QWidget;
+    QScrollArea* scroll_area = glv::widget::make_scrollable(widget_scroll, widget_vector);
+    scroll_area->setFrameShape(QFrame::Panel);
+    widget_vector->layout()->setContentsMargins(0, 0, 0, 0);
+
+    QHBoxLayout* layout = new QHBoxLayout;
+    layout->addWidget(widget_vector);
+    layout->addWidget(buttons_widget, 0, Qt::AlignTop);
+    setLayout(layout);
+
+    layout->setContentsMargins(0, 0, 0, 0);
+}
+
+inline GlvVectorWidget_base::~GlvVectorWidget_base() {
+
+}
+
+inline void GlvVectorWidget_base::set_editable(bool l_editable) {
+    QWidget::setEnabled(l_editable);
+}
+
+inline void GlvVectorWidget_base::insertValue() {
+
+    insertValue(index_spinbox->value());
+
+}
+
+inline GlvVectorWidgetItem_base::GlvVectorWidgetItem_base() {
+
+	layout = new QHBoxLayout;
+	setLayout(layout);
+	layout->setContentsMargins(0, 0, 0, 0);
+
+}
+
+inline GlvVectorWidgetItem_base::~GlvVectorWidgetItem_base() {
+
+}
+
+inline void GlvVectorWidgetItem_base::show_remove_button(bool _l_show) {
+
+	if (_l_show) {
+		remove_button->show();
+	} else {
+		remove_button->hide();
+	}
+
+}
+
+template <>
+inline QString glv::toQString<std::string>(const std::string& _value) {
+	return QString(_value.c_str());
+}
+template <>
+inline QString glv::toQString<double>(const double& _value) {
+	return QString(slv::string::value_to_string(_value).c_str());
+}
+template <>
+inline QString glv::toQString<float>(const float& _value) {
+	return QString(slv::string::value_to_string(_value).c_str());
+}
+template <>
+inline QString glv::toQString<int>(const int& _value) {
+	return QString(slv::string::number_to_string_auto(_value).c_str());
+}
+template <>
+inline QString glv::toQString<unsigned int>(const unsigned int& _value) {
+	return QString(slv::string::number_to_string_auto(_value).c_str());
+}
+template <>
+inline QString glv::toQString<unsigned long>(const unsigned long& _value) {
+	return QString(slv::string::number_to_string_auto(_value).c_str());
+}
+
 inline GlvMapWidget_base::GlvMapWidget_base(QWidget* _parent) : QWidget(_parent) {
 
     QString info;
@@ -24416,20 +24366,6 @@ inline GlvWidgetData<Tdata>::~GlvWidgetData() {
 #undef Tdata
 
 #endif
-
-inline SlvParameter_base::SlvParameter_base(SlvParametrization_base* _parametrization) : parametrization(_parametrization) {
-
-}
-
-inline SlvParameter_base::~SlvParameter_base() {
-
-}
-
-inline bool SlvParameter_base::is_param_init_auto() const {
-
-	return parametrization->is_param_init_auto();
-
-}
 
 inline SlvIFS::SlvIFS() {
 
@@ -24640,122 +24576,266 @@ inline std::vector<int> SlvTimer::get_time(clock_t _time) const {
     return time_vector;
 }
 
-inline SlvProgressionQt::SlvProgressionQt(std::string _name) :SlvName(_name) {
+#define get_iterator_ptr_value \
+iterator_type == IteratorType::Int ? *static_cast<int*>(iterator_ptr) : (\
+iterator_type == IteratorType::UnsignedInt ? *static_cast<unsigned int*>(iterator_ptr) : (\
+iterator_type == IteratorType::Size_t ? *static_cast<std::size_t*>(iterator_ptr) : (\
+0)))
+#define assign_iterator_ptr_value(value) \
+iterator_type == IteratorType::Int ? *static_cast<int*>(iterator_ptr) = value : (\
+iterator_type == IteratorType::UnsignedInt ? *static_cast<unsigned int*>(iterator_ptr) = value : (\
+iterator_type == IteratorType::Size_t ? *static_cast<std::size_t*>(iterator_ptr) = value : (\
+0)))
 
-	counter = NULL;
-	l_was_canceled = false;
+inline SlvProgressionQt::SlvProgressionQt(std::string _name, bool _l_recurrent) :SlvLblName(_name), l_recurrent(_l_recurrent) {
+
+	clear();
+}
+
+inline SlvProgressionQt::SlvProgressionQt(const SlvProgressionQt& _progression) : SlvProgressionQt(_progression.get_name(), _progression.is_recurrent()) {
+
 }
 
 inline SlvProgressionQt::~SlvProgressionQt() {
 
-	counter_finish();
+	iterator_finish();
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit final_signal();
+	emit finished();
 #endif
+
+}
+
+inline void SlvProgressionQt::clear() {
+
+	clear_progress();
+	message.clear();
+
+}
+
+inline void SlvProgressionQt::clear_progress() {
+
+	iterator_ptr = NULL;
+	l_iterating = false;
+	l_was_canceled = false;
+
+	iterator = 0;
+	Niterations = 0;
+	l_started = false;
+	l_no_feedback_ended = false;
 
 }
 
 inline SlvProgressionQt& SlvProgressionQt::operator=(const SlvProgressionQt& _progression) {
 
-	set_name(_progression.get_name());
 	return *this;
+
+}
+
+inline void SlvProgressionQt::set_recurrent(bool _l_recurrent) {
+
+	l_recurrent = _l_recurrent;
+
+}
+
+inline bool SlvProgressionQt::is_recurrent() const {
+
+	return l_recurrent;
 
 }
 
 inline bool SlvProgressionQt::is_over() const {
 
-	if (counter) {
-		return is_over(*counter, Ncounter);
-	} else {
-		return false;
-	}
-
-}
-
-inline bool SlvProgressionQt::has_counter() const {
-
-	return counter;
-
-}
-
-inline bool SlvProgressionQt::is_over(unsigned int _counter, unsigned int _Ncounter) {
-
-	return _counter >= _Ncounter - 1;
-
-}
-
-inline void SlvProgressionQt::emit_start(std::string _info) const {
-
-	const_cast<SlvProgressionQt*>(this)->l_was_canceled = false;
-	const_cast<SlvProgressionQt*>(this)->counter = NULL;
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit const_cast<SlvProgressionQt*>(this)->start_signal(_info);
-#endif
-
-}
-
-inline void SlvProgressionQt::emit_start(std::string _info, unsigned int* _counter, const unsigned int _Ncounter) const {
-
-	const_cast<SlvProgressionQt*>(this)->l_was_canceled = false;
-	const_cast<SlvProgressionQt*>(this)->counter = _counter;
-	const_cast<SlvProgressionQt*>(this)->Ncounter = _Ncounter;
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit const_cast<SlvProgressionQt*>(this)->start_signal(_info);
-#endif
-
-}
-
-inline bool SlvProgressionQt::emit_progress() const {
-
-	if (counter && Ncounter) {
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-		int value = 100 * (*counter + 1) / Ncounter;
-		emit const_cast<SlvProgressionQt*>(this)->progress_signal(value);
-#endif
-		if (is_over()) {
-			emit_end();
+	if (l_started) {
+		if (iterator_ptr) {
+			return is_iterator_ptr_over((unsigned int)(get_iterator_ptr_value), Niterations);
+		} else if (l_iterating) {
+			return is_iterator_over(iterator, Niterations);
+		} else {
+			return l_no_feedback_ended;
 		}
+	} else {
 		return true;
+	}
+
+}
+
+inline bool SlvProgressionQt::has_iterator_ptr() const {
+
+	return iterator_ptr;
+
+}
+
+inline bool SlvProgressionQt::is_iterating() const {
+
+	return l_iterating;
+
+}
+
+inline bool SlvProgressionQt::is_cancelable() const {
+
+	return Niterations;
+
+}
+
+inline bool SlvProgressionQt::is_iterator_ptr_over(unsigned int _iterator_value, unsigned int _Niterations) {
+
+	return _iterator_value >= _Niterations - 1;
+
+}
+
+inline bool SlvProgressionQt::is_iterator_over(std::size_t _iterator, unsigned int _Niterations) {
+
+	return _iterator >= _Niterations;
+
+}
+
+inline void SlvProgressionQt::start() {
+
+	clear_progress();
+	l_started = true;
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit started();
+#endif
+
+}
+
+inline void SlvProgressionQt::start(const unsigned int _Niterations) {
+
+	clear_progress();
+
+	start_pv(_Niterations);
+
+}
+
+template <>
+inline void SlvProgressionQt::start(int* _iterator_ptr, const unsigned int _Niterations) {
+
+	iterator_type = IteratorType::Int;
+
+	clear_progress();
+
+	iterator_ptr = _iterator_ptr;
+	
+	start_pv(_Niterations);
+
+}
+
+template <>
+inline void SlvProgressionQt::start(unsigned int* _iterator_ptr, const unsigned int _Niterations) {
+
+	iterator_type = IteratorType::UnsignedInt;
+
+	clear_progress();
+
+	iterator_ptr = _iterator_ptr;
+	
+	start_pv(_Niterations);
+
+}
+
+template <>
+inline void SlvProgressionQt::start(std::size_t* _iterator_ptr, const unsigned int _Niterations) {
+
+	iterator_type = IteratorType::Size_t;
+
+	clear_progress();
+
+	iterator_ptr = _iterator_ptr;
+	
+	start_pv(_Niterations);
+
+}
+
+inline void SlvProgressionQt::start_pv(const unsigned int _Niterations) {
+
+	l_started = true;
+	Niterations = _Niterations;
+
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit started();
+#endif
+
+}
+
+inline bool SlvProgressionQt::update() {
+
+	if (Niterations) {
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+		int value = -1;
+		if (iterator_ptr) {
+			value = int(100 * (get_iterator_ptr_value + 1) / Niterations);
+		} else if (l_iterating) {
+			value = int(100 * (iterator) / Niterations);
+		}
+		if (value >= 0) {
+			emit updated(value);
+			if (is_over()) {
+				end();
+			}
+			return true;
+		} else {
+			return false;
+		}
+#endif
 	} else {
 		return false;
 	}
 
 }
 
-inline void SlvProgressionQt::emit_progress(int _value) const {
+inline bool SlvProgressionQt::update(int _value) {
 
+	if (Niterations) {
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit const_cast<SlvProgressionQt*>(this)->progress_signal(_value);
+		int value = 100 * (_value + 1) / Niterations;
+		if (value >= 0) {
+			emit updated(value);
+			if (is_iterator_ptr_over(_value, Niterations)) {
+				end();
+			}
+			return true;
+		} else {
+			return false;
+		}
 #endif
-	if (is_over(_value, 100)) {
-		emit_end();
+	} else {
+		return false;
 	}
 
 }
 
-inline void SlvProgressionQt::emit_end() const {
+inline void SlvProgressionQt::end() {
 
-	const_cast<SlvProgressionQt*>(this)->counter_finish();
+	l_started = false;
+
+	iterator_finish();
+	if (!is_cancelable()) {
+		l_no_feedback_ended = true;
+	}
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit const_cast<SlvProgressionQt*>(this)->end_signal();
+	emit ended();
 #endif
 
-	const_cast<SlvProgressionQt*>(this)->counter = NULL;
+	iterator_ptr = NULL;
+	l_iterating = false;
+	Niterations = 0;
+
 }
 
-inline void SlvProgressionQt::emit_final() const {
+inline void SlvProgressionQt::finish() {
 
-	const_cast<SlvProgressionQt*>(this)->counter_finish();
+	iterator_finish();
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit const_cast<SlvProgressionQt*>(this)->final_signal();
+	emit finished();
 #endif
 
-	const_cast<SlvProgressionQt*>(this)->counter = NULL;
+	clear();
+
 }
 
 inline void SlvProgressionQt::cancel() {
 
-	counter_finish();
+	iterator_finish();
 	l_was_canceled = true;
 
 }
@@ -24766,20 +24846,110 @@ inline bool SlvProgressionQt::was_canceled() const {
 
 }
 
-inline void SlvProgressionQt::counter_finish() {
+inline void SlvProgressionQt::iterator_finish() {
 
-	/*! Triggers end of loop. If finished is called when the counter has not reach Ncounter yet, then it sets l_stopped = true. Means the progression has been stopped before then end.*/
-	if (counter) {
-		if (*counter != Ncounter) {
-			*counter = Ncounter;
+	/*! Triggers end of loop. If finished is called when the iterator has not reach Niterations yet, then it sets l_stopped = true. Means the progression has been stopped before then end.*/
+	if (iterator_ptr) {
+		if (get_iterator_ptr_value != Niterations) {
+			assign_iterator_ptr_value(Niterations);
+		}
+	} else if (l_iterating) {
+		if (iterator != Niterations) {
+			iterator = Niterations;
 		}
 	}
 
 }
 
-inline SlvProgression::SlvProgression(std::string _name) {
+inline SlvProgressionQt::operator std::size_t() const {
 
-	progression.set_name(_name);
+	return iterator;
+
+}
+
+inline SlvProgressionQt& SlvProgressionQt::operator=(const std::size_t _iterator) {
+
+	clear_progress();
+
+	l_started = true;
+
+	iterator = _iterator;
+	l_iterating = true;
+
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit started();
+#endif
+	return *this;
+}
+
+inline bool SlvProgressionQt::operator<<(std::size_t _Niterations) {
+
+	if (l_iterating) {
+		Niterations = (unsigned int)_Niterations;
+		return iterator < _Niterations;
+	} else {
+		return false;
+	}
+
+}
+
+inline bool SlvProgressionQt::operator<<(int _Niterations) {
+
+	return *this << std::size_t(_Niterations);
+
+}
+
+inline bool SlvProgressionQt::operator<<(unsigned int _Niterations) {
+
+	return *this << std::size_t(_Niterations);
+
+}
+
+inline bool SlvProgressionQt::operator<<=(std::size_t _Niterations) {
+
+	if (l_iterating) {
+		Niterations = (unsigned int)(_Niterations - 1);
+		return iterator <= _Niterations;
+	} else {
+		return false;
+	}
+
+}
+
+inline bool SlvProgressionQt::operator<<=(int _Niterations) {
+
+	return *this <<= std::size_t(_Niterations);
+
+}
+
+inline bool SlvProgressionQt::operator<<=(unsigned int _Niterations) {
+
+	return *this <<= std::size_t(_Niterations);
+
+}
+
+inline SlvProgressionQt& SlvProgressionQt::operator++() {
+
+	if (l_iterating) {
+		++iterator;
+		update();
+	}
+	return *this;
+}
+
+inline SlvProgressionQt SlvProgressionQt::operator++(int) {
+
+	if (l_iterating) {
+		iterator++;
+		update();
+	}
+	SlvProgressionQt progression = *this;
+	return progression;
+}
+
+inline SlvProgression::SlvProgression(std::string _name, bool _l_recurrent): progression(_name) {
+
+	progression.set_recurrent(_l_recurrent);
 
 }
 
@@ -24799,8 +24969,6 @@ inline SlvProgressionQt* SlvProgression::get_progression() const {
 }
 
 inline SlvProgression& SlvProgression::operator=(const SlvProgression& _progression) {
-
-	progression = _progression.progression;
 
 	return *this;
 }
@@ -24872,9 +25040,9 @@ inline std::vector<const SlvParameter_base*> SlvParametrization_base::find(std::
 
 inline const SlvParameter_base* SlvParametrization_base::find_first(std::string _parameter_name, bool _l_parametrizations) const {
 
-	std::vector<const SlvParameter_base*> parameters = find(_parameter_name, _l_parametrizations);
-	if (!parameters.empty()) {
-		return parameters.front();
+	std::vector<const SlvParameter_base*> parameters_found = find(_parameter_name, _l_parametrizations);
+	if (!parameters_found.empty()) {
+		return parameters_found.front();
 	} else {
 		return NULL;
 	}
@@ -25020,416 +25188,6 @@ inline const SlvParametrization0::Tparametrization& SlvParametrization0::param_c
 }
 
 #ifndef GLOVE_DISABLE_QT
-
-inline glvm_staticVariable_impl(const, int, GlvParametersWidget_base, layout_margin, QApplication::style()->pixelMetric(QStyle::PM_LayoutLeftMargin));
-
-class GlvParametersWidget_base::ScrollArea : public QScrollArea {
-public:
-	bool eventFilter(QObject* object, QEvent* event) {
-		if (object == widget() && event->type() == QEvent::Resize) {
-
-			int min_width = widget()->sizeHint().width();
-			int max_width = QGuiApplication::primaryScreen()->geometry().width() - 100;
-			if (min_width > max_width) {
-				min_width = max_width;
-			}
-			if (widget()->size().height() > QScrollArea::size().height()) {
-				min_width += QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent);
-			}
-			QScrollArea::setMinimumWidth(min_width);
-		}
-		return false;
-	}
-	bool is_expanded_vertically() const {
-		return widget()->size().height() > QScrollArea::size().height();
-	}
-};
-
-inline GlvParametersWidget_base::GlvParametersWidget_base() {
-
-	main_layout = new QVBoxLayout;
-	main_layout->setContentsMargins(layout_margin(), layout_margin(), 0, layout_margin());
-	this->setLayout(main_layout);
-
-	parameters_widget = new QWidget;
-	parameters_widget->installEventFilter(this);
-	vertical_layout = new QVBoxLayout;
-	parameters_widget->setLayout(vertical_layout);
-	parameters_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);//here
-
-	l_scrollable = false;
-	scroll_area = NULL;
-	main_layout->addWidget(parameters_widget);
-
-	set_scrollable(true);
-
-	l_height_decreased = false;
-	l_adapt_max_height = false;
-
-	save_load_widget = NULL;
-}
-
-inline GlvParametersWidget_base::~GlvParametersWidget_base() {
-
-}
-
-inline void GlvParametersWidget_base::set_layout_vertical() {
-
-	set_layout_type(LayoutType::Vertical);
-
-}
-
-inline void GlvParametersWidget_base::set_layout_grid() {
-
-	set_layout_type(LayoutType::Grid);
-
-}
-
-inline bool GlvParametersWidget_base::is_fully_visible() const {
-
-	return !l_scrollable || !scroll_area->is_expanded_vertically();
-
-}
-
-inline void GlvParametersWidget_base::set_save_load_widget(GlvWidgetSaveLoad_base* _save_load_widget) {
-
-	save_load_widget = _save_load_widget;
-	if (save_load_widget) {
-		save_load_widget->layout()->setContentsMargins(0, 0, layout_margin() - QApplication::style()->pixelMetric(QStyle::QStyle::PM_DefaultFrameWidth), 0);
-		main_layout->addWidget(save_load_widget, 0, Qt::AlignRight | Qt::AlignBottom);
-	}
-
-}
-
-inline void GlvParametersWidget_base::set_layout_type_protected(LayoutType _layout_type) {
-
-	bool l_update_layout = false;
-	if (layout_type != _layout_type) {
-		l_update_layout = true;
-	}
-	layout_type = _layout_type;
-
-	if (l_update_layout) {
-		delete parameters_widget->layout();
-		if (layout_type == LayoutType::Vertical) {
-			vertical_layout = new QVBoxLayout;
-			parameters_widget->setLayout(vertical_layout);
-		} else if (layout_type == LayoutType::Grid) {
-			grid_layout = new QGridLayout;
-			grid_layout->setContentsMargins(0, 0, layout_margin(), 0);
-			grid_layout->setHorizontalSpacing(grid_horizontal_spacing());
-			parameters_widget->setLayout(grid_layout);
-		}
-	}
-
-}
-
-inline void GlvParametersWidget_base::add_parameter_widget_to_vertical_layout(QWidget* _parameter_widget) {
-
-	vertical_layout->addWidget(_parameter_widget);
-
-}
-
-inline void GlvParametersWidget_base::add_parameter_widget_to_grid_layout(QWidget* _dataname_label, QWidget* _data_widget, QWidget* _optional_text_label, int i) {
-
-	if (_dataname_label) {
-		grid_layout->addWidget(_dataname_label, i, 0);
-	}
-	grid_layout->addWidget(_data_widget, i, 1);
-	if (_optional_text_label) {
-		grid_layout->addWidget(_optional_text_label, i, 2);
-	}
-
-}
-
-inline void GlvParametersWidget_base::set_checkable_collapse(bool _l_checkable) {
-
-	if (_l_checkable) {
-		QGroupBox::setCheckable(true);
-		connect(this, SIGNAL(toggled(bool)), this, SLOT(show_parameters(bool)));
-		setChecked(false);
-		this->setToolTip(tr("Show/hide nested parameters"));
-	} else {
-		setChecked(true);
-		disconnect(this, SIGNAL(toggled(bool)));
-		QGroupBox::setCheckable(false);
-		this->setToolTip(tr(""));
-	}
-	
-
-}
-
-inline void GlvParametersWidget_base::set_scrollable(bool _l_scrollable) {
-
-	if (!_l_scrollable && l_scrollable) {
-
-		main_layout->insertWidget(0, parameters_widget);
-		delete scroll_area;
-		scroll_area = NULL;
-
-	} else if (_l_scrollable && !l_scrollable) {
-
-		scroll_area = new ScrollArea;
-		scroll_area->setWidgetResizable(true);
-		scroll_area->setWidget(parameters_widget);
-		scroll_area->setFrameShape(QFrame::NoFrame);
-		main_layout->addWidget(scroll_area, 0);
-
-	}
-
-	l_scrollable = _l_scrollable;
-
-}
-
-inline void GlvParametersWidget_base::set_adapt_max_height(bool _l_adapt) {
-
-	l_adapt_max_height = _l_adapt;
-
-}
-
-inline void GlvParametersWidget_base::show_parameters(bool _l_show) {
-
-	parameters_widget->setVisible(_l_show);
-
-	if (save_load_widget) {
-		save_load_widget->setVisible(_l_show);
-	}
-
-}
-
-inline bool GlvParametersWidget_base::has_height_decreased() const {
-
-	return l_height_decreased;
-
-}
-
-inline bool GlvParametersWidget_base::eventFilter(QObject* object, QEvent* _event) {
-
-	if (object == parameters_widget && _event->type() == QEvent::Resize) {
-
-		QResizeEvent* resize_event = dynamic_cast<QResizeEvent*>(_event);
-		if (resize_event->size().height() < resize_event->oldSize().height()) {
-			l_height_decreased = true;
-			emit heightChanged();
-		} else if (resize_event->size().height() > resize_event->oldSize().height()) {
-			l_height_decreased = false;
-			emit heightChanged();
-		} else if (l_adapt_max_height) {
-			l_height_decreased = false;
-		}
-
-	}
-	return false;
-
-}
-
-inline void glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
-
-	showQMessageBox("", _status, _l_show_all, _parent);
-}
-
-inline void glv::flag::showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
-
-	QString message;
-	if (_status.get_type() != SlvStatus::statusType::ok) {
-		if (!_message.isEmpty()) {
-			message = _message;
-			message += "\n";
-		}
-		message += glv::toQString(_status.to_string(_l_show_all));
-	}
-
-	if (_status.get_type() == SlvStatus::statusType::information) {
-		QMessageBox::information(_parent, "", message);
-	} else if (_status.get_type() == SlvStatus::statusType::warning) {
-		QMessageBox::warning(_parent, "", message);
-	} else if (_status.get_type() == SlvStatus::statusType::critical) {
-		QMessageBox::critical(_parent, "", message);
-	}
-
-}
-
-inline void glv::flag::BREAK(std::string warning_message, QWidget* _parent) {
-
-	showQMessageBox(SlvStatus(SlvStatus::statusType::critical, warning_message), false, _parent);
-	slv::flag::ISSUE(slv::flag::Critical, warning_message);
-
-}
-
-inline void glv::flag::INFO(std::string warning_message, QWidget* _parent) {
-
-	showQMessageBox(SlvStatus(SlvStatus::statusType::information, warning_message), false, _parent);
-
-}
-
-inline GlvListDialog_base::GlvListDialog_base(QWidget* _parent, bool _l_dialog) :QDialog(_parent) {
-
-    if (_parent) this->setModal(true);
-
-    l_dialog = _l_dialog;
-
-    layout = new QVBoxLayout;
-
-    QWidget* configuration_widget = new QWidget();
-    list_layout = new QGridLayout();
-    list_layout->setContentsMargins(0, 0, 0, 0);
-
-    text_widget = NULL;
-
-    list_name_widget = new QLabel;
-    list_layout->addWidget(list_name_widget, 1, 0);
-
-    combo_list = new QComboBox;;
-    list_layout->addWidget(combo_list, 2, 0);
-
-    configuration_widget->setLayout(list_layout);
-
-    layout->addWidget(configuration_widget);
-
-    if (l_dialog) {
-        button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-        connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
-        connect(button_box, SIGNAL(rejected()), this, SLOT(reject()));
-        layout->addWidget(button_box);
-    }
-
-    this->setLayout(layout);
-}
-
-inline GlvListDialog_base::~GlvListDialog_base() {
-
-}
-
-inline void GlvListDialog_base::addWidget(QWidget* _widget) {
-    layout->insertWidget(layout->count() - l_dialog, _widget);
-}
-
-inline std::string GlvListDialog_base::get_currentText() {
-
-    return combo_list->currentText().toStdString();
-}
-
-inline bool GlvListDialog_base::set_currentText(const std::string& _name) {
-
-    int index = combo_list->findText(glv::toQString(_name));
-    combo_list->setCurrentIndex(index);
-
-    return (index != -1);
-}
-
-inline void GlvListDialog_base::enable_combo_items() {
-
-    for (int i = 0; i < combo_list->count(); i++) {
-        qobject_cast<QStandardItemModel*>(combo_list->model())->item(i)->setEnabled(true);
-    }
-
-}
-
-inline void GlvListDialog_base::set_text(const QString& _text) {
-
-    if (!text_widget) {
-        text_widget = new QLabel;
-        list_layout->addWidget(text_widget, 0, 0);
-    }
-
-    text_widget->setText(_text);
-
-}
-
-inline void GlvListDialog_base::accept() {
-
-    if (l_dialog) QDialog::accept();
-
-}
-
-inline void GlvListDialog_base::reject() {
-
-    if (l_dialog) QDialog::reject();
-
-}
-
-inline void GlvListDialog_base::setOkButtonEnabled(bool _l_enable) {
-
-    button_box->button(QDialogButtonBox::Ok)->setEnabled(_l_enable);
-
-}
-
-inline GlvListDialog::GlvListDialog(const std::vector<std::string>& _names, const std::string _list_name, QWidget* _parent, bool _l_dialog) :GlvListDialog_base(_parent, _l_dialog) {
-
-    list_name_widget->setText(glv::toQString(_list_name + " :"));
-    glv::toQComboBox(combo_list, _names);
-
-}
-
-inline GlvListDialog::~GlvListDialog() {
-
-}
-
-inline void GlvParamListDialog_Filtering::update_current_item(QComboBox* _combo_list) {
-
-    int i = 0;
-    while (i < _combo_list->count() && !qobject_cast<QStandardItemModel*>(_combo_list->model())->item(i)->isEnabled()) {
-        i++;
-    }
-
-    if (i < _combo_list->count()) {
-        _combo_list->setCurrentIndex(i);
-    } else {
-        //all items are deactivated
-    }
-
-}
-
-inline GlvParamListDialog_base::GlvParamListDialog_base(const std::vector<std::string>& _names, const std::string _list_name, QWidget* _parent, bool _l_dialog, bool _l_visible_config) :\
-GlvListDialog(_names, _list_name, _parent, _l_dialog) {
-
-	l_visible_config = _l_visible_config;
-
-	parametrization_dialog = NULL;
-
-	if (l_visible_config) {
-		QPushButton* configure_button = new QPushButton(QString(tr("Configure")));
-		configure_button->setMinimumHeight(23);
-		list_layout->addWidget(configure_button, 2, 1);
-
-		connect(configure_button, SIGNAL(clicked()), this, SLOT(make_parametrization_dialog()));
-	} else {
-		//auto open config when combo selection changes
-		connect(combo_list, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(make_parametrization_dialog(const QString&)));
-	}
-}
-
-inline GlvParamListDialog_base::~GlvParamListDialog_base() {
-	if (parametrization_dialog) {
-		delete parametrization_dialog;
-	}
-}
-
-inline void GlvParamListDialog_base::delete_parametrization_dialog() {
-
-	if (parametrization_dialog) {
-		delete parametrization_dialog;
-		parametrization_dialog = NULL;
-	}
-
-}
-
-inline GlvParametrizationDialog_base* GlvParamListDialog_base::get_parametrization_dialog_base() {
-
-	return parametrization_dialog;
-
-}
-
-inline const SlvParametrization_base* GlvParamListDialog_base::get_parametrization_base() const {
-
-	if (parametrization_dialog) {
-		return parametrization_dialog->get_parametrization_base();
-	} else {
-		// Reasons can be : List wasn't accepted, or Tlist is empty
-		return NULL;
-	}
-
-}
 
 inline void glv::resize(QStandardItemModel* _model, unsigned int _Mrow, unsigned int _Ncol, const QModelIndex _index) {
 
@@ -26230,6 +25988,770 @@ inline QSize GlvTreeView_base::get_view_offset() {
 
 }
 
+inline GlvParametrizationDialog_base::GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :QDialog(_parent, Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint) {
+
+    if (_parent) this->setModal(true);
+    //setWindowFlags(Qt::Dialog);
+    //setWindowModality(Qt::ApplicationModal);
+
+    l_dialog = _l_dialog;
+    l_deny_invalid_parameters =_l_deny_invalid_parameters;
+    parametrization_base = NULL;
+
+    // To avoid sending message "setGeometry: Unable to set geometry"
+    setMinimumSize(10, 10);
+
+    m_layout = new QVBoxLayout;
+    m_layout->setSizeConstraint(QLayout::SetMinimumSize);
+
+    if (l_dialog) {
+        button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+        connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
+        connect(button_box, SIGNAL(rejected()), this, SLOT(reject()));
+
+        abide_rules_button = button_box->addButton(tr("Abide rules"), QDialogButtonBox::ButtonRole::ApplyRole);
+        connect(abide_rules_button, SIGNAL(clicked(bool)), this, SLOT(abide_slot()));
+
+        connect(this, SIGNAL(parametrizationChanged(std::string)), this, SLOT(check_parameters_slot()));
+
+        m_layout->addWidget(button_box);
+    } else {
+        button_box = NULL;
+        abide_rules_button = NULL;
+    }
+
+    this->setLayout(m_layout);
+}
+
+inline GlvParametrizationDialog_base::~GlvParametrizationDialog_base() {
+
+    delete parametrization_base;
+
+}
+
+inline void GlvParametrizationDialog_base::enable_abide_rules_button(bool _l_enable) {
+
+    if (abide_rules_button) {
+        if (_l_enable) {
+            abide_rules_button->show();
+        } else {
+            abide_rules_button->hide();
+        }
+    }
+
+}
+
+inline void GlvParametrizationDialog_base::set_parameters_widget_base(GlvParametersWidget_base* _parameters_widget_base) {
+
+    parameters_widget_base = _parameters_widget_base;
+    connect(parameters_widget_base, SIGNAL(heightChanged()), this, SLOT(maximum_height_slot()));
+
+}
+
+inline void GlvParametrizationDialog_base::parametrizationChanged_slot(std::string _parameter_name) {
+    emit parametrizationChanged(_parameter_name);
+}
+
+inline const SlvParametrization_base* GlvParametrizationDialog_base::get_parametrization_base() const {
+
+    return parametrization_base;
+
+}
+
+inline void GlvParametrizationDialog_base::addWidget(QWidget* _widget) {
+    m_layout->insertWidget(m_layout->count() - 1, _widget);
+}
+
+inline void GlvParametrizationDialog_base::abide_slot() {
+
+    bool l_abide_rules = abide_rules();
+
+    if (!l_abide_rules) {
+        QMessageBox::warning(this, tr("Abide rules"), tr("Rules have been abided."));
+    }
+
+}
+
+inline void GlvParametrizationDialog_base::check_parameters_slot() {
+
+    if (l_dialog && has_rules()) {
+        const SlvParametrization_base* parametrization_tmp = new_parametrization_base();
+        SlvStatus status = parametrization_tmp->check_parameters();
+        if (status) {
+            abide_rules_button->setEnabled(false);
+            abide_rules_button->setToolTip(tr("Abide rules of each parameter (exceptions, dependencies..)\nDisabled if the parameterization complies with the rules."));
+        } else {
+            abide_rules_button->setEnabled(true);
+            abide_rules_button->setToolTip(glv::toQString(status.get_message()));
+        }
+
+        delete parametrization_tmp;
+    }
+    
+}
+
+inline void GlvParametrizationDialog_base::resizeEvent(QResizeEvent* _event) {
+
+    if (parameters_widget_base->is_fully_visible() && !parameters_widget_base->has_height_decreased()) {
+
+        int height = parameters_widget_base->size().height();
+        height += button_box->size().height();
+        height += this->layout()->contentsMargins().top() + this->layout()->contentsMargins().bottom();
+        height += m_layout->spacing();
+        setMaximumHeight(height);
+
+    }
+}
+
+inline void GlvParametrizationDialog_base::maximum_height_slot() {
+
+    if (!parameters_widget_base->is_fully_visible()) {
+        setMaximumHeight(QWIDGETSIZE_MAX);
+    }
+
+}
+
+inline glvm_staticVariable_impl(const, int, GlvParametersWidget_base, layout_margin, QApplication::style()->pixelMetric(QStyle::PM_LayoutLeftMargin));
+
+class GlvParametersWidget_base::ScrollArea : public QScrollArea {
+public:
+	bool eventFilter(QObject* object, QEvent* event) {
+		if (object == widget() && event->type() == QEvent::Resize) {
+
+			int min_width = widget()->sizeHint().width();
+			int max_width = QGuiApplication::primaryScreen()->geometry().width() - 100;
+			if (min_width > max_width) {
+				min_width = max_width;
+			}
+			if (widget()->size().height() > QScrollArea::size().height()) {
+				min_width += QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+			}
+			QScrollArea::setMinimumWidth(min_width);
+		}
+		return false;
+	}
+	bool is_expanded_vertically() const {
+		return widget()->size().height() > QScrollArea::size().height();
+	}
+};
+
+inline GlvParametersWidget_base::GlvParametersWidget_base() {
+
+	main_layout = new QVBoxLayout;
+	main_layout->setContentsMargins(layout_margin(), layout_margin(), 0, layout_margin());
+	this->setLayout(main_layout);
+
+	parameters_widget = new QWidget;
+	parameters_widget->installEventFilter(this);
+	vertical_layout = new QVBoxLayout;
+	parameters_widget->setLayout(vertical_layout);
+	parameters_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);//here
+
+	l_scrollable = false;
+	scroll_area = NULL;
+	main_layout->addWidget(parameters_widget);
+
+	set_scrollable(true);
+
+	l_height_decreased = false;
+	l_adapt_max_height = false;
+
+	save_load_widget = NULL;
+}
+
+inline GlvParametersWidget_base::~GlvParametersWidget_base() {
+
+}
+
+inline void GlvParametersWidget_base::set_layout_vertical() {
+
+	set_layout_type(LayoutType::Vertical);
+
+}
+
+inline void GlvParametersWidget_base::set_layout_grid() {
+
+	set_layout_type(LayoutType::Grid);
+
+}
+
+inline bool GlvParametersWidget_base::is_fully_visible() const {
+
+	return !l_scrollable || !scroll_area->is_expanded_vertically();
+
+}
+
+inline void GlvParametersWidget_base::set_save_load_widget(GlvWidgetSaveLoad_base* _save_load_widget) {
+
+	save_load_widget = _save_load_widget;
+	if (save_load_widget) {
+		save_load_widget->layout()->setContentsMargins(0, 0, layout_margin() - QApplication::style()->pixelMetric(QStyle::QStyle::PM_DefaultFrameWidth), 0);
+		main_layout->addWidget(save_load_widget, 0, Qt::AlignRight | Qt::AlignBottom);
+	}
+
+}
+
+inline void GlvParametersWidget_base::set_layout_type_protected(LayoutType _layout_type) {
+
+	bool l_update_layout = false;
+	if (layout_type != _layout_type) {
+		l_update_layout = true;
+	}
+	layout_type = _layout_type;
+
+	if (l_update_layout) {
+		delete parameters_widget->layout();
+		if (layout_type == LayoutType::Vertical) {
+			vertical_layout = new QVBoxLayout;
+			parameters_widget->setLayout(vertical_layout);
+		} else if (layout_type == LayoutType::Grid) {
+			grid_layout = new QGridLayout;
+			grid_layout->setContentsMargins(0, 0, layout_margin(), 0);
+			grid_layout->setHorizontalSpacing(grid_horizontal_spacing());
+			parameters_widget->setLayout(grid_layout);
+		}
+	}
+
+}
+
+inline void GlvParametersWidget_base::add_parameter_widget_to_vertical_layout(QWidget* _parameter_widget) {
+
+	vertical_layout->addWidget(_parameter_widget);
+
+}
+
+inline void GlvParametersWidget_base::add_parameter_widget_to_grid_layout(QWidget* _dataname_label, QWidget* _data_widget, QWidget* _optional_text_label, int i) {
+
+	if (_dataname_label) {
+		grid_layout->addWidget(_dataname_label, i, 0);
+	}
+	grid_layout->addWidget(_data_widget, i, 1);
+	if (_optional_text_label) {
+		grid_layout->addWidget(_optional_text_label, i, 2);
+	}
+
+}
+
+inline void GlvParametersWidget_base::set_checkable_collapse(bool _l_checkable) {
+
+	if (_l_checkable) {
+		QGroupBox::setCheckable(true);
+		connect(this, SIGNAL(toggled(bool)), this, SLOT(show_parameters(bool)));
+		setChecked(false);
+		this->setToolTip(tr("Show/hide nested parameters"));
+	} else {
+		setChecked(true);
+		disconnect(this, SIGNAL(toggled(bool)));
+		QGroupBox::setCheckable(false);
+		this->setToolTip(tr(""));
+	}
+	
+
+}
+
+inline void GlvParametersWidget_base::set_scrollable(bool _l_scrollable) {
+
+	if (!_l_scrollable && l_scrollable) {
+
+		main_layout->insertWidget(0, parameters_widget);
+		delete scroll_area;
+		scroll_area = NULL;
+
+	} else if (_l_scrollable && !l_scrollable) {
+
+		scroll_area = new ScrollArea;
+		scroll_area->setWidgetResizable(true);
+		scroll_area->setWidget(parameters_widget);
+		scroll_area->setFrameShape(QFrame::NoFrame);
+		main_layout->addWidget(scroll_area, 0);
+
+	}
+
+	l_scrollable = _l_scrollable;
+
+}
+
+inline void GlvParametersWidget_base::set_adapt_max_height(bool _l_adapt) {
+
+	l_adapt_max_height = _l_adapt;
+
+}
+
+inline void GlvParametersWidget_base::show_parameters(bool _l_show) {
+
+	parameters_widget->setVisible(_l_show);
+
+	if (save_load_widget) {
+		save_load_widget->setVisible(_l_show);
+	}
+
+}
+
+inline bool GlvParametersWidget_base::has_height_decreased() const {
+
+	return l_height_decreased;
+
+}
+
+inline bool GlvParametersWidget_base::eventFilter(QObject* object, QEvent* _event) {
+
+	if (object == parameters_widget && _event->type() == QEvent::Resize) {
+
+		QResizeEvent* resize_event = dynamic_cast<QResizeEvent*>(_event);
+		if (resize_event->size().height() < resize_event->oldSize().height()) {
+			l_height_decreased = true;
+			emit heightChanged();
+		} else if (resize_event->size().height() > resize_event->oldSize().height()) {
+			l_height_decreased = false;
+			emit heightChanged();
+		} else if (l_adapt_max_height) {
+			l_height_decreased = false;
+		}
+
+	}
+	return false;
+
+}
+
+inline bool glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
+
+	return showQMessageBox("", _status, _l_show_all, _parent);
+}
+
+inline bool glv::flag::showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
+
+	QString message;
+	if (_status.get_type() != SlvStatus::statusType::ok) {
+		if (!_message.isEmpty()) {
+			message = _message;
+			message += "\n";
+		}
+		message += glv::toQString(_status.to_string(_l_show_all));
+	}
+
+	QMessageBox::StandardButton button = QMessageBox::StandardButton::NoButton;
+	if (_status.get_type() == SlvStatus::statusType::information) {
+		button = QMessageBox::information(_parent, "", message);
+	} else if (_status.get_type() == SlvStatus::statusType::warning) {
+		button = QMessageBox::warning(_parent, "", message);
+	} else if (_status.get_type() == SlvStatus::statusType::critical) {
+		button = QMessageBox::critical(_parent, "", message);
+	}
+
+	return (button == QMessageBox::StandardButton::Ok);
+}
+
+inline void glv::flag::BREAK(std::string warning_message, QWidget* _parent) {
+
+	showQMessageBox(SlvStatus(SlvStatus::statusType::critical, warning_message), false, _parent);
+	slv::flag::ISSUE(slv::flag::Critical, warning_message);
+
+}
+
+inline void glv::flag::INFO(std::string warning_message, QWidget* _parent) {
+
+	showQMessageBox(SlvStatus(SlvStatus::statusType::information, warning_message), false, _parent);
+
+}
+
+inline GlvProgressMgr::GlvProgressMgr(QWidget* _parent) :QWidget(_parent) {
+
+    m_layout = new QVBoxLayout;
+    this->setLayout(m_layout);
+    m_layout->setSpacing(0);
+    m_layout->setContentsMargins(0, 0, 0, 0);
+    m_layout->setAlignment(Qt::AlignTop);
+
+    // Add dummy widget so that when all progressions are being removed, GlvProgressMgr instance is not empty and does not send message "setGeometry: Unable to set geometry"
+    QWidget* widget = new QWidget;
+    widget->setFixedHeight(2);
+    m_layout->addWidget(widget, 0, Qt::AlignTop);
+
+    l_close = false;
+}
+
+inline GlvProgressMgr::~GlvProgressMgr() {
+
+}
+
+inline GlvProgression* GlvProgressMgr::add_progression(SlvProgressionQt* _progression, bool _l_hide_when_over) {
+
+    unsigned int i = 0;
+    while (i < progressions.size() && _progression != progressions[i]->get_progression()) {
+        i++;
+    }
+
+    if (i == progressions.size()) {
+
+        GlvProgression* progression = new GlvProgression(this, _progression, _l_hide_when_over, false);
+        progression->setMinimumDuration(0);
+        m_layout->addWidget(progression, 0, Qt::AlignTop);
+        progressions.push_back(progression);
+        if (!progression->is_showable()) {
+            progression->hide();
+        }
+        
+        connect(_progression, SIGNAL(ended()), this, SLOT(check_close()));
+
+        return progression;
+
+    } else {
+
+        std::cout << "_progression already exists" << std::endl;
+        return progressions[i];
+
+    }
+
+}
+
+inline void GlvProgressMgr::clear() {
+
+    for (unsigned int i = 0; i < progressions.size(); i++) {
+        delete progressions[i];
+    }
+    progressions.clear();
+}
+
+inline void GlvProgressMgr::remove_progression(GlvProgression* _progression) {
+
+    unsigned int i = 0;
+    while (i < progressions.size() && _progression != progressions[i]) {
+        i++;
+    }
+
+    if (i < progressions.size()) {
+
+        glv::widget::remove_widget(m_layout, progressions[i]);
+        progressions.erase(progressions.begin() + i);
+
+    } else {
+        std::cout << "This progression index doesn't exist" << std::endl;
+    }
+
+}
+
+inline void GlvProgressMgr::closeEvent(QCloseEvent* _event) {
+
+    cancel();
+    l_close = true;
+
+    if (is_over()) {
+        QWidget::closeEvent(_event);
+    } else {
+        _event->ignore();
+    }
+
+}
+
+inline bool GlvProgressMgr::is_over() const {
+
+    bool l_over = true;
+    for (std::vector<GlvProgression*>::const_iterator it = progressions.begin(); it != progressions.end(); ++it) {
+        if (!(*it)->is_over()) {
+            l_over = false;
+        }
+    }
+
+    return l_over;
+}
+
+inline void GlvProgressMgr::check_close() {
+
+    if (l_close && is_over()) {
+        close();
+    }
+
+}
+
+inline void GlvProgressMgr::cancel() {
+
+    for (std::vector<GlvProgression*>::const_iterator it = progressions.begin(); it != progressions.end(); ++it) {
+
+        (*it)->cancel();
+
+    }
+
+}
+
+inline void GlvProgressMgr::paintEvent(QPaintEvent* _event) {
+
+    int count = 0;
+    GlvProgression* hint = NULL;
+    int max_width = 0;
+    for (int i = 0; i < progressions.size(); i++) {
+        if (!progressions[i]->is_showable()) {
+            progressions[i]->hide();
+        } else if (progressions[i]->isVisible()) {
+            count++;
+            hint = progressions[i];
+            if (progressions[i]->sizeHint().width() > max_width) {
+                max_width = progressions[i]->sizeHint().width();
+            }
+        }
+    }
+
+    if (count > 0) {
+        int height = hint->sizeHint().height() * count;
+        height += layout()->spacing() * (count - 1);
+        height += contentsMargins().top() + contentsMargins().bottom();
+        height += layout()->itemAt(0)->widget()->height();
+        setFixedHeight(height);
+        if (minimumWidth() != maximumWidth()) {// If fixed width is not set
+            setMinimumWidth(max_width);
+        }
+    }
+
+}
+
+inline GlvStatusMgr::GlvStatusMgr() {
+
+	connect(this, SIGNAL(display()), this, SLOT(show_status()));
+
+	l_continue = true;
+
+}
+
+inline GlvStatusMgr::~GlvStatusMgr() {
+
+}
+
+inline void GlvStatusMgr::clear() {
+
+	statuses.clear();
+
+}
+
+inline void GlvStatusMgr::add(const SlvStatus* _status) {
+
+	if (!slv::vector::find(_status, statuses)) {
+
+		statuses.push_back(_status);
+
+	}
+
+}
+
+inline void GlvStatusMgr::set_frozen() {
+
+	l_continue = false;
+
+}
+
+inline bool  GlvStatusMgr::proceeed() const {
+
+	return l_continue;
+
+}
+
+inline void GlvStatusMgr::show_status() {
+
+	bool l_ok = true;
+	for (std::vector<const SlvStatus*>::const_iterator it = statuses.begin(); it != statuses.end(); ++it) {
+		l_ok &= glv::flag::showQMessageBox(**it, true);
+	}
+
+	l_continue = l_ok;
+}
+
+inline glvm_staticVariable_impl(, SlvPoolFactory<SlvProgressionQt COMMA slv::lbl::Name>, GlvApp, progressions, {});
+
+inline SlvProgressionQt* GlvApp::get_progression(const slv::lbl::Name& _name) {
+
+	return progressions().get(_name);;
+
+}
+
+inline void GlvApp::show(const SlvStatus& _status, bool _l_wait) {
+
+	status() = _status;
+
+	if (status_mgr()) {
+
+		/*! Check if a QApplication was instantiated. So that method can still be used even if GLOVE_APP is not used.*/
+		QApplication* application = qobject_cast<QApplication*>(QCoreApplication::instance());
+		if (application) {
+			// Freeze status mgr in this thread. Too slow to freeze in slot connected to display otherwise.
+			if (_l_wait) {
+				status_mgr()->set_frozen();
+			}
+			status_mgr()->display();
+		}
+
+		while (!status_mgr()->proceeed()) {}
+
+	}
+
+}
+
+inline GlvListDialog_base::GlvListDialog_base(QWidget* _parent, bool _l_dialog) :QDialog(_parent) {
+
+    if (_parent) this->setModal(true);
+
+    l_dialog = _l_dialog;
+
+    layout = new QVBoxLayout;
+
+    QWidget* configuration_widget = new QWidget();
+    list_layout = new QGridLayout();
+    list_layout->setContentsMargins(0, 0, 0, 0);
+
+    text_widget = NULL;
+
+    list_name_widget = new QLabel;
+    list_layout->addWidget(list_name_widget, 1, 0);
+
+    combo_list = new QComboBox;;
+    list_layout->addWidget(combo_list, 2, 0);
+
+    configuration_widget->setLayout(list_layout);
+
+    layout->addWidget(configuration_widget);
+
+    if (l_dialog) {
+        button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+        connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
+        connect(button_box, SIGNAL(rejected()), this, SLOT(reject()));
+        layout->addWidget(button_box);
+    }
+
+    this->setLayout(layout);
+}
+
+inline GlvListDialog_base::~GlvListDialog_base() {
+
+}
+
+inline void GlvListDialog_base::addWidget(QWidget* _widget) {
+    layout->insertWidget(layout->count() - l_dialog, _widget);
+}
+
+inline std::string GlvListDialog_base::get_currentText() {
+
+    return combo_list->currentText().toStdString();
+}
+
+inline bool GlvListDialog_base::set_currentText(const std::string& _name) {
+
+    int index = combo_list->findText(glv::toQString(_name));
+    combo_list->setCurrentIndex(index);
+
+    return (index != -1);
+}
+
+inline void GlvListDialog_base::enable_combo_items() {
+
+    for (int i = 0; i < combo_list->count(); i++) {
+        qobject_cast<QStandardItemModel*>(combo_list->model())->item(i)->setEnabled(true);
+    }
+
+}
+
+inline void GlvListDialog_base::set_text(const QString& _text) {
+
+    if (!text_widget) {
+        text_widget = new QLabel;
+        list_layout->addWidget(text_widget, 0, 0);
+    }
+
+    text_widget->setText(_text);
+
+}
+
+inline void GlvListDialog_base::accept() {
+
+    if (l_dialog) QDialog::accept();
+
+}
+
+inline void GlvListDialog_base::reject() {
+
+    if (l_dialog) QDialog::reject();
+
+}
+
+inline void GlvListDialog_base::setOkButtonEnabled(bool _l_enable) {
+
+    button_box->button(QDialogButtonBox::Ok)->setEnabled(_l_enable);
+
+}
+
+inline GlvListDialog::GlvListDialog(const std::vector<std::string>& _names, const std::string _list_name, QWidget* _parent, bool _l_dialog) :GlvListDialog_base(_parent, _l_dialog) {
+
+    list_name_widget->setText(glv::toQString(_list_name + " :"));
+    glv::toQComboBox(combo_list, _names);
+
+}
+
+inline GlvListDialog::~GlvListDialog() {
+
+}
+
+inline void GlvParamListDialog_Filtering::update_current_item(QComboBox* _combo_list) {
+
+    int i = 0;
+    while (i < _combo_list->count() && !qobject_cast<QStandardItemModel*>(_combo_list->model())->item(i)->isEnabled()) {
+        i++;
+    }
+
+    if (i < _combo_list->count()) {
+        _combo_list->setCurrentIndex(i);
+    } else {
+        //all items are deactivated
+    }
+
+}
+
+inline GlvParamListDialog_base::GlvParamListDialog_base(const std::vector<std::string>& _names, const std::string _list_name, QWidget* _parent, bool _l_dialog, bool _l_visible_config) :\
+GlvListDialog(_names, _list_name, _parent, _l_dialog) {
+
+	l_visible_config = _l_visible_config;
+
+	parametrization_dialog = NULL;
+
+	if (l_visible_config) {
+		QPushButton* configure_button = new QPushButton(QString(tr("Configure")));
+		configure_button->setMinimumHeight(23);
+		list_layout->addWidget(configure_button, 2, 1);
+
+		connect(configure_button, SIGNAL(clicked()), this, SLOT(make_parametrization_dialog()));
+	} else {
+		//auto open config when combo selection changes
+		connect(combo_list, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(make_parametrization_dialog(const QString&)));
+	}
+}
+
+inline GlvParamListDialog_base::~GlvParamListDialog_base() {
+	if (parametrization_dialog) {
+		delete parametrization_dialog;
+	}
+}
+
+inline void GlvParamListDialog_base::delete_parametrization_dialog() {
+
+	if (parametrization_dialog) {
+		delete parametrization_dialog;
+		parametrization_dialog = NULL;
+	}
+
+}
+
+inline GlvParametrizationDialog_base* GlvParamListDialog_base::get_parametrization_dialog_base() {
+
+	return parametrization_dialog;
+
+}
+
+inline const SlvParametrization_base* GlvParamListDialog_base::get_parametrization_base() const {
+
+	if (parametrization_dialog) {
+		return parametrization_dialog->get_parametrization_base();
+	} else {
+		// Reasons can be : List wasn't accepted, or Tlist is empty
+		return NULL;
+	}
+
+}
+
 #endif
 
 #if __cplusplus > 201402L
@@ -26380,15 +26902,18 @@ inline bool slv::rw::readB<char>(char* _dat, std::ifstream& _input_file) {
 
 #ifndef GLOVE_DISABLE_QT
 
-inline GlvProgression::GlvProgression(GlvProgressMgr* _progress_mgr, SlvProgressionQt* _progression, bool _l_auto_hide, QWidget* _parent) :QProgressDialog(_parent) {
+inline GlvProgression::GlvProgression(GlvProgressMgr* _progress_mgr, SlvProgressionQt* _progression, bool _l_auto_hide, bool _l_show_before_start, QWidget* _parent) :QProgressDialog(_parent), l_auto_hide(_l_auto_hide), l_show_before_start(_l_show_before_start) {
+    
+    setValue(0);
+    setMaximum(100);
 
-    qRegisterMetaType<std::string>();
+    l_has_started = false;
+    l_cancel_requested = false;
 
-    l_auto_hide = _l_auto_hide;
     progress_mgr = _progress_mgr;
 
     QProgressDialog::setAutoReset(false);
-    QProgressDialog::setAutoClose(false);// does not seem to work
+    QProgressDialog::setAutoClose(false);
 
     progression = NULL;
     set_progression(_progression);
@@ -26396,6 +26921,8 @@ inline GlvProgression::GlvProgression(GlvProgressMgr* _progress_mgr, SlvProgress
     cancel_button = new QPushButton(tr("Cancel"));
     QProgressDialog::setCancelButton(cancel_button);
     cancel_button->setEnabled(false);
+
+    setSizePolicy(QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::MinimumExpanding);
 
 }
 
@@ -26418,11 +26945,11 @@ inline void GlvProgression::set_progression(SlvProgressionQt* _progression) {
         progression = _progression;
 
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-        connect(progression, SIGNAL(start_signal(std::string)), this, SLOT(start(std::string)));
+        connect(progression, SIGNAL(started()), this, SLOT(start()));
         // thread safe. In case executed slot doesn't have time to go through.
-        connect(progression, SIGNAL(progress_signal(int)), this, SLOT(setValue(int)), Qt::BlockingQueuedConnection);
-        connect(progression, SIGNAL(end_signal()), this, SLOT(end()));
-        connect(progression, SIGNAL(final_signal()), this, SLOT(final()));
+        connect(progression, SIGNAL(updated(int)), this, SLOT(setValue(int)), Qt::BlockingQueuedConnection);
+        connect(progression, SIGNAL(ended()), this, SLOT(end()));
+        connect(progression, SIGNAL(finished()), this, SLOT(final()));
 #endif
 
     }
@@ -26434,25 +26961,41 @@ inline const SlvProgressionQt* GlvProgression::get_progression() const {
     return progression;
 }
 
+inline bool GlvProgression::is_showable() const {
+
+    return l_has_started || l_show_before_start;
+
+}
+
 inline bool GlvProgression::is_over() const {
 
     return progression->is_over();
 }
 
-inline void GlvProgression::start(std::string _message) {
+inline void GlvProgression::start() {
+
+    QProgressDialog::reset();//to reset wasCanceled
+    setValue(0);
+
+    l_has_started = true;
 
     std::string text = progression->get_name();
-    if (!text.empty()) {
+    if (!text.empty() && !progression->get_message().empty()) {
         text += " : ";
     }
-    text += _message;
+    // Update QProgressDialog::text with message.
+    text += progression->get_message();
 
     QProgressDialog::setLabelText(glv::toQString(text));
 
-    if (progression->has_counter()) {
+    if (progression->has_iterator_ptr() || progression->is_iterating()) {
         cancel_button->setEnabled(true);
+        setMaximum(100);
         connect(this, SIGNAL(canceled()), this, SLOT(cancel()), Qt::ConnectionType::UniqueConnection);
     } else {
+        cancel_button->hide();
+        setMaximum(0);
+        findChild<QProgressBar*>()->setTextVisible(false);
         disconnect(this, SIGNAL(canceled()), this, SLOT(cancel()));
     }
 
@@ -26460,6 +27003,11 @@ inline void GlvProgression::start(std::string _message) {
 }
 
 inline void GlvProgression::end() {
+
+    if (!QProgressDialog::wasCanceled() && l_cancel_requested) {
+        QProgressDialog::cancel();
+        l_cancel_requested = false;
+    }
 
     if (l_auto_hide) {
         hide();
@@ -26477,85 +27025,15 @@ inline void GlvProgression::cancel() {
 
     // Since QProgressDialog::cancel() is not virtual, QProgressDialog::canceled() signal will trigger both QProgressDialog::cancel() and GlvProgression::cancel()
     if (!QProgressDialog::wasCanceled()) {
-        QProgressDialog::cancel();
+        if (progression->is_cancelable()) {// if control on progress is possible
+            QProgressDialog::cancel();
+            end();
+        } else {
+            l_cancel_requested = true;
+        }
     }
-
-    end();
+    
     progression->cancel();
-
-}
-
-inline GlvProgressMgr::GlvProgressMgr(QWidget* _parent) :QWidget(_parent) {
-
-    m_layout = new QVBoxLayout;
-    this->setLayout(m_layout);
-    //layout->setSizeConstraint(QLayout::SetFixedSize);
-
-    // Add dummy widget so that when all progressions are being removed, GlvProgressMgr instance is not empty and does not send message "setGeometry: Unable to set geometry"
-    QWidget* widget = new QWidget;
-    widget->setFixedHeight(2);
-    m_layout->addWidget(widget);
-
-}
-
-inline GlvProgressMgr::~GlvProgressMgr() {
-
-}
-
-inline GlvProgression* GlvProgressMgr::add_progression(const SlvProgressionQt* _progression, bool _l_hide_when_over) {
-
-    unsigned int i = 0;
-    while (i < progressions.size() && _progression != progressions[i]->get_progression()) {
-        i++;
-    }
-
-    if (i == progressions.size()) {
-
-        GlvProgression* progression = new GlvProgression(this, const_cast<SlvProgressionQt*>(_progression), _l_hide_when_over);
-        m_layout->addWidget(progression);
-        progressions.push_back(progression);
-        return progression;
-
-    } else {
-
-        std::cout << "_progression already exists" << std::endl;
-        return progressions[i];
-
-    }
-
-}
-
-inline void GlvProgressMgr::clear() {
-
-    for (unsigned int i = 0; i < progressions.size(); i++) {
-        delete progressions[i];
-    }
-    progressions.clear();
-}
-
-inline void GlvProgressMgr::setFixedWidth(int _width) {
-
-    for (int i = 0; i < progressions.size(); i++) {
-        progressions[i]->setFixedWidth(_width);
-    }
-
-}
-
-inline void GlvProgressMgr::remove_progression(GlvProgression* _progression) {
-
-    unsigned int i = 0;
-    while (i < progressions.size() && _progression != progressions[i]) {
-        i++;
-    }
-
-    if (i < progressions.size()) {
-
-        glv::widget::remove_widget(m_layout, progressions[i]);
-        progressions.erase(progressions.begin() + i);
-
-    } else {
-        std::cout << "This progression index doesn't exist" << std::endl;
-    }
 
 }
 

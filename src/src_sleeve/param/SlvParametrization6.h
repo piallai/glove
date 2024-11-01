@@ -27,6 +27,8 @@ class SlvParametrization6 : public SlvParametrization5<T1, T2, T3, T4, T5> {
 
 public:
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 6);
 	typedef SlvParametrization6<T1, T2, T3, T4, T5, T6> Tparametrization;
 	typedef SlvParametrization5<T1, T2, T3, T4, T5> Tparametrization_lower;
 

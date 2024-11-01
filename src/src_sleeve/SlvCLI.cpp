@@ -151,7 +151,6 @@ std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair<std::s
 
 	}
 
-
 	for (int i = 0; i < _solo_arguments.size(); i++) {
 		argv[1 + 2 * Nfilled_parameters + i] = new char[_solo_arguments[i].size() + 1];
 #ifdef COMPILER_GCC

@@ -22,9 +22,9 @@
 #include "ClassC.h"
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "GlvProgressMgr.h"
-#endif
 #include <QtConcurrent/QtConcurrentRun>
 #include <QFutureWatcher>
+#endif
 #include "FutureWrapper.h"
 
 int main(int argc, char *argv[]) {

@@ -30,16 +30,17 @@ ClassE::ClassE(int _Niterations) {
 void ClassE::process() {
 
 	unsigned int i = 0;
-	get_progression()->emit_start("Processing ClassE", &i, Niterations);
+	get_progression()->set_message("Processing ClassE");
+	get_progression()->start(&i, Niterations);
 	for (i = 0; i < Niterations; i++) {
 
 		// Simulates computation
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-		get_progression()->emit_progress();
+		get_progression()->update();
 
 	}
 
-	get_progression()->emit_final();
+	get_progression()->finish();
 
 }

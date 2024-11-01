@@ -1,4 +1,4 @@
-# ![C++](https://img.shields.io/badge/C++-Library-blue.svg?style=flat&logo=c%2B%2B) Glove
+# ![C++](https://img.shields.io/badge/C++-Library-blue.svg?style=flat&logo=c%2B%2B) Glove <img align="right" width="200" height="200" src="/doc/images/glove-logo.png">
 
 [![License: GPLv3](https://img.shields.io/badge/license-GPLv3-blue)](https://opensource.org/license/gpl-3-0/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://shields.io/)
@@ -8,6 +8,8 @@
 [![Generic badge](https://img.shields.io/badge/gcc-10+-blue.svg)](https://shields.io/)
 [![Generic badge](https://img.shields.io/badge/MSVC-yes-green.svg)](https://shields.io/)
 [![Generic badge](https://img.shields.io/badge/clang-TODO-red.svg)](https://shields.io/)
+
+<br><br><br>
 
 ![Teaser](/doc/images/teaser/teaser.png)
 
@@ -19,17 +21,25 @@
 
 # Summary
 
-- The library is designed as a general C++ toolkit with straightforward bindings with Qt
-  
-  - to manage parametrization of a class
-  
-  - to manage data containers as tables
-  
-  - to manage progress feedback of algorithms
+## What it does
+
+- Design parametrization widgets in the blink of an eye
+
+	- Handles typed parameters, with straightforward GUI
+
+- Easy handling of data containers using GUI tables
+
+- Easy progress feedback of algorithms with GUI
+
+- Can transform an existing C++ program into a GUI application with minimum modifications ([details](#glove-application))
+
+## How
 
 - Requires only [Qt](https://doc.qt.io/qt-6/get-and-install-qt.html) to be installed
 
 - **Single header available**
+
+- The library is designed as a general C++ toolkit with straightforward bindings with Qt
 
 - Modularity by relying on template specializations
 
@@ -48,9 +58,7 @@
       4. [Remarks](#remarks)
          1. [Widget specializations](#glvwidgetdata-specializations)
          2. [Convenient macros](#convient-macros)
-   2. [CLI parsing](#cli-parsing)
-      1. [CLI to GUI](#cli-to-gui)
-      2. [Parametrization parsing](#parametrization-parsing)
+   2. [Glove application](#glove-application)
    3. [Table interfacing](#table-interfacing)
       1. [Examples](#examples--2)
    4. [Progress feedback](#progress-feedback)
@@ -65,7 +73,7 @@
    3. [Usage](#usage)
       1. [Library location](#library-location)
       2. [CMake configuration of a project using Glove](#cmake-configuration-of-a-project-using-glove)
-4. [License](#license)	  
+4. [License](#license)      
 
 # Presentation
 
@@ -120,7 +128,7 @@ The framework explicitly points what are the parameters of a class. Parameters a
 - a default value
 - optional rules on its value
 
-A parametrization can currently contain up to 25 parameters of any type. Parametrizations can contain nested parametrizations. So there is theoretically no limit to the number of parameters.
+A parametrization can currently contain up to 24 parameters of any type. Parametrizations can contain nested parametrizations. So there is theoretically no limit to the number of parameters.
 
 ### Examples :
 
@@ -176,19 +184,16 @@ List of convenient macros to handle parametrizations.
   
   - see [here](/doc/readme/SlvEnum.md) and [here](/doc/readme/GlvEnumWidget.md) for example
 
-## CLI parsing
+## Glove Application
 
-### CLI to GUI
+The framework includes simple methods to transform a C++ program with command line arguments into a basic application.
+The features that can be easily added are:
 
-The framework includes a simple method to transform the command line arguments of a <code>main</code> into a basic GUI.  The framework allows a flexible CLI approach, and can manage saving and loading of the arguments as presented just above.
+- Input arguments through a GUI
+- Show and control progression of loops.
+- Show status messages
 
-**Example** : [CLI to GUI](/doc/readme/CLI/CLI_GUI.md)
-
-### Parametrization parsing
-
-Without relying on Qt, a simple parsing of a 'main' parametrization can be done.
-
-**Example** : [CLI parametrization](/doc/readme/CLI/CLI_parametrization.md)
+**Details at** [Glove application](/doc/readme/App/GlvApp.md)
 
 ## Table interfacing
 

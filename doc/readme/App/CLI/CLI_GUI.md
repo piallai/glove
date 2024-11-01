@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-Defining a parametrization `ParametersCLI` taking into accound the properties of the command line arguments, and adding the macro <code>GLOVE_CLI(ParametersCLI)</code> , the program becomes:
+Defining a parametrization `ParametersCLI` taking into accound the properties of the command line arguments, and adding the macro <code>GLOVE_APP_PARAM(ParametersCLI)</code>, the program becomes:
 
 ```cpp
 glvm_parametrization(FooBar, "Foo Bar Size",
@@ -41,7 +41,7 @@ glvm_parametrization(ParametersCLI, "CLI parameters",
 
 int main(int argc, char* argv[]) {
 
-    GLOVE_CLI(ParametersCLI)
+    GLOVE_APP_PARAM(ParametersCLI)
 
     std::cout << "argc = " << argc << std::endl;
     for (int i = 1; i < argc; i++) {
@@ -158,7 +158,7 @@ For the second command, the default autosaved *CLI_parameters.json* is being ign
 A parameter can used to set an additional path where to save the parametrization file. In the example above, one can define:
 
 ```cpp
-GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(ParametersCLI, "-O")
+GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(ParametersCLI, "-O")
 ```
 
 A copy of the parametrization file will be automatically saved in the directory of the argument *"-O"* provided the directory exsists.
@@ -166,13 +166,13 @@ A copy of the parametrization file will be automatically saved in the directory 
 Alternatively, one can specify the parameter by its declarative name:
 
 ```cpp
-GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(ParametersCLI, output_file)
+GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(ParametersCLI, output_file)
 ```
 
 In case the parameter is nested, one can use the same macro such as:
 
 ```cpp
-GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(ParametersCLI, advanced, size)
+GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL(ParametersCLI, advanced, size)
 ```
 
 even though in this example the *size* parameter is irrelevant as an output directory.

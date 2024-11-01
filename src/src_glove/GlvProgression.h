@@ -19,11 +19,6 @@
 
 #include <QProgressDialog>
 class QPushButton;
-
-#include <QtGlobal>
-#if QT_VERSION_MAJOR < 6
-Q_DECLARE_METATYPE(std::string)
-#endif
 class SlvProgressionQt;
 class GlvProgressMgr;
 #include "SlvMacrosDeclarations.h"
@@ -41,11 +36,17 @@ private:
     QPushButton* cancel_button;
 
     /*! Automatically hide the progression once ended.*/
-    bool l_auto_hide;
+    const bool l_auto_hide;
+    /*! Show before the progress has started.*/
+    const bool l_show_before_start;
+    /*! Whether progress has started or not.*/
+    bool l_has_started;
+    /*! If progress is not cancelable, keep cancel request for end.*/
+    bool l_cancel_requested;
 
 public:
 
-    GlvProgression(GlvProgressMgr* _progress_mgr, SlvProgressionQt* _progression = 0, bool _l_auto_hide = false, QWidget* _parent = 0);
+    GlvProgression(GlvProgressMgr* _progress_mgr, SlvProgressionQt* _progression = 0, bool _l_auto_hide = false, bool _l_show_before_start = false, QWidget* _parent = 0);
     ~GlvProgression();
 
     /*! Associate progression to this progress instance.*/
@@ -53,21 +54,25 @@ public:
     /*! Get progression.*/
     const SlvProgressionQt* get_progression() const;
 
-    /*! Whether the progression as reached its maximum or not.*/
+    /*! Whether the progression has reached its maximum or not.*/
     bool is_over() const;
+
+    /*! Whether the progression is showable based on start status or shoability before start.
+    * Workaround to manage QProgressDialog::minimumDuration().*/
+    bool is_showable() const;
+
+public slots:
+
+    void cancel();
 
 private slots:
 
-    /*! Start/reset GlvProgression. Update QProgressDialog::text with \p _message.
+    /*! Start/reset GlvProgression.
     * Enable or diable Cancel button depending on the attached progression..*/
-    void start(std::string _message);
+    void start();
     /*! Auto hide if enabled.*/
     void end();
     /*! Remove progression from GlvProgressMgr.*/
     void final();
-
-private slots:
-
-    void cancel();
 
 };

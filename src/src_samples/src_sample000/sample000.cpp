@@ -47,9 +47,9 @@
 #include "glove.h"
 #else
 #include "GlvProgressMgr.h"
-#endif
 #include <QtConcurrent/QtConcurrentRun>
 #include <QFutureWatcher>
+#endif
 #include "FutureWrapper.h"
 
 // Parametrization widget connections
@@ -117,59 +117,13 @@ glvm_parametrization(ClassBig, "ClassBig",
 	paramU, float, "big", "comment parameter", 0.f,
 	paramV, float, "big", "comment parameter", 0.f,
 	paramW, float, "big", "comment parameter", 0.f,
-	paramX, float, "big", "comment parameter", 0.f,
-	paramY, float, "big", "comment parameter", 0.f)
+	paramX, float, "big", "comment parameter", 0.f)
 
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "GlvParametrizationSaveLoad.h"
 #endif
 
 int main(int argc, char *argv[]) {
-
-#ifdef json_tests
-	std::cout << slv::rw::json::typemgr::is_write_specialized<ClassTest>::value << std::endl;
-
-	std::cout << SlvHasOstreamOperator<ClassA>::value << std::endl;//0
-	std::cout << SlvHasIstreamOperator<ClassA>::value << std::endl;//0
-	std::cout << SlvHasOstreamOperator<std::string>::value << std::endl;//0
-	std::cout << SlvHasIstreamOperator<std::string>::value << std::endl;//0
-	std::cout << SlvHasOstreamOperator<EnumName>::value << std::endl;//0
-	std::cout << SlvHasIstreamOperator<EnumName>::value << std::endl;//0
-	std::cout << slv::rw::json::typemgr::JsonRW_use_readwriteJson<ClassA>::l_valid << std::endl;//1
-	std::cout << slv::rw::json::typemgr::JsonRW_use_iofstream<ClassA>::l_valid << std::endl;//0
-	std::cout << slv::rw::json::typemgr::JsonRW_use_iostream<ClassA>::l_valid << std::endl;//0
-	std::cout << std::is_base_of<SlvOS, ClassA>::value << std::endl;//1
-	std::cout << std::is_base_of<SlvIS, ClassA>::value << std::endl;//0
-
-	std::cout << "--------" << std::endl;
-
-	std::cout << std::is_base_of<SlvOS, SlvProportion>::value << std::endl;//1
-	std::cout << std::is_base_of<SlvIS, SlvProportion>::value << std::endl;//0
-	std::cout << slv::rw::json::typemgr::JsonRW_use_chevrons<SlvProportion>::l_valid << std::endl;
-
-	std::cout << "--------" << std::endl;
-	std::cout << "here" << std::endl;
-	std::cout << slv::rw::json::ReadWrite<ClassTest>::l_valid << std::endl;
-	std::cout << SlvHasOstreamOperator<ClassTest>::value << std::endl;
-	std::cout << SlvHasIstreamOperator<ClassTest>::value << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrization<ClassA>::l_valid << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<ClassA>::l_valid << std::endl;
-	std::cout << slv::rw::json::ReadWrite<ClassA>::l_valid << std::endl;
-
-	std::cout << "--------" << std::endl;
-
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParametrization1<ClassTest>>::l_valid << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParametrization1<ClassA>>::l_valid << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParametrization2<ClassA, float>>::l_valid << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParametrization3<ClassA, float, bool>>::l_valid << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParametrization4<ClassA, float, bool, SlvProportion>>::l_valid << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParametrization5<ClassA, float, bool, SlvProportion, SlvFile>>::l_valid << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParametrization6<ClassA, float, bool, SlvProportion, SlvFile, EnumName>>::l_valid << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<SlvParametrization7<ClassA, float, bool, SlvProportion, SlvFile, EnumName, SlvDirectory>>::l_valid << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrizationExplicit<ClassB::Tparametrization>::l_valid << std::endl;
-	std::cout << slv::rw::json::typemgr::IsJsonManageableParametrization<ClassB>::l_valid << std::endl;
-	std::cout << slv::rw::json::ReadWrite<ClassB>::l_valid << std::endl;
-#endif
 
     QApplication app(argc, argv);
 

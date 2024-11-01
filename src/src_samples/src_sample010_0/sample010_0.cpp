@@ -19,8 +19,6 @@
 
 #include <QApplication>
 
-#include <QtConcurrent/QtConcurrentRun>
-#include <QFutureWatcher>
 #include <QLayout>// to change GlvProgressMgr layout behaviour for example
 
 #include <chrono>// for computation simulation
@@ -28,40 +26,89 @@
 
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "SlvProgressionQt.h"
+#include <QtConcurrent/QtConcurrentRun>
+#include <QFutureWatcher>
 #else
 #include "glove.h"
 #endif
 
+SlvProgressionQt progression0("Loop 0");
 SlvProgressionQt progression1("Loop 1");
 SlvProgressionQt progression2("Loop 2");
 SlvProgressionQt progression3("Loop 3");
 
-void process(unsigned int _Niterations) {
+void process1(unsigned int _Niterations) {
 
-	unsigned int i = 0;
-	progression1.emit_start("Processing", &i, _Niterations);
-	for (i = 0; i < _Niterations; i++) {
+	progression0.start();// No progress bar for this one
+	// Simulates computation
+	std::this_thread::sleep_for(std::chrono::milliseconds(_Niterations * 50));
+	progression0.end();
 
-		unsigned int j = 0;
-		progression2.emit_start("Processing", &j, _Niterations);
-		for (j = 0; j < _Niterations; j++) {
+	if (!progression0.was_canceled()) {
 
-			unsigned int k = 0;
-			progression3.emit_start("Processing", &k, _Niterations);
-			for (k = 0; k < _Niterations; k++) {
+		progression1.set_message("Processing");
+		SlvProgressionQt& i = progression1;
+		for (i = 0; i << _Niterations; i++) {
 
-				// Simulates computation
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			progression2.set_message("Processing");
+			SlvProgressionQt& j = progression2;
+			for (j = 0; j << _Niterations; j++) {
 
-				progression3.emit_progress();
+				progression3.set_message("Processing");
+				SlvProgressionQt& k = progression3;
+				for (k = 0; k << _Niterations; k++) {
+
+					// Simulates computation
+					std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+				}
 
 			}
 
-			progression2.emit_progress();
-
 		}
 
-		progression1.emit_progress();
+	}
+
+}
+
+void process2(unsigned int _Niterations) {
+
+	progression0.start();// No progress bar for this one
+	// Simulates computation
+	std::this_thread::sleep_for(std::chrono::milliseconds(_Niterations * 50));
+	progression0.end();
+
+	if (!progression0.was_canceled()) {
+
+		std::size_t i = 0;
+		progression1.set_message("Processing");
+		progression1.start(&i, _Niterations);
+		for (i = 0; i < _Niterations; i++) {
+
+			unsigned int j = 0;
+			progression2.set_message("Processing");
+			progression2.start(&j, _Niterations);
+			for (j = 0; j < _Niterations; j++) {
+
+				std::size_t k = 0;
+				progression3.set_message("Processing");
+				progression3.start(&k, _Niterations);
+				for (k = 0; k < _Niterations; k++) {
+
+					// Simulates computation
+					std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+					progression3.update();
+
+				}
+
+				progression2.update();
+
+			}
+
+			progression1.update();
+
+		}
 
 	}
 
@@ -76,16 +123,13 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
 	GlvProgressMgr progress_mgr;
+	progress_mgr.add_progression(&progression0, true);
 	progress_mgr.add_progression(&progression1);
 	progress_mgr.add_progression(&progression2);
 	progress_mgr.add_progression(&progression3);
 	progress_mgr.show();
 
-	// Example for fixed size
-	progress_mgr.setFixedWidth(420);
-	progress_mgr.layout()->setSizeConstraint(QLayout::SetFixedSize);
-
-	QFuture<void> future = QtConcurrent::run(&process, 100);
+	QFuture<void> future = QtConcurrent::run(&process1, 100);// use process1 or process2
 	QFutureWatcher<void> future_watcher;
 
 	future_watcher.setFuture(future);

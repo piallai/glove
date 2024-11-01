@@ -86,9 +86,9 @@ std::vector<const SlvParameter_base*> SlvParametrization_base::find(std::string 
 
 const SlvParameter_base* SlvParametrization_base::find_first(std::string _parameter_name, bool _l_parametrizations) const {
 
-	std::vector<const SlvParameter_base*> parameters = find(_parameter_name, _l_parametrizations);
-	if (!parameters.empty()) {
-		return parameters.front();
+	std::vector<const SlvParameter_base*> parameters_found = find(_parameter_name, _l_parametrizations);
+	if (!parameters_found.empty()) {
+		return parameters_found.front();
 	} else {
 		return NULL;
 	}

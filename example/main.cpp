@@ -44,7 +44,7 @@ public:
 	cimg_library::CImg<float> image;//for processing
 	cimg_library::CImg<unsigned char> image_permuted;//for direct display refresh
 
-	ImageConvolution() : glvm_parametrization_constructor(image_path, Niterations, kernel, normalization, boundary_condition) {}
+	ImageConvolution() : glvm_parametrization_constructor(image_path, Niterations, kernel, normalization, boundary_condition), SlvProgression(name()) {}
 
 	void load_image() {
 		image.load(get_image_path().get_path().c_str());
@@ -71,14 +71,11 @@ public:
 			}
 		}
 
-		unsigned int i = 0;
-		get_progression()->emit_start("Processing ClassC", &i, get_Niterations());
-		for (i = 0; i < get_Niterations(); i++) {
+		SlvProgressionQt& p = *get_progression();
+		for (p = 0; p << get_Niterations(); p++) {
 			image.convolve(kernel_img, (int)get_boundary_condition(), false);
 			image.cut(0.f, 255.f);
 			image_permuted = image.get_permute_axes("cxyz");
-			get_progression()->emit_progress();
-
 		}
 	}
 
@@ -173,7 +170,7 @@ int main(int argc, char* argv[]) {
 #else
 			future = QtConcurrent::run(&ImageConvolution::process, image_convolution);
 #endif
-			QObject::connect(image_convolution->get_progression(), SIGNAL(progress_signal(int)), image_widget, SLOT(update()));
+			QObject::connect(image_convolution->get_progression(), SIGNAL(updated(int)), image_widget, SLOT(update()));
 			future_watcher.setFuture(future);
 		}
 

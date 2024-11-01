@@ -29,6 +29,18 @@ SlvStatus::SlvStatus(statusType _type, std::string _message) {
 
 }
 
+SlvStatus::SlvStatus(statusType _type, const char* _format, ...) {
+
+    std::va_list args;
+    va_start(args, _format);
+    std::string string{ slv::string::format_va_list(_format, args) };
+    va_end(args);
+
+    status_signals = new std::vector<SlvStatusSignal>;
+    push(_type, string);
+
+}
+
 SlvStatus::SlvStatus(const SlvStatus& _status) {
 
     status_signals = new std::vector<SlvStatusSignal>(*_status.status_signals);

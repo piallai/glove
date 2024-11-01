@@ -20,6 +20,7 @@
 #include <string>
 #include <sstream>
 #include "std_vector.h"
+#include <cstdarg>
 
 /*! Contains functions for the slv framework. No Qt/Glv here.*/
 namespace slv {
@@ -74,6 +75,8 @@ namespace slv {
         /*! Read a string from istream with space character. Replaces _is >> _string.*/
         void istream(std::istream& _is, std::string& _string);
 
+        /*! Parse formated \p _format arguments \p _args and returns the corresponding std::string.*/
+        std::string format_va_list(const char* _format, std::va_list _args);
     }
 
 }

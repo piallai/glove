@@ -19,6 +19,7 @@
 
 #define EXPAND(arg) arg
 #define glvm_pv_get_macro_parametrization(\
+_class_name,\
 _1_1, _1_2, _1_3, _1_4, _1_5,\
 _2_1, _2_2, _2_3, _2_4, _2_5,\
 _3_1, _3_2, _3_3, _3_4, _3_5,\
@@ -43,14 +44,12 @@ _21_1, _21_2, _21_3, _21_4, _21_5,\
 _22_1, _22_2, _22_3, _22_4, _22_5,\
 _23_1, _23_2, _23_3, _23_4, _23_5,\
 _24_1, _24_2, _24_3, _24_4, _24_5,\
-_25_1, _25_2, _25_3, _25_4, _25_5,\
 macro_arg, ...) macro_arg
 
 /*! Declare a parametrization class implementing only parameters.
 * Convenient for quickly declare a class inheriting SlvParametrizationX.
 * Does not allow rule management, all parameters are simply named, typed, and commented.*/
-#define glvm_parametrization(class_declaration, class_name, ...) EXPAND( glvm_pv_get_macro_parametrization(__VA_ARGS__,\
-glvm_parametrization25, _null25a, _null25b, _null25c, _null25d,\
+#define glvm_parametrization(class_declaration, ...) EXPAND( glvm_pv_get_macro_parametrization(__VA_ARGS__,\
 glvm_parametrization24, _null24a, _null24b, _null24c, _null24d,\
 glvm_parametrization23, _null23a, _null23b, _null23c, _null23d,\
 glvm_parametrization22, _null22a, _null22b, _null22c, _null22d,\
@@ -74,10 +73,20 @@ glvm_parametrization5, _null5a, _null5b, _null5c, _null5d,\
 glvm_parametrization4, _null4a, _null4b, _null4c, _null4d,\
 glvm_parametrization3, _null3a, _null3b, _null3c, _null3d,\
 glvm_parametrization2, _null2a, _null2b, _null2c, _null2d,\
-glvm_parametrization1)(class_declaration, class_name, __VA_ARGS__))
+glvm_parametrization1, _null1a, _null1b, _null1c, _null1d,\
+glvm_parametrization0)(class_declaration, __VA_ARGS__))
+
+#include "param/SlvParametrization0.h"
+#define glvm_parametrization0(class_declaration, class_name)\
+class class_declaration : public SlvParametrization0 {\
+glvm_parametrization0_init(class_name)\
+public:\
+class_declaration() :SlvParametrization0() {}\
+};
 
 #include "param/SlvParametrization1.h"
-#define glvm_parametrization1(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value)\
+#define glvm_parametrization1(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value)\
 class class_declaration : public SlvParametrization1<param1_type> {\
 glvm_parametrization1_init(class_name)\
 glvm_parameter(1, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value)\
@@ -86,7 +95,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration) {}\
 };
 
 #include "param/SlvParametrization2.h"
-#define glvm_parametrization2(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization2(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value)\
 class class_declaration : public SlvParametrization2<param1_type, param2_type> {\
 glvm_parametrization2_init(class_name)\
@@ -97,7 +107,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization3.h"
-#define glvm_parametrization3(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization3(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value)\
 class class_declaration : public SlvParametrization3<param1_type, param2_type, param3_type> {\
@@ -110,7 +121,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization4.h"
-#define glvm_parametrization4(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization4(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value)\
@@ -125,7 +137,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization5.h"
-#define glvm_parametrization5(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization5(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -142,7 +155,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization6.h"
-#define glvm_parametrization6(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization6(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -161,7 +175,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization7.h"
-#define glvm_parametrization7(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization7(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -182,7 +197,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization8.h"
-#define glvm_parametrization8(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization8(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -205,7 +221,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization9.h"
-#define glvm_parametrization9(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization9(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -230,7 +247,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization10.h"
-#define glvm_parametrization10(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization10(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -257,7 +275,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization11.h"
-#define glvm_parametrization11(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization11(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -286,7 +305,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization12.h"
-#define glvm_parametrization12(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization12(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -317,7 +337,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization13.h"
-#define glvm_parametrization13(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization13(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -350,7 +371,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization14.h"
-#define glvm_parametrization14(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization14(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -385,7 +407,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization15.h"
-#define glvm_parametrization15(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization15(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -422,7 +445,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization16.h"
-#define glvm_parametrization16(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization16(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -461,7 +485,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization17.h"
-#define glvm_parametrization17(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization17(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -502,7 +527,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization18.h"
-#define glvm_parametrization18(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization18(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -545,7 +571,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization19.h"
-#define glvm_parametrization19(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization19(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -590,7 +617,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization20.h"
-#define glvm_parametrization20(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization20(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -637,7 +665,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization21.h"
-#define glvm_parametrization21(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization21(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -686,7 +715,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization22.h"
-#define glvm_parametrization22(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization22(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -737,7 +767,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization23.h"
-#define glvm_parametrization23(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization23(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -790,7 +821,8 @@ class_declaration() :glvm_parametrization_constructor(param1_declaration, param2
 };
 
 #include "param/SlvParametrization24.h"
-#define glvm_parametrization24(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
+#define glvm_parametrization24(class_declaration, class_name,\
+param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
 param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
 param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
 param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
@@ -842,62 +874,5 @@ glvm_parameter(23, param23_declaration, param23_type, param23_name, param23_comm
 glvm_parameter(24, param24_declaration, param24_type, param24_name, param24_comment, param24_default_value)\
 public:\
 class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration, param18_declaration, param19_declaration, param20_declaration, param21_declaration, param22_declaration, param23_declaration, param24_declaration) {}\
-};
-
-#include "param/SlvParametrization25.h"
-#define glvm_parametrization25(class_declaration, class_name, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value,\
-param2_declaration, param2_type, param2_name, param2_comment, param2_default_value,\
-param3_declaration, param3_type, param3_name, param3_comment, param3_default_value,\
-param4_declaration, param4_type, param4_name, param4_comment, param4_default_value,\
-param5_declaration, param5_type, param5_name, param5_comment, param5_default_value,\
-param6_declaration, param6_type, param6_name, param6_comment, param6_default_value,\
-param7_declaration, param7_type, param7_name, param7_comment, param7_default_value,\
-param8_declaration, param8_type, param8_name, param8_comment, param8_default_value,\
-param9_declaration, param9_type, param9_name, param9_comment, param9_default_value,\
-param10_declaration, param10_type, param10_name, param10_comment, param10_default_value,\
-param11_declaration, param11_type, param11_name, param11_comment, param11_default_value,\
-param12_declaration, param12_type, param12_name, param12_comment, param12_default_value,\
-param13_declaration, param13_type, param13_name, param13_comment, param13_default_value,\
-param14_declaration, param14_type, param14_name, param14_comment, param14_default_value,\
-param15_declaration, param15_type, param15_name, param15_comment, param15_default_value,\
-param16_declaration, param16_type, param16_name, param16_comment, param16_default_value,\
-param17_declaration, param17_type, param17_name, param17_comment, param17_default_value,\
-param18_declaration, param18_type, param18_name, param18_comment, param18_default_value,\
-param19_declaration, param19_type, param19_name, param19_comment, param19_default_value,\
-param20_declaration, param20_type, param20_name, param20_comment, param20_default_value,\
-param21_declaration, param21_type, param21_name, param21_comment, param21_default_value,\
-param22_declaration, param22_type, param22_name, param22_comment, param22_default_value,\
-param23_declaration, param23_type, param23_name, param23_comment, param23_default_value,\
-param24_declaration, param24_type, param24_name, param24_comment, param24_default_value,\
-param25_declaration, param25_type, param25_name, param25_comment, param25_default_value)\
-class class_declaration : public SlvParametrization25<param1_type, param2_type, param3_type, param4_type, param5_type, param6_type, param7_type, param8_type, param9_type, param10_type, param11_type, param12_type, param13_type, param14_type, param15_type, param16_type, param17_type, param18_type, param19_type, param20_type, param21_type, param22_type, param23_type, param24_type, param25_type> {\
-glvm_parametrization25_init(class_name)\
-glvm_parameter(1, param1_declaration, param1_type, param1_name, param1_comment, param1_default_value)\
-glvm_parameter(2, param2_declaration, param2_type, param2_name, param2_comment, param2_default_value)\
-glvm_parameter(3, param3_declaration, param3_type, param3_name, param3_comment, param3_default_value)\
-glvm_parameter(4, param4_declaration, param4_type, param4_name, param4_comment, param4_default_value)\
-glvm_parameter(5, param5_declaration, param5_type, param5_name, param5_comment, param5_default_value)\
-glvm_parameter(6, param6_declaration, param6_type, param6_name, param6_comment, param6_default_value)\
-glvm_parameter(7, param7_declaration, param7_type, param7_name, param7_comment, param7_default_value)\
-glvm_parameter(8, param8_declaration, param8_type, param8_name, param8_comment, param8_default_value)\
-glvm_parameter(9, param9_declaration, param9_type, param9_name, param9_comment, param9_default_value)\
-glvm_parameter(10, param10_declaration, param10_type, param10_name, param10_comment, param10_default_value)\
-glvm_parameter(11, param11_declaration, param11_type, param11_name, param11_comment, param11_default_value)\
-glvm_parameter(12, param12_declaration, param12_type, param12_name, param12_comment, param12_default_value)\
-glvm_parameter(13, param13_declaration, param13_type, param13_name, param13_comment, param13_default_value)\
-glvm_parameter(14, param14_declaration, param14_type, param14_name, param14_comment, param14_default_value)\
-glvm_parameter(15, param15_declaration, param15_type, param15_name, param15_comment, param15_default_value)\
-glvm_parameter(16, param16_declaration, param16_type, param16_name, param16_comment, param16_default_value)\
-glvm_parameter(17, param17_declaration, param17_type, param17_name, param17_comment, param17_default_value)\
-glvm_parameter(18, param18_declaration, param18_type, param18_name, param18_comment, param18_default_value)\
-glvm_parameter(19, param19_declaration, param19_type, param19_name, param19_comment, param19_default_value)\
-glvm_parameter(20, param20_declaration, param20_type, param20_name, param20_comment, param20_default_value)\
-glvm_parameter(21, param21_declaration, param21_type, param21_name, param21_comment, param21_default_value)\
-glvm_parameter(22, param22_declaration, param22_type, param22_name, param22_comment, param22_default_value)\
-glvm_parameter(23, param23_declaration, param23_type, param23_name, param23_comment, param23_default_value)\
-glvm_parameter(24, param24_declaration, param24_type, param24_name, param24_comment, param24_default_value)\
-glvm_parameter(25, param25_declaration, param25_type, param25_name, param25_comment, param25_default_value)\
-public:\
-class_declaration() :glvm_parametrization_constructor(param1_declaration, param2_declaration, param3_declaration, param4_declaration, param5_declaration, param6_declaration, param7_declaration, param8_declaration, param9_declaration, param10_declaration, param11_declaration, param12_declaration, param13_declaration, param14_declaration, param15_declaration, param16_declaration, param17_declaration, param18_declaration, param19_declaration, param20_declaration, param21_declaration, param22_declaration, param23_declaration, param24_declaration, param25_declaration) {}\
 };
 

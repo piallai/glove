@@ -19,6 +19,7 @@
 
 #include "GlvItemDelegate_spec_Modeled.h"
 #include "slv_flag.h"
+#include <QEvent>
 
 #define delegate_completely_inside_cell 0
 

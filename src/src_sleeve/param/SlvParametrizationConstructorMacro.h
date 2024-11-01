@@ -19,12 +19,11 @@
 
 #define EXPAND(arg) arg
 #define glvm_pv_parametrization_constructor(\
-_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25,\
+_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24,\
 macro_arg, ...) macro_arg
 
 /*! Define parametrization constructor.*/
 #define glvm_parametrization_constructor(...) EXPAND( glvm_pv_parametrization_constructor(__VA_ARGS__,\
-glvm_parametrization25_constructor,\
 glvm_parametrization24_constructor,\
 glvm_parametrization23_constructor,\
 glvm_parametrization22_constructor,\
@@ -51,17 +50,23 @@ glvm_parametrization2_constructor,\
 glvm_parametrization1_constructor)(__VA_ARGS__))
 
 
-#define glvm_parametrization1_constructor(param1_decl)\
+#define glvm_parametrization0_constructor()\
+SlvParametrization0
+
+#define glvm_parametrization1_constructor(\
+param1_decl)\
 SlvParametrization1<typename SlvPvClassParam_##param1_decl::Tparam>(new SlvPvClassParam_##param1_decl(this)\
 )
 
-#define glvm_parametrization2_constructor(param1_decl,\
+#define glvm_parametrization2_constructor(\
+param1_decl,\
 param2_decl)\
 SlvParametrization2<typename SlvPvClassParam_##param1_decl::Tparam, typename SlvPvClassParam_##param2_decl::Tparam>(new SlvPvClassParam_##param1_decl(this),\
 new SlvPvClassParam_##param2_decl(this)\
 )
 
-#define glvm_parametrization3_constructor(param1_decl,\
+#define glvm_parametrization3_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl)\
 SlvParametrization3<typename SlvPvClassParam_##param1_decl::Tparam, typename SlvPvClassParam_##param2_decl::Tparam, typename SlvPvClassParam_##param3_decl::Tparam>(new SlvPvClassParam_##param1_decl(this),\
@@ -69,7 +74,8 @@ new SlvPvClassParam_##param2_decl(this),\
 new SlvPvClassParam_##param3_decl(this)\
 )
 
-#define glvm_parametrization4_constructor(param1_decl,\
+#define glvm_parametrization4_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl)\
@@ -79,7 +85,8 @@ new SlvPvClassParam_##param3_decl(this),\
 new SlvPvClassParam_##param4_decl(this)\
 )
 
-#define glvm_parametrization5_constructor(param1_decl,\
+#define glvm_parametrization5_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -91,7 +98,8 @@ new SlvPvClassParam_##param4_decl(this),\
 new SlvPvClassParam_##param5_decl(this)\
 )
 
-#define glvm_parametrization6_constructor(param1_decl,\
+#define glvm_parametrization6_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -105,7 +113,8 @@ new SlvPvClassParam_##param5_decl(this),\
 new SlvPvClassParam_##param6_decl(this)\
 )
 
-#define glvm_parametrization7_constructor(param1_decl,\
+#define glvm_parametrization7_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -121,7 +130,8 @@ new SlvPvClassParam_##param6_decl(this),\
 new SlvPvClassParam_##param7_decl(this)\
 )
 
-#define glvm_parametrization8_constructor(param1_decl,\
+#define glvm_parametrization8_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -139,7 +149,8 @@ new SlvPvClassParam_##param7_decl(this),\
 new SlvPvClassParam_##param8_decl(this)\
 )
 
-#define glvm_parametrization9_constructor(param1_decl,\
+#define glvm_parametrization9_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -159,7 +170,8 @@ new SlvPvClassParam_##param8_decl(this),\
 new SlvPvClassParam_##param9_decl(this)\
 )
 
-#define glvm_parametrization10_constructor(param1_decl,\
+#define glvm_parametrization10_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -181,7 +193,8 @@ new SlvPvClassParam_##param9_decl(this),\
 new SlvPvClassParam_##param10_decl(this)\
 )
 
-#define glvm_parametrization11_constructor(param1_decl,\
+#define glvm_parametrization11_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -205,7 +218,8 @@ new SlvPvClassParam_##param10_decl(this),\
 new SlvPvClassParam_##param11_decl(this)\
 )
 
-#define glvm_parametrization12_constructor(param1_decl,\
+#define glvm_parametrization12_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -231,7 +245,8 @@ new SlvPvClassParam_##param11_decl(this),\
 new SlvPvClassParam_##param12_decl(this)\
 )
 
-#define glvm_parametrization13_constructor(param1_decl,\
+#define glvm_parametrization13_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -259,7 +274,8 @@ new SlvPvClassParam_##param12_decl(this),\
 new SlvPvClassParam_##param13_decl(this)\
 )
 
-#define glvm_parametrization14_constructor(param1_decl,\
+#define glvm_parametrization14_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -289,7 +305,8 @@ new SlvPvClassParam_##param13_decl(this),\
 new SlvPvClassParam_##param14_decl(this)\
 )
 
-#define glvm_parametrization15_constructor(param1_decl,\
+#define glvm_parametrization15_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -321,7 +338,8 @@ new SlvPvClassParam_##param14_decl(this),\
 new SlvPvClassParam_##param15_decl(this)\
 )
 
-#define glvm_parametrization16_constructor(param1_decl,\
+#define glvm_parametrization16_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -355,7 +373,8 @@ new SlvPvClassParam_##param15_decl(this),\
 new SlvPvClassParam_##param16_decl(this)\
 )
 
-#define glvm_parametrization17_constructor(param1_decl,\
+#define glvm_parametrization17_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -391,7 +410,8 @@ new SlvPvClassParam_##param16_decl(this),\
 new SlvPvClassParam_##param17_decl(this)\
 )
 
-#define glvm_parametrization18_constructor(param1_decl,\
+#define glvm_parametrization18_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -429,7 +449,8 @@ new SlvPvClassParam_##param17_decl(this),\
 new SlvPvClassParam_##param18_decl(this)\
 )
 
-#define glvm_parametrization19_constructor(param1_decl,\
+#define glvm_parametrization19_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -469,7 +490,8 @@ new SlvPvClassParam_##param18_decl(this),\
 new SlvPvClassParam_##param19_decl(this)\
 )
 
-#define glvm_parametrization20_constructor(param1_decl,\
+#define glvm_parametrization20_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -511,7 +533,8 @@ new SlvPvClassParam_##param19_decl(this),\
 new SlvPvClassParam_##param20_decl(this)\
 )
 
-#define glvm_parametrization21_constructor(param1_decl,\
+#define glvm_parametrization21_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -555,7 +578,8 @@ new SlvPvClassParam_##param20_decl(this),\
 new SlvPvClassParam_##param21_decl(this)\
 )
 
-#define glvm_parametrization22_constructor(param1_decl,\
+#define glvm_parametrization22_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -601,7 +625,8 @@ new SlvPvClassParam_##param21_decl(this),\
 new SlvPvClassParam_##param22_decl(this)\
 )
 
-#define glvm_parametrization23_constructor(param1_decl,\
+#define glvm_parametrization23_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -649,7 +674,8 @@ new SlvPvClassParam_##param22_decl(this),\
 new SlvPvClassParam_##param23_decl(this)\
 )
 
-#define glvm_parametrization24_constructor(param1_decl,\
+#define glvm_parametrization24_constructor(\
+param1_decl,\
 param2_decl,\
 param3_decl,\
 param4_decl,\
@@ -697,58 +723,6 @@ new SlvPvClassParam_##param21_decl(this),\
 new SlvPvClassParam_##param22_decl(this),\
 new SlvPvClassParam_##param23_decl(this),\
 new SlvPvClassParam_##param24_decl(this)\
-)
-
-#define glvm_parametrization25_constructor(param1_decl,\
-param2_decl,\
-param3_decl,\
-param4_decl,\
-param5_decl,\
-param6_decl,\
-param7_decl,\
-param8_decl,\
-param9_decl,\
-param10_decl,\
-param11_decl,\
-param12_decl,\
-param13_decl,\
-param14_decl,\
-param15_decl,\
-param16_decl,\
-param17_decl,\
-param18_decl,\
-param19_decl,\
-param20_decl,\
-param21_decl,\
-param22_decl,\
-param23_decl,\
-param24_decl,\
-param25_decl)\
-SlvParametrization25<typename SlvPvClassParam_##param1_decl::Tparam, typename SlvPvClassParam_##param2_decl::Tparam, typename SlvPvClassParam_##param3_decl::Tparam, typename SlvPvClassParam_##param4_decl::Tparam, typename SlvPvClassParam_##param5_decl::Tparam, typename SlvPvClassParam_##param6_decl::Tparam, typename SlvPvClassParam_##param7_decl::Tparam, typename SlvPvClassParam_##param8_decl::Tparam, typename SlvPvClassParam_##param9_decl::Tparam, typename SlvPvClassParam_##param10_decl::Tparam, typename SlvPvClassParam_##param11_decl::Tparam, typename SlvPvClassParam_##param12_decl::Tparam, typename SlvPvClassParam_##param13_decl::Tparam, typename SlvPvClassParam_##param14_decl::Tparam, typename SlvPvClassParam_##param15_decl::Tparam, typename SlvPvClassParam_##param16_decl::Tparam, typename SlvPvClassParam_##param17_decl::Tparam, typename SlvPvClassParam_##param18_decl::Tparam, typename SlvPvClassParam_##param19_decl::Tparam, typename SlvPvClassParam_##param20_decl::Tparam, typename SlvPvClassParam_##param21_decl::Tparam, typename SlvPvClassParam_##param22_decl::Tparam, typename SlvPvClassParam_##param23_decl::Tparam, typename SlvPvClassParam_##param24_decl::Tparam, typename SlvPvClassParam_##param25_decl::Tparam>(new SlvPvClassParam_##param1_decl(this),\
-new SlvPvClassParam_##param2_decl(this),\
-new SlvPvClassParam_##param3_decl(this),\
-new SlvPvClassParam_##param4_decl(this),\
-new SlvPvClassParam_##param5_decl(this),\
-new SlvPvClassParam_##param6_decl(this),\
-new SlvPvClassParam_##param7_decl(this),\
-new SlvPvClassParam_##param8_decl(this),\
-new SlvPvClassParam_##param9_decl(this),\
-new SlvPvClassParam_##param10_decl(this),\
-new SlvPvClassParam_##param11_decl(this),\
-new SlvPvClassParam_##param12_decl(this),\
-new SlvPvClassParam_##param13_decl(this),\
-new SlvPvClassParam_##param14_decl(this),\
-new SlvPvClassParam_##param15_decl(this),\
-new SlvPvClassParam_##param16_decl(this),\
-new SlvPvClassParam_##param17_decl(this),\
-new SlvPvClassParam_##param18_decl(this),\
-new SlvPvClassParam_##param19_decl(this),\
-new SlvPvClassParam_##param20_decl(this),\
-new SlvPvClassParam_##param21_decl(this),\
-new SlvPvClassParam_##param22_decl(this),\
-new SlvPvClassParam_##param23_decl(this),\
-new SlvPvClassParam_##param24_decl(this),\
-new SlvPvClassParam_##param25_decl(this)\
 )
 
 #define glvm_parametrization_name(_name)\
@@ -1305,41 +1279,6 @@ private:
 glvm_parametrization_name(_name);\
 glvm_parametrization24_static_init
 
-#define glvm_parametrization25_static_init \
-public:\
-static bool has_rules() {\
-return Tpv_parameter1::has_rules()\
- || Tpv_parameter2::has_rules()\
- || Tpv_parameter3::has_rules()\
- || Tpv_parameter4::has_rules()\
- || Tpv_parameter5::has_rules()\
- || Tpv_parameter6::has_rules()\
- || Tpv_parameter7::has_rules()\
- || Tpv_parameter8::has_rules()\
- || Tpv_parameter9::has_rules()\
- || Tpv_parameter10::has_rules()\
- || Tpv_parameter11::has_rules()\
- || Tpv_parameter12::has_rules()\
- || Tpv_parameter13::has_rules()\
- || Tpv_parameter14::has_rules()\
- || Tpv_parameter15::has_rules()\
- || Tpv_parameter16::has_rules()\
- || Tpv_parameter17::has_rules()\
- || Tpv_parameter18::has_rules()\
- || Tpv_parameter19::has_rules()\
- || Tpv_parameter20::has_rules()\
- || Tpv_parameter21::has_rules()\
- || Tpv_parameter22::has_rules()\
- || Tpv_parameter23::has_rules()\
- || Tpv_parameter24::has_rules()\
- || Tpv_parameter25::has_rules();\
-}\
-private:
-
-#define glvm_parametrization25_init(_name)\
-glvm_parametrization_name(_name);\
-glvm_parametrization25_static_init
-
 #define glvm_parametrization1_inherited_template_init(base_class)\
 using typename base_class::Tpv_parameter1;
 
@@ -1687,31 +1626,4 @@ using typename base_class::Tpv_parameter21;\
 using typename base_class::Tpv_parameter22;\
 using typename base_class::Tpv_parameter23;\
 using typename base_class::Tpv_parameter24;
-
-#define glvm_parametrization25_inherited_template_init(base_class)\
-using typename base_class::Tpv_parameter1;\
-using typename base_class::Tpv_parameter2;\
-using typename base_class::Tpv_parameter3;\
-using typename base_class::Tpv_parameter4;\
-using typename base_class::Tpv_parameter5;\
-using typename base_class::Tpv_parameter6;\
-using typename base_class::Tpv_parameter7;\
-using typename base_class::Tpv_parameter8;\
-using typename base_class::Tpv_parameter9;\
-using typename base_class::Tpv_parameter10;\
-using typename base_class::Tpv_parameter11;\
-using typename base_class::Tpv_parameter12;\
-using typename base_class::Tpv_parameter13;\
-using typename base_class::Tpv_parameter14;\
-using typename base_class::Tpv_parameter15;\
-using typename base_class::Tpv_parameter16;\
-using typename base_class::Tpv_parameter17;\
-using typename base_class::Tpv_parameter18;\
-using typename base_class::Tpv_parameter19;\
-using typename base_class::Tpv_parameter20;\
-using typename base_class::Tpv_parameter21;\
-using typename base_class::Tpv_parameter22;\
-using typename base_class::Tpv_parameter23;\
-using typename base_class::Tpv_parameter24;\
-using typename base_class::Tpv_parameter25;
 

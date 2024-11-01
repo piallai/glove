@@ -27,6 +27,7 @@ class SlvCombo;
 * Convenient to return possible errors.
 * Practical use: create instances by setting an error type and a message.
 * += instances to stack errors and return the overall status result.*/
+//class SlvStatus : public SlvOS {
 class SlvStatus : public SlvOS {
 
 public:
@@ -52,6 +53,7 @@ private:
 public:
 
     SlvStatus(statusType _type = statusType::ok, std::string _message = "");
+    SlvStatus(statusType _type, const char* _format, ...);
     SlvStatus(const SlvStatus& _status);
     ~SlvStatus();
 

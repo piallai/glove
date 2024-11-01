@@ -32,28 +32,35 @@ ClassD::process | ClassE::process |
 #include "ClassD.h"
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "GlvProgressMgr.h"
-#endif
 #include <QtConcurrent/QtConcurrentRun>
 #include <QFutureWatcher>
+#endif
 #include "FutureWrapper.h"
 
 int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
-	ClassD classD(1000);
+	ClassD classD(100);
 	GlvProgressMgr progress_mgr;
 	progress_mgr.add_progression(classD.get_progression());
-	progress_mgr.add_progression(classD.classC.get_progression(), true);// Up to the user, but can create glitches by continuously hiding/displaying the progression
+	progress_mgr.add_progression(classD.classC.get_progression(), true);// Hide when over: Up to the user, but can create glitches by continuously hiding/displaying the progression of frequent loops
 	progress_mgr.add_progression(classD.classE.get_progression());
 	progress_mgr.add_progression(classD.progression_ptr);
 	progress_mgr.show(); 
-	progress_mgr.setFixedWidth(420);
 
+#if USE_OMP
 #if QT_VERSION_MAJOR < 6
-	QFuture<void> future = QtConcurrent::run(&classD, &ClassD::processOMP);// or &ClassD::processOMP
+	QFuture<void> future = QtConcurrent::run(&classD, &ClassD::processOMP);// or &ClassD::process
 #else
-	QFuture<void> future = QtConcurrent::run( &ClassD::processOMP, &classD);// or &ClassD::processOMP
+	QFuture<void> future = QtConcurrent::run( &ClassD::processOMP, &classD);// or &ClassD::process
+#endif
+#else
+#if QT_VERSION_MAJOR < 6
+	QFuture<void> future = QtConcurrent::run(&classD, &ClassD::process);// or &ClassD::processOMP
+#else
+	QFuture<void> future = QtConcurrent::run(&ClassD::process, &classD);// or &ClassD::processOMP
+#endif
 #endif
 	FutureWrapper future_wrapper(&progress_mgr);
 	QFutureWatcher<void> future_watcher;

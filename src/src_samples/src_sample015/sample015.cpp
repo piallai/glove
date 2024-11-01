@@ -42,7 +42,7 @@ glvm_parametrization(ParametersCLI, "CLI parameters",
 										enable, bool, "-enable", "Enable something", false,
 										advanced, FooBar, "Advanced", "Advanced parameters", FooBar());
 
-GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(ParametersCLI, "-O")
+GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(ParametersCLI, "-O")
 
 // Program supposed to manage 7 command line arguments
 // -I : input path of a .txt file
@@ -54,12 +54,18 @@ GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(ParametersCLI, "-O")
 // -size : and advanced parameter formatted as intxint (widthxheight)
 int main(int argc, char* argv[]) {
 
-	GLOVE_CLI(ParametersCLI)
+	GLOVE_APP_PARAM(ParametersCLI)
 
 	std::cout << "argc = " << argc << std::endl;
 	for (int i = 1; i < argc; i++) {
 		std::cout << "argv[i] = " << argv[i] << std::endl;
 	}
+
+	// Additionally, the configured parametrization is available in the variable glv_parametrization if -glove cli argument was used
+	if (is_glove) {
+		std::cout << glove_parametrization << std::endl;
+	}
+	
 
 	return 0;
 }

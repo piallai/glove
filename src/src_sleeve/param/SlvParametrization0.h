@@ -76,6 +76,8 @@ public:
 	SlvStatus readJson(const nlohmann::json& _json);
 #endif
 
+	/* Static number of parameters.*/
+	glvm_staticVariable(const, unsigned int, Nparameters, 0);
 	typedef SlvParametrization0 Tparametrization;
 
 	Tparametrization& param_cast();

@@ -63,9 +63,11 @@ struct SlvCLI {
 	public:
 
 		Arguments(int _argc, char* _argv[]);
-		/*! Get arguments that are not parameters.*/
+		/*! Get arguments that are not parameters. Ex: "-option".*/
 		const std::vector<std::string>& get_solo_arguments() const;
-		/*! Get list of arguments and their corresponding value.*/
+		/*! Get list of arguments and their corresponding value. Ex: "-param 17".
+		* Each parameter argument cas be accessed by its name (ex: "-param"), and return a vector of associated values.
+		* A vector is used in case multiple identical arguments are provided (ex: "-param -17 -param 5").*/
 		const Tparameters& get_parameter_arguments() const;
 		/*! Get single argument of the -glove cli input. Used for loading a parametrization.*/
 		const std::string& get_glove_argument() const;

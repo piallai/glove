@@ -17,7 +17,7 @@
 
 cmake_minimum_required(VERSION 3.0.0)
 
-PROJECT(Glove VERSION 0.7.2
+PROJECT(Glove VERSION 0.7.3
         DESCRIPTION "A Qt C++ library for simple GUI")
 
 message(STATUS "Glove " ${PROJECT_VERSION})
@@ -28,7 +28,7 @@ option(OPTION_USE_THIRDPARTY_JSON "Use json library." ON)
 option(OPTION_USE_BOOST "Enable default management of boost containers with GCC and Clang (nested containers management)." OFF)
 option(OPTION_STD_BREAK_THROW_EXCEPTION "Throws std::runtime_error when using slv::flag::BREAK" ON)
 option(OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER "Examples to be compiled with the merged library as a single header." OFF)
-option(OPTION_QT6 "Use Qt6. If ON, minimal C++ version is 17" OFF)
+option(OPTION_QT6 "Use Qt6. If ON, minimal C++ version is 17" ON)
 set(OPTION_CXX "11" CACHE STRING "C++ version.")
 set_property(CACHE OPTION_CXX PROPERTY STRINGS 11 14 17 20)
 

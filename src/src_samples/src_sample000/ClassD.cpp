@@ -30,18 +30,16 @@ ClassD::ClassD(int _Niterations) {
 void ClassD::process() {
 
 	unsigned int i = 0;
-	get_progression()->emit_start("Processing ClassD", &i, Niterations);
+	get_progression()->set_message("Processing ClassD");
+	get_progression()->start(&i, Niterations);
 	for (i = 0; i < Niterations; i++) {
 
 		// Simulates computation
 		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		classC.process();
 
-		get_progression()->emit_progress(100 * (i + 1) / Niterations);
-
+		get_progression()->update();
 	}
-
-	//get_progression()->emit_end();
 
 }
 
@@ -49,7 +47,8 @@ void ClassD::process() {
 void ClassD::processOMP() {
 
 	unsigned int i = 0;
-	get_progression()->emit_start("Processing ClassD", &i, Niterations);
+	get_progression()->set_message("Processing ClassD");
+	get_progression()->start(&i, Niterations);
 
 #pragma omp parallel
 	{
@@ -58,19 +57,16 @@ void ClassD::processOMP() {
 
 			// Simulates computation
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			//classC.process();
+			classC.process();
 
-			//progression->emit_progress(100 * (i + 1) / Niterations);
 #pragma omp critical
 			{
-				get_progression()->emit_progress(100 * (i + 1) / Niterations);
+				get_progression()->update();
 				i++;
 			}
 
 		}
 	}
-
-	//get_progression()->emit_end();
 
 }
 

@@ -28,6 +28,12 @@
 #include "glove.h"
 #endif
 
+#include "GloveOptions.h"
+// This example can work only if:
+// - compiling samples with single headers
+// - Or compiling the library with OPTION_ENABLE_SLV_QT_PROGRESS is disabled
+#if OPTION_ENABLE_SLV_QT_PROGRESS==0 || defined(OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER)
+
 glvm_parametrization(FooBar, "Foo Bar Size",
 										foo, float, "-foo", "Foo value", 2.f,
 										bar, int, "-bar", "Bar value", 7,
@@ -56,3 +62,16 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
+
+#else
+
+int main(int argc, char* argv[]) {
+
+	std::cout << "This example can work only if:\n\
+	- compiling samples with single headers\n\
+	- Or compiling with OPTION_ENABLE_SLV_QT_PROGRESS is disabled" << std::endl;
+
+	return 0;
+}
+
+#endif

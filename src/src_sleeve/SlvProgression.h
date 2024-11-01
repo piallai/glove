@@ -32,7 +32,7 @@ private:
 
 public:
 
-	SlvProgression(std::string _name = "");
+	SlvProgression(std::string _name = "", bool _l_recurrent = false);
 	SlvProgression(const SlvProgression& _progression);
 	~SlvProgression();
 
@@ -42,6 +42,7 @@ public:
 
 protected:
 
+	/*! Assignment operator to avoid assigning SlvProgressionQt progression.*/
 	SlvProgression& operator=(const SlvProgression& _progression);
 
 };

@@ -60,7 +60,10 @@ public:
 	SlvPool<Tvalue, Tlabel>& operator=(const SlvPool<Tvalue, Tlabel>& _pool);
 
 	/*! Get number of elements. Size of the pool.*/
-	unsigned int psize() const;
+	std::size_t psize() const;
+
+	/*! Return true if the pool contains no elements.*/
+	bool empty() const;
 
 	/*! Add an element created externally.
 	* Checks if an element with the same label already exists.
@@ -195,9 +198,16 @@ SlvPool<Tvalue, Tlabel>& SlvPool<Tvalue, Tlabel>::operator=(const SlvPool<Tvalue
 }
 
 template <class Tvalue, class Tlabel>
-unsigned int SlvPool<Tvalue, Tlabel>::psize() const {
+std::size_t SlvPool<Tvalue, Tlabel>::psize() const {
 
-	return (unsigned int)elements.size();
+	return elements.size();
+
+}
+
+template <class Tvalue, class Tlabel>
+bool SlvPool<Tvalue, Tlabel>::empty() const {
+
+	return elements.empty();
 
 }
 

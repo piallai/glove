@@ -17,9 +17,9 @@
 
 #include "SlvProgression.h"
 
-SlvProgression::SlvProgression(std::string _name) {
+SlvProgression::SlvProgression(std::string _name, bool _l_recurrent): progression(_name) {
 
-	progression.set_name(_name);
+	progression.set_recurrent(_l_recurrent);
 
 }
 
@@ -39,8 +39,6 @@ SlvProgressionQt* SlvProgression::get_progression() const {
 }
 
 SlvProgression& SlvProgression::operator=(const SlvProgression& _progression) {
-
-	progression = _progression.progression;
 
 	return *this;
 }

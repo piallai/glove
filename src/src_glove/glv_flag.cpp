@@ -20,12 +20,12 @@
 #include <QMessageBox>
 #include "glv_QString.h"
 
-void glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
+bool glv::flag::showQMessageBox(const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
 
-	showQMessageBox("", _status, _l_show_all, _parent);
+	return showQMessageBox("", _status, _l_show_all, _parent);
 }
 
-void glv::flag::showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
+bool glv::flag::showQMessageBox(const QString& _message, const SlvStatus& _status, bool _l_show_all, QWidget* _parent) {
 
 	QString message;
 	if (_status.get_type() != SlvStatus::statusType::ok) {
@@ -36,14 +36,16 @@ void glv::flag::showQMessageBox(const QString& _message, const SlvStatus& _statu
 		message += glv::toQString(_status.to_string(_l_show_all));
 	}
 
+	QMessageBox::StandardButton button = QMessageBox::StandardButton::NoButton;
 	if (_status.get_type() == SlvStatus::statusType::information) {
-		QMessageBox::information(_parent, "", message);
+		button = QMessageBox::information(_parent, "", message);
 	} else if (_status.get_type() == SlvStatus::statusType::warning) {
-		QMessageBox::warning(_parent, "", message);
+		button = QMessageBox::warning(_parent, "", message);
 	} else if (_status.get_type() == SlvStatus::statusType::critical) {
-		QMessageBox::critical(_parent, "", message);
+		button = QMessageBox::critical(_parent, "", message);
 	}
 
+	return (button == QMessageBox::StandardButton::Ok);
 }
 
 void glv::flag::BREAK(std::string warning_message, QWidget* _parent) {

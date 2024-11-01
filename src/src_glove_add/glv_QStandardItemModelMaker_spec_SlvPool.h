@@ -38,7 +38,7 @@ public:
 
         if (_model && (_index == QModelIndex() || _index.model() == _model)) {
 
-            glv::resize(_model, _pool.psize(), 2, _index);
+            glv::resize(_model, (unsigned int)(_pool.psize()), 2, _index);
 
             QModelIndex index;
             for (unsigned int i = 0; i < _pool.psize(); i++) {
@@ -61,7 +61,7 @@ public:
             }
 
             if (_index != QModelIndex()) {
-                QString root_text = get_root_text(_pool.psize());
+                QString root_text = get_root_text((unsigned int)(_pool.psize()));
                 if (_model->itemFromIndex(_index)->text() != root_text) {
                     _model->itemFromIndex(_index)->setText(root_text);
                 }

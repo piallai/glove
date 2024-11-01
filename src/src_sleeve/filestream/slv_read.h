@@ -41,7 +41,6 @@ namespace slv {
         template <class Tdat>
         Tdat readB_constr(std::ifstream& _input_file);
 
-        //extern const std::string end_of_file_str;
         glvm_staticVariable(const, std::string, end_of_file_str, "end of file")
 
     }

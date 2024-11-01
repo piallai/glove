@@ -93,3 +93,20 @@ void slv::string::istream(std::istream& _is, std::string& _string) {
     std::getline(_is, _string);
 
 }
+
+std::string slv::string::format_va_list(const char* _format, std::va_list _args) {
+
+    std::string string;
+
+    va_list args;
+    va_copy(args, _args);
+
+    size_t length = vsnprintf(0, 0, _format, args);
+    string.resize(length + 1);
+
+    vsnprintf(&string[0], length + 1, _format, _args);
+    string.resize(length);
+
+    return string;
+
+}

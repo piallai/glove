@@ -16,11 +16,12 @@ public:
     /*! Simulate the computation of an algorithm which progress needs to be tracked.*/
     void process() {
         unsigned int i = 0;
-        get_progression()->emit_start("Processing ClassC", &i, Niterations);
+        get_progression()->set_message("Processing ClassC");
+        get_progression()->start(&i, Niterations);
         for (i = 0; i < Niterations; i++) {
             // Simulates computation
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            get_progression()->emit_progress();
+            get_progression()->update();
         }
     }
 };

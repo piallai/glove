@@ -36,10 +36,11 @@ void ClassD::process() {
 	//// Delete progression in the middle of a process ////
 	unsigned int Nw = 10;
 	unsigned int w = 0;
-	progression_ptr->emit_start("Processing delete in the middle", &w, Nw);
+	progression_ptr->set_message("Processing delete in the middle");
+	progression_ptr->start(&w, Nw);
 	for (w = 0; w < Nw; w++) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		progression_ptr->emit_progress();
+		progression_ptr->update();
 		if (w == Nw / 2) {
 			delete progression_ptr;// ends loop
 		}
@@ -47,18 +48,17 @@ void ClassD::process() {
 	///////////////////////////////////////////////////
 
 	unsigned int i = 0;
-	get_progression()->emit_start("Processing ClassD", &i, Niterations);
+	get_progression()->set_message("Processing ClassD");
+	get_progression()->start(&i, Niterations);
 	for (i = 0; i < Niterations; i++) {
 
 		// Simulates computation
 		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		classC.processOMP();
 
-		get_progression()->emit_progress();
+		get_progression()->update();
 
 	}
-
-	//get_progression()->emit_end();
 
 }
 
@@ -70,10 +70,11 @@ void ClassD::processOMP() {
 	//// Delete progression in the middle of a process ////
 	unsigned int Nw = 10;
 	unsigned int w = 0;
-	progression_ptr->emit_start("Processing delete in the middle", &w, Nw);
+	progression_ptr->set_message("Processing delete in the middle");
+	progression_ptr->start(&w, Nw);
 	for (w = 0; w < Nw; w++) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		progression_ptr->emit_progress();
+		progression_ptr->update();
 		if (w == Nw / 2) {
 			delete progression_ptr;// ends loop
 		}
@@ -81,7 +82,8 @@ void ClassD::processOMP() {
 	///////////////////////////////////////////////////
 
 	unsigned int i = 0;
-	get_progression()->emit_start("Processing ClassD", &i, Niterations);
+	get_progression()->set_message("Processing ClassD");
+	get_progression()->start(&i, Niterations);
 
 #pragma omp parallel
 	{
@@ -97,7 +99,7 @@ void ClassD::processOMP() {
 
 #pragma omp critical
 				{
-					get_progression()->emit_progress();
+					get_progression()->update();
 					i++;
 				}
 
@@ -106,8 +108,7 @@ void ClassD::processOMP() {
 		}
 	}
 
-	//get_progression()->emit_end();
-
+	classC.get_progression()->finish();
 }
 
 #endif

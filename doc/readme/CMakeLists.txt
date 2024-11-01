@@ -54,6 +54,8 @@ add_custom_target(_Readme_md ALL
     ReadWriteFile/ReadWriteFile_class_text.md
     ReadWriteFile/ReadWriteFile_specs.md
     Specializations.md
-    CLI/CLI_GUI.md
-    CLI/CLI_parametrization.md
+    App/GlvApp.md
+    App/GlvApp_full.md
+    App/CLI/CLI_GUI.md
+    App/CLI/CLI_parametrization.md
 )
