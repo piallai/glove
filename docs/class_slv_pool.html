@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.3</span>
    </div>
   </td>
  </tr>
@@ -116,8 +116,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:afa2d55b4f3ae611524379efef0c7789e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe313322b60b2d4a8adc8b810b671c32"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_slv_pool.html">SlvPool</a>&lt; Tvalue, Tlabel &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_pool.html#abe313322b60b2d4a8adc8b810b671c32">operator=</a> (const <a class="el" href="class_slv_pool.html">SlvPool</a>&lt; Tvalue, Tlabel &gt; &amp;_pool)</td></tr>
 <tr class="separator:abe313322b60b2d4a8adc8b810b671c32"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c60ed460e48e5b91132fae25828e33c"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_pool.html#a4c60ed460e48e5b91132fae25828e33c">psize</a> () const</td></tr>
-<tr class="separator:a4c60ed460e48e5b91132fae25828e33c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a074611c95ef00143a5f7fa2d0ff25b5f"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_pool.html#a074611c95ef00143a5f7fa2d0ff25b5f">psize</a> () const</td></tr>
+<tr class="separator:a074611c95ef00143a5f7fa2d0ff25b5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af563068e0c2930cbe724967fa057161c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_pool.html#af563068e0c2930cbe724967fa057161c">empty</a> () const</td></tr>
+<tr class="separator:af563068e0c2930cbe724967fa057161c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa378a2b6c4f291621c6cbc40406993a5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_pool.html#aa378a2b6c4f291621c6cbc40406993a5">add</a> (Tvalue *_element)</td></tr>
 <tr class="separator:aa378a2b6c4f291621c6cbc40406993a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc02f2100b124f15c078bc22fe68f1a2"><td class="memTemplParams" colspan="2">template&lt;class Tlabel2 &gt; </td></tr>
@@ -418,6 +420,26 @@ template&lt;class Tvalue , class Tlabel  = typename Tvalue::Tlabeling&gt; </div>
 
 </div>
 </div>
+<a id="af563068e0c2930cbe724967fa057161c" name="af563068e0c2930cbe724967fa057161c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af563068e0c2930cbe724967fa057161c">&#9670;&#160;</a></span>empty()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Tvalue , class Tlabel  = typename Tvalue::Tlabeling&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="class_slv_pool.html">SlvPool</a>&lt; Tvalue, Tlabel &gt;::empty </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Return true if the pool contains no elements. </p>
+
+</div>
+</div>
 <a id="afa2d55b4f3ae611524379efef0c7789e" name="afa2d55b4f3ae611524379efef0c7789e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afa2d55b4f3ae611524379efef0c7789e">&#9670;&#160;</a></span>end() <span class="overload">[1/2]</span></h2>
 
@@ -706,8 +728,8 @@ template&lt;class Tvalue , class Tlabel  = typename Tvalue::Tlabeling&gt; </div>
 
 </div>
 </div>
-<a id="a4c60ed460e48e5b91132fae25828e33c" name="a4c60ed460e48e5b91132fae25828e33c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4c60ed460e48e5b91132fae25828e33c">&#9670;&#160;</a></span>psize()</h2>
+<a id="a074611c95ef00143a5f7fa2d0ff25b5f" name="a074611c95ef00143a5f7fa2d0ff25b5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a074611c95ef00143a5f7fa2d0ff25b5f">&#9670;&#160;</a></span>psize()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -715,7 +737,7 @@ template&lt;class Tvalue , class Tlabel  = typename Tvalue::Tlabeling&gt; </div>
 template&lt;class Tvalue , class Tlabel  = typename Tvalue::Tlabeling&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int <a class="el" href="class_slv_pool.html">SlvPool</a>&lt; Tvalue, Tlabel &gt;::psize </td>
+          <td class="memname">std::size_t <a class="el" href="class_slv_pool.html">SlvPool</a>&lt; Tvalue, Tlabel &gt;::psize </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>

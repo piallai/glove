@@ -8,5 +8,6 @@ var searchData=
   ['delete_5fparametrization_5fdialog_5',['delete_parametrization_dialog',['../class_glv_param_list_dialog__base.html#a468f844d30d740e221ce33702b00be75',1,'GlvParamListDialog_base']]],
   ['delete_5fsave_5fload_5fwidget_6',['delete_save_load_widget',['../class_glv_save_load.html#a4c8185377a96e2d55f385dd2f0e8f6ee',1,'GlvSaveLoad']]],
   ['directory_5fchanged_7',['directory_changed',['../class_glv_open_directory.html#a6c4e243df28932a730fd1f1d5cbe36e9',1,'GlvOpenDirectory']]],
-  ['dynamic_5fcast_5fmessage_5fbox_8',['dynamic_cast_message_box',['../namespaceglv_1_1widget.html#a422a621c7959d1253d77d27d900ed0fc',1,'glv::widget']]]
+  ['display_8',['display',['../class_glv_status_mgr.html#a717028b3ce7c011802bc233a41ff598e',1,'GlvStatusMgr']]],
+  ['dynamic_5fcast_5fmessage_5fbox_9',['dynamic_cast_message_box',['../namespaceglv_1_1widget.html#a422a621c7959d1253d77d27d900ed0fc',1,'glv::widget']]]
 ];

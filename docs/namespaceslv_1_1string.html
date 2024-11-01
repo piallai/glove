@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.3</span>
    </div>
   </td>
  </tr>
@@ -122,6 +122,8 @@ Functions</h2></td></tr>
 <tr class="separator:ad5e9e1762b0709b9cd863aecca944cde"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd25c7994541c81d00d87206e62e8ced"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceslv_1_1string.html#afd25c7994541c81d00d87206e62e8ced">istream</a> (std::istream &amp;_is, std::string &amp;_string)</td></tr>
 <tr class="separator:afd25c7994541c81d00d87206e62e8ced"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc7ad7884af6fb0e2ed14b8fd1ea5866"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceslv_1_1string.html#acc7ad7884af6fb0e2ed14b8fd1ea5866">format_va_list</a> (const char *_format, std::va_list _args)</td></tr>
+<tr class="separator:acc7ad7884af6fb0e2ed14b8fd1ea5866"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>String functions. </p>
@@ -154,6 +156,35 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 <p>Get first part of <code>_string</code> (substring) up to <code>_stop</code>. </p>
+
+</div>
+</div>
+<a id="acc7ad7884af6fb0e2ed14b8fd1ea5866" name="acc7ad7884af6fb0e2ed14b8fd1ea5866"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc7ad7884af6fb0e2ed14b8fd1ea5866">&#9670;&#160;</a></span>format_va_list()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string slv::string::format_va_list </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>_format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::va_list&#160;</td>
+          <td class="paramname"><em>_args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Parse formated <code>_format</code> arguments <code>_args</code> and returns the corresponding std::string. </p>
 
 </div>
 </div>

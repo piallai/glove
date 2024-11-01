@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.3</span>
    </div>
   </td>
  </tr>
@@ -80,44 +80,70 @@ $(function() {
   <div class="headertitle"><div class="title">GlvCLI.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="_slv_c_l_i_8h_source.html">SlvCLI.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="_slv_parametrization_macro_8h_source.html">param/SlvParametrizationMacro.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_slv_pool_factory_8h_source.html">SlvPoolFactory.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="slv__lbl_8h_source.html">slv_lbl.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_slv_macros_8h_source.html">SlvMacros.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_slv_macros_declarations_8h_source.html">SlvMacrosDeclarations.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_slv_status_8h_source.html">SlvStatus.h</a>&quot;</code><br />
 <code>#include &lt;QApplication&gt;</code><br />
+<code>#include &quot;<a class="el" href="_slv_c_l_i_8h_source.html">SlvCLI.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_glv_parametrization_dialog_8h_source.html">GlvParametrizationDialog.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_glv_parametrization_save_load_8h_source.html">GlvParametrizationSaveLoad.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_slv_progression_qt_8h_source.html">SlvProgressionQt.h</a>&quot;</code><br />
 <code>#include &lt;QMessageBox&gt;</code><br />
+<code>#include &quot;<a class="el" href="_glv_progress_mgr_8h_source.html">GlvProgressMgr.h</a>&quot;</code><br />
+<code>#include &lt;QtConcurrent/QtConcurrentRun&gt;</code><br />
+<code>#include &lt;QFutureWatcher&gt;</code><br />
+<code>#include &quot;<a class="el" href="_glv_status_mgr_8h_source.html">GlvStatusMgr.h</a>&quot;</code><br />
 </div>
 <p><a href="_glv_c_l_i_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_glv_c_l_i.html">GlvCLI</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html">GlvApp</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a0ea62585966b75c2b48ab9bd47f63948"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a0ea62585966b75c2b48ab9bd47f63948">GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY</a>(Tparametrization,  parameter_name)</td></tr>
-<tr class="separator:a0ea62585966b75c2b48ab9bd47f63948"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7054cc5a961ceb0e00cf5820e36dc3f1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7054cc5a961ceb0e00cf5820e36dc3f1">GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</a>(Tparametrization, ...)&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a5b8637b5731207983d4e1d3559abaf64">EXPAND</a>( <a class="el" href="_glv_c_l_i_8h.html#a7ad03dea52eccaeda4f4f4651000d12e">glvm_pv_get_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</a>(__VA_ARGS__, <a class="el" href="_glv_c_l_i_8h.html#a08661696e305354b9ddfecf7af82340c">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</a>, <a class="el" href="_glv_c_l_i_8h.html#a119b3c23a741d633663d57e0f91fc5a1">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3</a>, <a class="el" href="_glv_c_l_i_8h.html#a7bf7a69a037460df479f17125db05e76">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2</a>, <a class="el" href="_glv_c_l_i_8h.html#a3eb0215525961613034fcab2147b114a">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1</a>)(Tparametrization, __VA_ARGS__))</td></tr>
-<tr class="separator:a7054cc5a961ceb0e00cf5820e36dc3f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a527931ac34a1860dda2db146b8f1d307"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a527931ac34a1860dda2db146b8f1d307">GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY</a>(Tparametrization,  parameter_name)</td></tr>
+<tr class="separator:a527931ac34a1860dda2db146b8f1d307"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f7ab47af5496d5a9c5e4ca6067c0b60"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a2f7ab47af5496d5a9c5e4ca6067c0b60">GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</a>(Tparametrization, ...)&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a5b8637b5731207983d4e1d3559abaf64">EXPAND</a>( <a class="el" href="_glv_c_l_i_8h.html#a6b953a900d76b0ca2efabce51ba1e4d1">glvm_pv_get_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</a>(__VA_ARGS__, <a class="el" href="_glv_c_l_i_8h.html#a5f210810bb060603f8438fdca0b7a038">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</a>, <a class="el" href="_glv_c_l_i_8h.html#a8ee3056fa75e67daf9a3d2ebd54ce699">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3</a>, <a class="el" href="_glv_c_l_i_8h.html#a96c249bb0b9eb2fd5d9a836a8b5c9e34">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2</a>, <a class="el" href="_glv_c_l_i_8h.html#a2e4b86ff8698a3c2614dc1916cdc9205">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1</a>)(Tparametrization, __VA_ARGS__))</td></tr>
+<tr class="separator:a2f7ab47af5496d5a9c5e4ca6067c0b60"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b8637b5731207983d4e1d3559abaf64"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a5b8637b5731207983d4e1d3559abaf64">EXPAND</a>(arg)&#160;&#160;&#160;arg</td></tr>
 <tr class="separator:a5b8637b5731207983d4e1d3559abaf64"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ad03dea52eccaeda4f4f4651000d12e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7ad03dea52eccaeda4f4f4651000d12e">glvm_pv_get_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</a>(_1,  _2,  _3,  _4,  macro_arg, ...)&#160;&#160;&#160;macro_arg</td></tr>
-<tr class="separator:a7ad03dea52eccaeda4f4f4651000d12e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3eb0215525961613034fcab2147b114a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a3eb0215525961613034fcab2147b114a">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1</a>(Tparametrization,  parameter_name)</td></tr>
-<tr class="separator:a3eb0215525961613034fcab2147b114a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7bf7a69a037460df479f17125db05e76"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7bf7a69a037460df479f17125db05e76">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2</a>(Tparametrization,  parameter_name1,  parameter_name2)</td></tr>
-<tr class="separator:a7bf7a69a037460df479f17125db05e76"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a119b3c23a741d633663d57e0f91fc5a1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a119b3c23a741d633663d57e0f91fc5a1">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3</a>(Tparametrization,  parameter_name1,  parameter_name2,  parameter_name3)</td></tr>
-<tr class="separator:a119b3c23a741d633663d57e0f91fc5a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a08661696e305354b9ddfecf7af82340c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a08661696e305354b9ddfecf7af82340c">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</a>(Tparametrization,  parameter_name1,  parameter_name2,  parameter_name3,  parameter_name4)</td></tr>
-<tr class="separator:a08661696e305354b9ddfecf7af82340c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6ef80217f6cc4941a70a2a24f171879c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a6ef80217f6cc4941a70a2a24f171879c">GLOVE_CLI</a>(Tparametrization)</td></tr>
-<tr class="separator:a6ef80217f6cc4941a70a2a24f171879c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b953a900d76b0ca2efabce51ba1e4d1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a6b953a900d76b0ca2efabce51ba1e4d1">glvm_pv_get_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</a>(_1,  _2,  _3,  _4,  macro_arg, ...)&#160;&#160;&#160;macro_arg</td></tr>
+<tr class="separator:a6b953a900d76b0ca2efabce51ba1e4d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e4b86ff8698a3c2614dc1916cdc9205"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a2e4b86ff8698a3c2614dc1916cdc9205">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1</a>(Tparametrization,  parameter_name)</td></tr>
+<tr class="separator:a2e4b86ff8698a3c2614dc1916cdc9205"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96c249bb0b9eb2fd5d9a836a8b5c9e34"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a96c249bb0b9eb2fd5d9a836a8b5c9e34">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2</a>(Tparametrization,  parameter_name1,  parameter_name2)</td></tr>
+<tr class="separator:a96c249bb0b9eb2fd5d9a836a8b5c9e34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ee3056fa75e67daf9a3d2ebd54ce699"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a8ee3056fa75e67daf9a3d2ebd54ce699">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3</a>(Tparametrization,  parameter_name1,  parameter_name2,  parameter_name3)</td></tr>
+<tr class="separator:a8ee3056fa75e67daf9a3d2ebd54ce699"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f210810bb060603f8438fdca0b7a038"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a5f210810bb060603f8438fdca0b7a038">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</a>(Tparametrization,  parameter_name1,  parameter_name2,  parameter_name3,  parameter_name4)</td></tr>
+<tr class="separator:a5f210810bb060603f8438fdca0b7a038"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7edcc3c4f4e3f4761ddf00369676df71"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7edcc3c4f4e3f4761ddf00369676df71">GLOVE_APP_PARAM</a>(Tparametrization)&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization, false)</td></tr>
+<tr class="separator:a7edcc3c4f4e3f4761ddf00369676df71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e59d45defb404971f2ec8f2d08a177d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a2e59d45defb404971f2ec8f2d08a177d">GLOVE_APP</a>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(GLOVE_APP_default_parametrization, false)</td></tr>
+<tr class="separator:a2e59d45defb404971f2ec8f2d08a177d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65b9ec1d97cb98edb637281dc64e7dee"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a65b9ec1d97cb98edb637281dc64e7dee">GLOVE_APP_PARAM_AUTO</a>(Tparametrization)&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization, true)</td></tr>
+<tr class="separator:a65b9ec1d97cb98edb637281dc64e7dee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a10c098a5a7a5efbfe5f45bdd532aae"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7a10c098a5a7a5efbfe5f45bdd532aae">GLOVE_APP_AUTO</a>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(GLOVE_APP_default_parametrization, true)</td></tr>
+<tr class="separator:a7a10c098a5a7a5efbfe5f45bdd532aae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a446abd0bda54d05aa72486859aa3df27"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a446abd0bda54d05aa72486859aa3df27">GLOVE_APP_THREAD_MODE</a>&#160;&#160;&#160;true</td></tr>
+<tr class="separator:a446abd0bda54d05aa72486859aa3df27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c09d273b113d266e473ad49f34d682e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization,  _l_auto_glove)</td></tr>
+<tr class="separator:a7c09d273b113d266e473ad49f34d682e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a3eadd29a9e403949ddc1797d786fbc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a2a3eadd29a9e403949ddc1797d786fbc">GLOVE_APP_MSVC_NO_CONSOLE</a>&#160;&#160;&#160;comment(linker, &quot;/SUBSYSTEM:windows /ENTRY:mainCRTStartup&quot;)</td></tr>
+<tr class="separator:a2a3eadd29a9e403949ddc1797d786fbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a7797613f0508603541600984b6011506"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7797613f0508603541600984b6011506">glv_cli_main</a> (int argc, char *argv[])</td></tr>
-<tr class="separator:a7797613f0508603541600984b6011506"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc4778976d93ca63e51903b16eb06bf7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#acc4778976d93ca63e51903b16eb06bf7">glvm_parametrization</a> (GLOVE_APP_default_parametrization, &quot;default&quot;)</td></tr>
+<tr class="separator:acc4778976d93ca63e51903b16eb06bf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d99e6ba46630cead51f89ffe5416791"><td class="memTemplParams" colspan="2">template&lt;class Tparametrization &gt; </td></tr>
+<tr class="memitem:a3d99e6ba46630cead51f89ffe5416791"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a3d99e6ba46630cead51f89ffe5416791">glv_cli_main</a> (int argc, char *argv[], bool _l_gloved, const Tparametrization &amp;_parametrization)</td></tr>
+<tr class="separator:a3d99e6ba46630cead51f89ffe5416791"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a5b8637b5731207983d4e1d3559abaf64" name="a5b8637b5731207983d4e1d3559abaf64"></a>
@@ -138,36 +164,42 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a6ef80217f6cc4941a70a2a24f171879c" name="a6ef80217f6cc4941a70a2a24f171879c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6ef80217f6cc4941a70a2a24f171879c">&#9670;&#160;</a></span>GLOVE_CLI</h2>
+<a id="a2e59d45defb404971f2ec8f2d08a177d" name="a2e59d45defb404971f2ec8f2d08a177d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e59d45defb404971f2ec8f2d08a177d">&#9670;&#160;</a></span>GLOVE_APP</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define GLOVE_CLI</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">Tparametrization</td><td>)</td>
-          <td></td>
+          <td class="memname">#define GLOVE_APP&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(GLOVE_APP_default_parametrization, false)</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">return</span> GlvCLI::main&lt;Tparametrization&gt;(argc, argv);\</div>
-<div class="line">}\</div>
-<div class="line"><span class="keywordtype">int</span> <a class="code hl_function" href="_glv_c_l_i_8h.html#a7797613f0508603541600984b6011506">glv_cli_main</a>(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[]) {</div>
-<div class="ttc" id="a_glv_c_l_i_8h_html_a7797613f0508603541600984b6011506"><div class="ttname"><a href="_glv_c_l_i_8h.html#a7797613f0508603541600984b6011506">glv_cli_main</a></div><div class="ttdeci">int glv_cli_main(int argc, char *argv[])</div></div>
-</div><!-- fragment -->
+
 </div>
 </div>
-<a id="a0ea62585966b75c2b48ab9bd47f63948" name="a0ea62585966b75c2b48ab9bd47f63948"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0ea62585966b75c2b48ab9bd47f63948">&#9670;&#160;</a></span>GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY</h2>
+<a id="a7a10c098a5a7a5efbfe5f45bdd532aae" name="a7a10c098a5a7a5efbfe5f45bdd532aae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7a10c098a5a7a5efbfe5f45bdd532aae">&#9670;&#160;</a></span>GLOVE_APP_AUTO</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY</td>
+          <td class="memname">#define GLOVE_APP_AUTO&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(GLOVE_APP_default_parametrization, true)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a527931ac34a1860dda2db146b8f1d307" name="a527931ac34a1860dda2db146b8f1d307"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a527931ac34a1860dda2db146b8f1d307">&#9670;&#160;</a></span>GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">Tparametrization, </td>
@@ -186,7 +218,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keyword">template</span> &lt;&gt;\</div>
-<div class="line"><span class="keyword">struct </span>GlvCLI::ParamOutput&lt;Tparametrization&gt; {\</div>
+<div class="line"><span class="keyword">struct </span>GlvApp::ParamOutput&lt;Tparametrization&gt; {\</div>
 <div class="line">        <span class="keyword">static</span> std::string get_path(<span class="keyword">const</span> Tparametrization&amp; _parametrization) {\</div>
 <div class="line">            <span class="keyword">const</span> <a class="code hl_class" href="class_slv_parameter__base.html">SlvParameter_base</a>* parameter = _parametrization.find_first(parameter_name, <span class="keyword">false</span>);\</div>
 <div class="line">            if (parameter) {\</div>
@@ -202,14 +234,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a7054cc5a961ceb0e00cf5820e36dc3f1" name="a7054cc5a961ceb0e00cf5820e36dc3f1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7054cc5a961ceb0e00cf5820e36dc3f1">&#9670;&#160;</a></span>GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</h2>
+<a id="a2f7ab47af5496d5a9c5e4ca6067c0b60" name="a2f7ab47af5496d5a9c5e4ca6067c0b60"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f7ab47af5496d5a9c5e4ca6067c0b60">&#9670;&#160;</a></span>GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</td>
+          <td class="memname">#define GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">Tparametrization, </td>
@@ -223,7 +255,7 @@ Functions</h2></td></tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a5b8637b5731207983d4e1d3559abaf64">EXPAND</a>( <a class="el" href="_glv_c_l_i_8h.html#a7ad03dea52eccaeda4f4f4651000d12e">glvm_pv_get_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</a>(__VA_ARGS__, <a class="el" href="_glv_c_l_i_8h.html#a08661696e305354b9ddfecf7af82340c">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</a>, <a class="el" href="_glv_c_l_i_8h.html#a119b3c23a741d633663d57e0f91fc5a1">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3</a>, <a class="el" href="_glv_c_l_i_8h.html#a7bf7a69a037460df479f17125db05e76">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2</a>, <a class="el" href="_glv_c_l_i_8h.html#a3eb0215525961613034fcab2147b114a">glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1</a>)(Tparametrization, __VA_ARGS__))</td>
+          <td></td><td>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a5b8637b5731207983d4e1d3559abaf64">EXPAND</a>( <a class="el" href="_glv_c_l_i_8h.html#a6b953a900d76b0ca2efabce51ba1e4d1">glvm_pv_get_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</a>(__VA_ARGS__, <a class="el" href="_glv_c_l_i_8h.html#a5f210810bb060603f8438fdca0b7a038">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</a>, <a class="el" href="_glv_c_l_i_8h.html#a8ee3056fa75e67daf9a3d2ebd54ce699">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3</a>, <a class="el" href="_glv_c_l_i_8h.html#a96c249bb0b9eb2fd5d9a836a8b5c9e34">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2</a>, <a class="el" href="_glv_c_l_i_8h.html#a2e4b86ff8698a3c2614dc1916cdc9205">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1</a>)(Tparametrization, __VA_ARGS__))</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -231,14 +263,87 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a7ad03dea52eccaeda4f4f4651000d12e" name="a7ad03dea52eccaeda4f4f4651000d12e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7ad03dea52eccaeda4f4f4651000d12e">&#9670;&#160;</a></span>glvm_pv_get_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</h2>
+<a id="a2a3eadd29a9e403949ddc1797d786fbc" name="a2a3eadd29a9e403949ddc1797d786fbc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a3eadd29a9e403949ddc1797d786fbc">&#9670;&#160;</a></span>GLOVE_APP_MSVC_NO_CONSOLE</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define glvm_pv_get_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</td>
+          <td class="memname">#define GLOVE_APP_MSVC_NO_CONSOLE&#160;&#160;&#160;comment(linker, &quot;/SUBSYSTEM:windows /ENTRY:mainCRTStartup&quot;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7edcc3c4f4e3f4761ddf00369676df71" name="a7edcc3c4f4e3f4761ddf00369676df71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7edcc3c4f4e3f4761ddf00369676df71">&#9670;&#160;</a></span>GLOVE_APP_PARAM</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GLOVE_APP_PARAM</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Tparametrization</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization, false)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Transform a program into a GUI application by setting -glove as CLI argument. To be used at the very beginning of the main. Provide two additional variables:</p><ul>
+<li>bool is_glove : whether -glove cli argument was used or not.</li>
+<li>Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one. </li>
+</ul>
+
+</div>
+</div>
+<a id="a65b9ec1d97cb98edb637281dc64e7dee" name="a65b9ec1d97cb98edb637281dc64e7dee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a65b9ec1d97cb98edb637281dc64e7dee">&#9670;&#160;</a></span>GLOVE_APP_PARAM_AUTO</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GLOVE_APP_PARAM_AUTO</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Tparametrization</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization, true)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Same as GLOVE_APP macro, but forces use of glove (ie: -glove is set by default). Transform a program into a GUI application. To be used at the very beginning of the main. Provide two additional variables:</p><ul>
+<li>bool is_glove : whether -glove cli argument was used or not.</li>
+<li>Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one. </li>
+</ul>
+
+</div>
+</div>
+<a id="a446abd0bda54d05aa72486859aa3df27" name="a446abd0bda54d05aa72486859aa3df27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a446abd0bda54d05aa72486859aa3df27">&#9670;&#160;</a></span>GLOVE_APP_THREAD_MODE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GLOVE_APP_THREAD_MODE&#160;&#160;&#160;true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional: Disable program execution in a separate thread. Progressions and status display can not be managed in this mode, only input parametrization can. Can be convenient if one wants to execute the program in the closest conditions as the initial program is. The program being 'gloved' remains fully compliant with thread mode deactivated. Default is : true. To be set just before calling GLOVE_APP. </p>
+
+</div>
+</div>
+<a id="a6b953a900d76b0ca2efabce51ba1e4d1" name="a6b953a900d76b0ca2efabce51ba1e4d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b953a900d76b0ca2efabce51ba1e4d1">&#9670;&#160;</a></span>glvm_pv_get_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define glvm_pv_get_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">_1, </td>
@@ -283,14 +388,48 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a3eb0215525961613034fcab2147b114a" name="a3eb0215525961613034fcab2147b114a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3eb0215525961613034fcab2147b114a">&#9670;&#160;</a></span>glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1</h2>
+<a id="a7c09d273b113d266e473ad49f34d682e" name="a7c09d273b113d266e473ad49f34d682e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c09d273b113d266e473ad49f34d682e">&#9670;&#160;</a></span>glvm_pv_GLOVE_APP</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1</td>
+          <td class="memname">#define glvm_pv_GLOVE_APP</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Tparametrization, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">_l_auto_glove&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">return</span> GlvApp::main&lt;Tparametrization&gt;(argc, argv, _l_auto_glove, <a class="code hl_define" href="_glv_c_l_i_8h.html#a446abd0bda54d05aa72486859aa3df27">GLOVE_APP_THREAD_MODE</a>);\</div>
+<div class="line">}\</div>
+<div class="line"><span class="keyword">template</span> &lt;&gt;\</div>
+<div class="line"><span class="keywordtype">int</span> <a class="code hl_function" href="_glv_c_l_i_8h.html#a3d99e6ba46630cead51f89ffe5416791">glv_cli_main</a>(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[], <span class="keywordtype">bool</span> is_glove, <span class="keyword">const</span> Tparametrization&amp; glove_parametrization) {</div>
+<div class="ttc" id="a_glv_c_l_i_8h_html_a3d99e6ba46630cead51f89ffe5416791"><div class="ttname"><a href="_glv_c_l_i_8h.html#a3d99e6ba46630cead51f89ffe5416791">glv_cli_main</a></div><div class="ttdeci">int glv_cli_main(int argc, char *argv[], bool _l_gloved, const Tparametrization &amp;_parametrization)</div></div>
+<div class="ttc" id="a_glv_c_l_i_8h_html_a446abd0bda54d05aa72486859aa3df27"><div class="ttname"><a href="_glv_c_l_i_8h.html#a446abd0bda54d05aa72486859aa3df27">GLOVE_APP_THREAD_MODE</a></div><div class="ttdeci">#define GLOVE_APP_THREAD_MODE</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:121</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a2e4b86ff8698a3c2614dc1916cdc9205" name="a2e4b86ff8698a3c2614dc1916cdc9205"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e4b86ff8698a3c2614dc1916cdc9205">&#9670;&#160;</a></span>glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL1</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">Tparametrization, </td>
@@ -309,7 +448,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keyword">template</span> &lt;&gt;\</div>
-<div class="line"><span class="keyword">struct </span>GlvCLI::ParamOutput&lt;Tparametrization&gt; {\</div>
+<div class="line"><span class="keyword">struct </span>GlvApp::ParamOutput&lt;Tparametrization&gt; {\</div>
 <div class="line">        <span class="keyword">static</span> std::string get_path(<span class="keyword">const</span> Tparametrization&amp; _parametrization) {\</div>
 <div class="line">            std::ostringstream stream;\</div>
 <div class="line">            stream &lt;&lt; _parametrization.get_##parameter_name();\</div>
@@ -319,14 +458,14 @@ Functions</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<a id="a7bf7a69a037460df479f17125db05e76" name="a7bf7a69a037460df479f17125db05e76"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7bf7a69a037460df479f17125db05e76">&#9670;&#160;</a></span>glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2</h2>
+<a id="a96c249bb0b9eb2fd5d9a836a8b5c9e34" name="a96c249bb0b9eb2fd5d9a836a8b5c9e34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96c249bb0b9eb2fd5d9a836a8b5c9e34">&#9670;&#160;</a></span>glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2</td>
+          <td class="memname">#define glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL2</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">Tparametrization, </td>
@@ -351,7 +490,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keyword">template</span> &lt;&gt;\</div>
-<div class="line"><span class="keyword">struct </span>GlvCLI::ParamOutput&lt;Tparametrization&gt; {\</div>
+<div class="line"><span class="keyword">struct </span>GlvApp::ParamOutput&lt;Tparametrization&gt; {\</div>
 <div class="line">        <span class="keyword">static</span> std::string get_path(<span class="keyword">const</span> Tparametrization&amp; _parametrization) {\</div>
 <div class="line">            std::ostringstream stream;\</div>
 <div class="line">            stream &lt;&lt; _parametrization.get_##parameter_name1().get_##parameter_name2();\</div>
@@ -361,14 +500,14 @@ Functions</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<a id="a119b3c23a741d633663d57e0f91fc5a1" name="a119b3c23a741d633663d57e0f91fc5a1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a119b3c23a741d633663d57e0f91fc5a1">&#9670;&#160;</a></span>glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3</h2>
+<a id="a8ee3056fa75e67daf9a3d2ebd54ce699" name="a8ee3056fa75e67daf9a3d2ebd54ce699"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ee3056fa75e67daf9a3d2ebd54ce699">&#9670;&#160;</a></span>glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3</td>
+          <td class="memname">#define glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL3</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">Tparametrization, </td>
@@ -399,7 +538,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keyword">template</span> &lt;&gt;\</div>
-<div class="line"><span class="keyword">struct </span>GlvCLI::ParamOutput&lt;Tparametrization&gt; {\</div>
+<div class="line"><span class="keyword">struct </span>GlvApp::ParamOutput&lt;Tparametrization&gt; {\</div>
 <div class="line">        <span class="keyword">static</span> std::string get_path(<span class="keyword">const</span> Tparametrization&amp; _parametrization) {\</div>
 <div class="line">            std::ostringstream stream;\</div>
 <div class="line">            stream &lt;&lt; _parametrization.get_##parameter_name1().get_##parameter_name2().get_##parameter_name3();\</div>
@@ -409,14 +548,14 @@ Functions</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<a id="a08661696e305354b9ddfecf7af82340c" name="a08661696e305354b9ddfecf7af82340c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a08661696e305354b9ddfecf7af82340c">&#9670;&#160;</a></span>glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</h2>
+<a id="a5f210810bb060603f8438fdca0b7a038" name="a5f210810bb060603f8438fdca0b7a038"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f210810bb060603f8438fdca0b7a038">&#9670;&#160;</a></span>glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define glvm_pv_GLOVE_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</td>
+          <td class="memname">#define glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">Tparametrization, </td>
@@ -453,7 +592,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keyword">template</span> &lt;&gt;\</div>
-<div class="line"><span class="keyword">struct </span>GlvCLI::ParamOutput&lt;Tparametrization&gt; {\</div>
+<div class="line"><span class="keyword">struct </span>GlvApp::ParamOutput&lt;Tparametrization&gt; {\</div>
 <div class="line">        <span class="keyword">static</span> std::string get_path(<span class="keyword">const</span> Tparametrization&amp; _parametrization) {\</div>
 <div class="line">            std::ostringstream stream;\</div>
 <div class="line">            stream &lt;&lt; _parametrization.get_##parameter_name1().get_##parameter_name2().get_##parameter_name3().get_##parameter_name4();\</div>
@@ -464,11 +603,13 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a7797613f0508603541600984b6011506" name="a7797613f0508603541600984b6011506"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7797613f0508603541600984b6011506">&#9670;&#160;</a></span>glv_cli_main()</h2>
+<a id="a3d99e6ba46630cead51f89ffe5416791" name="a3d99e6ba46630cead51f89ffe5416791"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d99e6ba46630cead51f89ffe5416791">&#9670;&#160;</a></span>glv_cli_main()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class Tparametrization &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">int glv_cli_main </td>
@@ -480,7 +621,47 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>argv</em>[]&#160;</td>
+          <td class="paramname"><em>argv</em>[], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_gloved</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Tparametrization &amp;&#160;</td>
+          <td class="paramname"><em>_parametrization</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acc4778976d93ca63e51903b16eb06bf7" name="acc4778976d93ca63e51903b16eb06bf7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc4778976d93ca63e51903b16eb06bf7">&#9670;&#160;</a></span>glvm_parametrization()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">glvm_parametrization </td>
+          <td>(</td>
+          <td class="paramtype">GLOVE_APP_default_parametrization&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&quot;default&quot;&#160;</td>
+          <td class="paramname">&#160;</td>
         </tr>
         <tr>
           <td></td>

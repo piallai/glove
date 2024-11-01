@@ -8,11 +8,13 @@ var searchData=
   ['l_5fdummy_5frow_5',['l_dummy_row',['../class_glv_table_view__base.html#ac22625c68cbcdc5121774c7313610f98',1,'GlvTableView_base']]],
   ['l_5fdynamically_5fupdate_5fdata_6',['l_dynamically_update_data',['../class_glv_item_delegate__base.html#aa0a40e1d21ea51ffc0fa2463f34fe296',1,'GlvItemDelegate_base']]],
   ['l_5fparam_5finit_5fauto_7',['l_param_init_auto',['../class_slv_parametrization__base.html#a57431ebd2305c03598b7e039a832216e',1,'SlvParametrization_base']]],
-  ['l_5fvisible_5fconfig_8',['l_visible_config',['../class_glv_param_list_dialog__base.html#a0863848aa9d0324c6881af32fa2f3f41',1,'GlvParamListDialog_base']]],
-  ['label_5findex_9',['label_index',['../class_glv_vector_widget_item__base.html#adbea1657759795d3ecd6ba115f1b437f',1,'GlvVectorWidgetItem_base']]],
-  ['layout_10',['layout',['../class_glv_described_widget__base.html#ab0f2f98877fd6845e7ad1698e57c1208',1,'GlvDescribedWidget_base::layout()'],['../class_glv_list_dialog__base.html#aa05d3a61289ff4e2463d13b493f46573',1,'GlvListDialog_base::layout()'],['../class_glv_map_widget_item__base.html#a4cb43d52b07dc67ec9d6b594330d4d16',1,'GlvMapWidgetItem_base::layout()'],['../class_glv_vector_widget_item__base.html#a7dbc0fdccfa16c76cf97b42bd54e2747',1,'GlvVectorWidgetItem_base::layout()'],['../class_glv_widget__base.html#a770854d32778c2a0d48e9d0fa4bc93e7',1,'GlvWidget_base::layout()']]],
-  ['layout_5fitems_11',['layout_items',['../class_glv_map_widget__base.html#a823b414f33637c74601a49dcd18555da',1,'GlvMapWidget_base::layout_items()'],['../class_glv_vector_widget__base.html#af815cfd48c33ebccc59a4d312b1d044c',1,'GlvVectorWidget_base::layout_items()']]],
-  ['layout_5ftype_12',['layout_type',['../class_glv_parameters_widget__base.html#a2c11f70ec80ea40caa02d46218b1ac5b',1,'GlvParametersWidget_base']]],
-  ['list_5flayout_13',['list_layout',['../class_glv_list_dialog__base.html#ab6ab4fcfcabf049374128cf6facfb86f',1,'GlvListDialog_base']]],
-  ['list_5fname_5fwidget_14',['list_name_widget',['../class_glv_list_dialog__base.html#af98d31340b741826d09c5acd5796d5ae',1,'GlvListDialog_base']]]
+  ['l_5frecurrent_8',['l_recurrent',['../class_slv_progression_qt.html#af16a99fc7e0014b11dfd529ba0bc3cb5',1,'SlvProgressionQt']]],
+  ['l_5fvisible_5fconfig_9',['l_visible_config',['../class_glv_param_list_dialog__base.html#a0863848aa9d0324c6881af32fa2f3f41',1,'GlvParamListDialog_base']]],
+  ['l_5fwas_5fcanceled_10',['l_was_canceled',['../class_slv_progression_qt.html#a36efadab2027d9e29c45d0e5462025a2',1,'SlvProgressionQt']]],
+  ['label_5findex_11',['label_index',['../class_glv_vector_widget_item__base.html#adbea1657759795d3ecd6ba115f1b437f',1,'GlvVectorWidgetItem_base']]],
+  ['layout_12',['layout',['../class_glv_described_widget__base.html#ab0f2f98877fd6845e7ad1698e57c1208',1,'GlvDescribedWidget_base::layout()'],['../class_glv_list_dialog__base.html#aa05d3a61289ff4e2463d13b493f46573',1,'GlvListDialog_base::layout()'],['../class_glv_map_widget_item__base.html#a4cb43d52b07dc67ec9d6b594330d4d16',1,'GlvMapWidgetItem_base::layout()'],['../class_glv_vector_widget_item__base.html#a7dbc0fdccfa16c76cf97b42bd54e2747',1,'GlvVectorWidgetItem_base::layout()'],['../class_glv_widget__base.html#a770854d32778c2a0d48e9d0fa4bc93e7',1,'GlvWidget_base::layout()']]],
+  ['layout_5fitems_13',['layout_items',['../class_glv_map_widget__base.html#a823b414f33637c74601a49dcd18555da',1,'GlvMapWidget_base::layout_items()'],['../class_glv_vector_widget__base.html#af815cfd48c33ebccc59a4d312b1d044c',1,'GlvVectorWidget_base::layout_items()']]],
+  ['layout_5ftype_14',['layout_type',['../class_glv_parameters_widget__base.html#a2c11f70ec80ea40caa02d46218b1ac5b',1,'GlvParametersWidget_base']]],
+  ['list_5flayout_15',['list_layout',['../class_glv_list_dialog__base.html#ab6ab4fcfcabf049374128cf6facfb86f',1,'GlvListDialog_base']]],
+  ['list_5fname_5fwidget_16',['list_name_widget',['../class_glv_list_dialog__base.html#af98d31340b741826d09c5acd5796d5ae',1,'GlvListDialog_base']]]
 ];

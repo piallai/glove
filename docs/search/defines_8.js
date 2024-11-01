@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['parenthesis1_0',['PARENTHESIS1',['../_slv_macros_8h.html#a971e4636812392c80e8dc26b681bb304',1,'SlvMacros.h']]],
-  ['parenthesis2_1',['PARENTHESIS2',['../_slv_macros_8h.html#ac0ca4bdbad953b1d62de08883d2248b1',1,'SlvMacros.h']]]
+  ['mydebug1_0',['MYDEBUG1',['../_slv_macros_8h.html#a728d7644f1cfd77ca80f870e1b5b61a2',1,'SlvMacros.h']]],
+  ['mydebug2_1',['MYDEBUG2',['../_slv_macros_8h.html#a0e7735c264020c60077e35a1579b3286',1,'SlvMacros.h']]]
 ];

@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.3</span>
    </div>
   </td>
  </tr>
@@ -81,10 +81,10 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aa27c709b246a973022c4f2c42b4fb4ca"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#aa27c709b246a973022c4f2c42b4fb4ca">showQMessageBox</a> (const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;_status, bool _l_show_all, QWidget *_parent=NULL)</td></tr>
-<tr class="separator:aa27c709b246a973022c4f2c42b4fb4ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad79bd2a2de2ca18d296aadf63b204994"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#ad79bd2a2de2ca18d296aadf63b204994">showQMessageBox</a> (const QString &amp;_message, const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;_status, bool _l_show_all, QWidget *_parent=NULL)</td></tr>
-<tr class="separator:ad79bd2a2de2ca18d296aadf63b204994"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a697c009361b1fc366c1c3b3345ba7034"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#a697c009361b1fc366c1c3b3345ba7034">showQMessageBox</a> (const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;_status, bool _l_show_all, QWidget *_parent=NULL)</td></tr>
+<tr class="separator:a697c009361b1fc366c1c3b3345ba7034"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a435a07ea6b5a6b4cae42da0a2c41ff6c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#a435a07ea6b5a6b4cae42da0a2c41ff6c">showQMessageBox</a> (const QString &amp;_message, const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;_status, bool _l_show_all, QWidget *_parent=NULL)</td></tr>
+<tr class="separator:a435a07ea6b5a6b4cae42da0a2c41ff6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1252556e3135a623c5a09d8dab0d2b9e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#a1252556e3135a623c5a09d8dab0d2b9e">BREAK</a> (std::string warning_message, QWidget *_parent=NULL)</td></tr>
 <tr class="separator:a1252556e3135a623c5a09d8dab0d2b9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc48439f4d426dd1bc74374f672293ff"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceglv_1_1flag.html#adc48439f4d426dd1bc74374f672293ff">INFO</a> (std::string warning_message, QWidget *_parent=NULL)</td></tr>
@@ -151,14 +151,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad79bd2a2de2ca18d296aadf63b204994" name="ad79bd2a2de2ca18d296aadf63b204994"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad79bd2a2de2ca18d296aadf63b204994">&#9670;&#160;</a></span>showQMessageBox() <span class="overload">[1/2]</span></h2>
+<a id="a435a07ea6b5a6b4cae42da0a2c41ff6c" name="a435a07ea6b5a6b4cae42da0a2c41ff6c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a435a07ea6b5a6b4cae42da0a2c41ff6c">&#9670;&#160;</a></span>showQMessageBox() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void glv::flag::showQMessageBox </td>
+          <td class="memname">bool glv::flag::showQMessageBox </td>
           <td>(</td>
           <td class="paramtype">const QString &amp;&#160;</td>
           <td class="paramname"><em>_message</em>, </td>
@@ -188,18 +188,18 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Calls QMessageBox according to <code>_status</code> most critical type. <code>_message</code> : preceding message. <code>_l_show_all</code> : if false displays only most critical message (if any). If true displays all messages. </p>
+<p>Calls QMessageBox according to <code>_status</code> most critical type. <code>_message</code> : preceding message. <code>_l_show_all</code> : if false displays only most critical message (if any). If true displays all messages. Return true if message box was being clicked its Ok button. </p>
 
 </div>
 </div>
-<a id="aa27c709b246a973022c4f2c42b4fb4ca" name="aa27c709b246a973022c4f2c42b4fb4ca"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa27c709b246a973022c4f2c42b4fb4ca">&#9670;&#160;</a></span>showQMessageBox() <span class="overload">[2/2]</span></h2>
+<a id="a697c009361b1fc366c1c3b3345ba7034" name="a697c009361b1fc366c1c3b3345ba7034"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a697c009361b1fc366c1c3b3345ba7034">&#9670;&#160;</a></span>showQMessageBox() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void glv::flag::showQMessageBox </td>
+          <td class="memname">bool glv::flag::showQMessageBox </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;&#160;</td>
           <td class="paramname"><em>_status</em>, </td>
@@ -223,7 +223,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Calls QMessageBox according to <code>_status</code> most critical type. <code>_l_show_all</code> : if false displays only most critical message (if any). If true displays all messages. </p>
+<p>Calls QMessageBox according to <code>_status</code> most critical type. <code>_l_show_all</code> : if false displays only most critical message (if any). If true displays all messages. Return true if message box was being clicked its Ok button. </p>
 
 </div>
 </div>

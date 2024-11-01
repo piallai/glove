@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.3</span>
    </div>
   </td>
  </tr>
@@ -81,8 +81,8 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a2d1faa53403346bb4850fa057a4caa78"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_progression.html#a2d1faa53403346bb4850fa057a4caa78">SlvProgression</a> (std::string _name=&quot;&quot;)</td></tr>
-<tr class="separator:a2d1faa53403346bb4850fa057a4caa78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f8d5b6cf4fee9dbdfb9056569d4e304"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_progression.html#a8f8d5b6cf4fee9dbdfb9056569d4e304">SlvProgression</a> (std::string _name=&quot;&quot;, bool _l_recurrent=false)</td></tr>
+<tr class="separator:a8f8d5b6cf4fee9dbdfb9056569d4e304"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afeed697a1e75c761af7463b49d5042f3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_progression.html#afeed697a1e75c761af7463b49d5042f3">SlvProgression</a> (const <a class="el" href="class_slv_progression.html">SlvProgression</a> &amp;_progression)</td></tr>
 <tr class="separator:afeed697a1e75c761af7463b49d5042f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50c42d6f48084860a3e2f48ff0ba9670"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_progression.html#a50c42d6f48084860a3e2f48ff0ba9670">~SlvProgression</a> ()</td></tr>
@@ -99,8 +99,8 @@ Protected Member Functions</h2></td></tr>
 <div class="textblock"><p>Use Qt signals.</p>
 <p>Convenience class to embed a <a class="el" href="class_slv_progression_qt.html">SlvProgressionQt</a> in a class. Typical use: to be inherited by a class which contains a method to monitor. The key class is actually <a class="el" href="class_slv_progression_qt.html">SlvProgressionQt</a>, but it is convenient to encapsulate it in <a class="el" href="class_slv_progression.html">SlvProgression</a> in order to not add too many inherited methods in inheriting classes. Also convenient to track the <a class="el" href="class_slv_progression.html#a6cc30671bbe53364fb8f5474edbe092f">get_progression()</a> method. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a2d1faa53403346bb4850fa057a4caa78" name="a2d1faa53403346bb4850fa057a4caa78"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2d1faa53403346bb4850fa057a4caa78">&#9670;&#160;</a></span>SlvProgression() <span class="overload">[1/2]</span></h2>
+<a id="a8f8d5b6cf4fee9dbdfb9056569d4e304" name="a8f8d5b6cf4fee9dbdfb9056569d4e304"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f8d5b6cf4fee9dbdfb9056569d4e304">&#9670;&#160;</a></span>SlvProgression() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -109,8 +109,18 @@ Protected Member Functions</h2></td></tr>
           <td class="memname">SlvProgression::SlvProgression </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>_name</em> = <code>&quot;&quot;</code></td><td>)</td>
+          <td class="paramname"><em>_name</em> = <code>&quot;&quot;</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_recurrent</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -194,6 +204,7 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Assignment operator to avoid assigning <a class="el" href="class_slv_progression_qt.html">SlvProgressionQt</a> progression. </p>
 
 </div>
 </div>

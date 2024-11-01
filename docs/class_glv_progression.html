@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.2</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.3</span>
    </div>
   </td>
  </tr>
@@ -70,6 +70,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-slots">Public Slots</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="class_glv_progression-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">GlvProgression Class Reference</div></div>
@@ -84,10 +85,15 @@ Inheritance diagram for GlvProgression:</div>
   <img src="class_glv_progression.png" alt=""/>
  </div></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-slots" name="pub-slots"></a>
+Public Slots</h2></td></tr>
+<tr class="memitem:acc681dff5cfc0bd90e082ed1bfb464d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_progression.html#acc681dff5cfc0bd90e082ed1bfb464d2">cancel</a> ()</td></tr>
+<tr class="separator:acc681dff5cfc0bd90e082ed1bfb464d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa34702e8ba812f62b95620ea816db5fb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_progression.html#aa34702e8ba812f62b95620ea816db5fb">GlvProgression</a> (<a class="el" href="class_glv_progress_mgr.html">GlvProgressMgr</a> *_progress_mgr, <a class="el" href="class_slv_progression_qt.html">SlvProgressionQt</a> *_progression=0, bool _l_auto_hide=false, QWidget *_parent=0)</td></tr>
-<tr class="separator:aa34702e8ba812f62b95620ea816db5fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa961b415cda55d598c536841fe0e62ab"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_progression.html#aa961b415cda55d598c536841fe0e62ab">GlvProgression</a> (<a class="el" href="class_glv_progress_mgr.html">GlvProgressMgr</a> *_progress_mgr, <a class="el" href="class_slv_progression_qt.html">SlvProgressionQt</a> *_progression=0, bool _l_auto_hide=false, bool _l_show_before_start=false, QWidget *_parent=0)</td></tr>
+<tr class="separator:aa961b415cda55d598c536841fe0e62ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a87dd2bed0f02cca3bc84a43878d056"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_progression.html#a7a87dd2bed0f02cca3bc84a43878d056">~GlvProgression</a> ()</td></tr>
 <tr class="separator:a7a87dd2bed0f02cca3bc84a43878d056"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6dd177f589a2e5acbf7b0fc0e6cad4ef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_progression.html#a6dd177f589a2e5acbf7b0fc0e6cad4ef">set_progression</a> (<a class="el" href="class_slv_progression_qt.html">SlvProgressionQt</a> *_progression)</td></tr>
@@ -96,12 +102,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a9aa95b8d3ec46ac4e5a6f51ff3b984a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab982fd7ee4b568c61de0fbbb20eeabe8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_progression.html#ab982fd7ee4b568c61de0fbbb20eeabe8">is_over</a> () const</td></tr>
 <tr class="separator:ab982fd7ee4b568c61de0fbbb20eeabe8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abacba471830d7c585f3095ddeabf7b0c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_progression.html#abacba471830d7c585f3095ddeabf7b0c">is_showable</a> () const</td></tr>
+<tr class="separator:abacba471830d7c585f3095ddeabf7b0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Widget managing progress a <a class="el" href="class_slv_progression_qt.html">SlvProgressionQt</a>. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="aa34702e8ba812f62b95620ea816db5fb" name="aa34702e8ba812f62b95620ea816db5fb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa34702e8ba812f62b95620ea816db5fb">&#9670;&#160;</a></span>GlvProgression()</h2>
+<a id="aa961b415cda55d598c536841fe0e62ab" name="aa961b415cda55d598c536841fe0e62ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa961b415cda55d598c536841fe0e62ab">&#9670;&#160;</a></span>GlvProgression()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -123,6 +131,12 @@ Public Member Functions</h2></td></tr>
           <td></td>
           <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>_l_auto_hide</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_show_before_start</em> = <code>false</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -158,6 +172,31 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="acc681dff5cfc0bd90e082ed1bfb464d2" name="acc681dff5cfc0bd90e082ed1bfb464d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc681dff5cfc0bd90e082ed1bfb464d2">&#9670;&#160;</a></span>cancel</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GlvProgression::cancel </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">slot</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a9aa95b8d3ec46ac4e5a6f51ff3b984a1" name="a9aa95b8d3ec46ac4e5a6f51ff3b984a1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9aa95b8d3ec46ac4e5a6f51ff3b984a1">&#9670;&#160;</a></span>get_progression()</h2>
 
@@ -190,7 +229,25 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Whether the progression as reached its maximum or not. </p>
+<p>Whether the progression has reached its maximum or not. </p>
+
+</div>
+</div>
+<a id="abacba471830d7c585f3095ddeabf7b0c" name="abacba471830d7c585f3095ddeabf7b0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abacba471830d7c585f3095ddeabf7b0c">&#9670;&#160;</a></span>is_showable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool GlvProgression::is_showable </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the progression is showable based on start status or shoability before start. Workaround to manage QProgressDialog::minimumDuration(). </p>
 
 </div>
 </div>
