@@ -21,7 +21,7 @@
 
 #define GLOVE_VERSION_MAJOR 0
 #define GLOVE_VERSION_MINOR 7
-#define GLOVE_VERSION_PATCH 3
+#define GLOVE_VERSION_PATCH 4
 
 #ifndef GLOVE_DISABLE_QT
 #define OPTION_ENABLE_SLV_QT_PROGRESS 1
@@ -19453,7 +19453,21 @@ class GlvProgressMgr;
 class GlvStatusMgr;
 class SlvProgressionQt;
 
-class GlvApp {
+#ifdef GLOVE_APP_SHARED
+#if defined(OS_WIN)
+#ifdef GLOVE_APP_SHARED_EXPORT
+#define GLOVE_APP_SHARED_API __declspec(dllexport)
+#else
+#define GLOVE_APP_SHARED_API __declspec(dllimport)
+#endif
+#else
+#define GLOVE_APP_SHARED_API
+#endif
+#else
+#define GLOVE_APP_SHARED_API
+#endif
+
+class GLOVE_APP_SHARED_API GlvApp {
 	
 public:
 
@@ -19479,7 +19493,7 @@ public :
 
 	static SlvProgressionQt* get_progression(const slv::lbl::Name& _name);
 	/*! Show a status widget as a QMesssageBox. Does nothing if GLOVE_APP is not used.
-	* \p _l_wait : if ture, the program will not continue until 'Ok' is clicked.
+	* \p _l_wait : if true, the program will not continue until 'Ok' is clicked.
 	* Caution, in case \p _l_wait is false, showing many QMessageBoxes (~40) altogether can produce an overflow.*/
 	static void show(const SlvStatus& _status, bool _l_wait = true);
 

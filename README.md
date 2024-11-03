@@ -271,10 +271,15 @@ To enable the json management, the macro `GLOVE_ENABLE_JSON` must be defined.
 
 To enable the management of boost containers, the macro <code>GLOVE_ENABLE_BOOST</code> must be defined.
 
+To enable use of glove application [GlvApp](/doc/readme/App/GlvApp.md) across shared libraries, <code>GLOVE_APP_SHARED</code> and <code>GLOVE_APP_SHARED_EXPORT</code> must be defined.
+The latter to be defined in the shared library.
+
 ```cpp
 #define GLOVE_DISABLE_QT // Option to disable Qt management
 #define GLOVE_ENABLE_JSON // Option to enable Json management
 #define GLOVE_ENABLE_BOOST // Option to enable boost containers management
+#define GLOVE_APP_SHARED // Option to use GlvApp in a shared library
+#define GLOVE_APP_SHARED_EXPORT // If GLOVE_APP_SHARED is set, to define in the shared library
 #include "glove.h"
 ```
 
