@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.4</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.5</span>
    </div>
   </td>
  </tr>
@@ -79,11 +79,19 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_glv_c_l_i_8h_source.html">GlvCLI.h</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app_1_1_recurrent_wrapper.html">RecurrentWrapper</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a233065560f657322c64b9b89f295ce8d"><td class="memTemplParams" colspan="2">template&lt;class Tparametrization &gt; </td></tr>
-<tr class="memitem:a233065560f657322c64b9b89f295ce8d"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_glv_app.html#a233065560f657322c64b9b89f295ce8d">main</a> (int _argc, char *_argv[], bool _l_auto_glove=false, bool _l_threaded=true)</td></tr>
-<tr class="separator:a233065560f657322c64b9b89f295ce8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f4f830898c47249af9383e8182cb04c"><td class="memTemplParams" colspan="2">template&lt;class Tparametrization , class Trecurrent &gt; </td></tr>
+<tr class="memitem:a9f4f830898c47249af9383e8182cb04c"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_glv_app.html#a9f4f830898c47249af9383e8182cb04c">main</a> (int _argc, char *_argv[], bool _l_auto_glove, bool _l_threaded, bool _l_recurrent, Trecurrent &amp;_recurrent)</td></tr>
+<tr class="separator:a9f4f830898c47249af9383e8182cb04c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63cc727aa1f22c4eabeb831c7ec2db2b"><td class="memTemplParams" colspan="2">template&lt;class Tparametrization , class Trecurrent &gt; </td></tr>
+<tr class="memitem:a63cc727aa1f22c4eabeb831c7ec2db2b"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_glv_app.html#a63cc727aa1f22c4eabeb831c7ec2db2b">main_recurrent</a> (int _argc, char *_argv[], bool _l_threaded, Interface &amp;_interface, bool _l_recurrent, Trecurrent &amp;_recurrent)</td></tr>
+<tr class="separator:a63cc727aa1f22c4eabeb831c7ec2db2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac20e019b8a2e3ad55c8eadcef4a47a43"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_slv_progression_qt.html">SlvProgressionQt</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#ac20e019b8a2e3ad55c8eadcef4a47a43">get_progression</a> (const <a class="el" href="namespaceslv_1_1lbl.html#ab51033eb34a2e588bc7b9fa5f48e950d">slv::lbl::Name</a> &amp;_name)</td></tr>
 <tr class="separator:ac20e019b8a2e3ad55c8eadcef4a47a43"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0d5be9b17ff7337dc08c22baba70ed8"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#ac0d5be9b17ff7337dc08c22baba70ed8">show</a> (const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;_status, bool _l_wait=true)</td></tr>
@@ -116,13 +124,13 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a233065560f657322c64b9b89f295ce8d" name="a233065560f657322c64b9b89f295ce8d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a233065560f657322c64b9b89f295ce8d">&#9670;&#160;</a></span>main()</h2>
+<a id="a9f4f830898c47249af9383e8182cb04c" name="a9f4f830898c47249af9383e8182cb04c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f4f830898c47249af9383e8182cb04c">&#9670;&#160;</a></span>main()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class Tparametrization &gt; </div>
+template&lt;class Tparametrization , class Trecurrent &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -143,13 +151,87 @@ template&lt;class Tparametrization &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>_l_auto_glove</em> = <code>false</code>, </td>
+          <td class="paramname"><em>_l_auto_glove</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>_l_threaded</em> = <code>true</code>&#160;</td>
+          <td class="paramname"><em>_l_threaded</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_recurrent</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Trecurrent &amp;&#160;</td>
+          <td class="paramname"><em>_recurrent</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a63cc727aa1f22c4eabeb831c7ec2db2b" name="a63cc727aa1f22c4eabeb831c7ec2db2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63cc727aa1f22c4eabeb831c7ec2db2b">&#9670;&#160;</a></span>main_recurrent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Tparametrization , class Trecurrent &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int GlvApp::main_recurrent </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>_argc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>_argv</em>[], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_threaded</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Interface &amp;&#160;</td>
+          <td class="paramname"><em>_interface</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_recurrent</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Trecurrent &amp;&#160;</td>
+          <td class="paramname"><em>_recurrent</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

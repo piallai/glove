@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.4</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.5</span>
    </div>
   </td>
  </tr>
@@ -132,8 +132,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a4dfce265a817e0d79f8cbba75f4cc615"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9dc7b138391ff30751f1a0117d4d8295"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_progression_qt.html#a9dc7b138391ff30751f1a0117d4d8295">end</a> ()</td></tr>
 <tr class="separator:a9dc7b138391ff30751f1a0117d4d8295"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af6a11ce897c4074fda7069dc769f7242"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_progression_qt.html#af6a11ce897c4074fda7069dc769f7242">finish</a> ()</td></tr>
-<tr class="separator:af6a11ce897c4074fda7069dc769f7242"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62d17d23c7b6db13ceddc0f3a7ad5d61"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_progression_qt.html#a62d17d23c7b6db13ceddc0f3a7ad5d61">finish</a> (bool _l_remove=true)</td></tr>
+<tr class="separator:a62d17d23c7b6db13ceddc0f3a7ad5d61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa80c77595801ecab17dc358ac5f0dd1c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_progression_qt.html#aa80c77595801ecab17dc358ac5f0dd1c">cancel</a> ()</td></tr>
 <tr class="separator:aa80c77595801ecab17dc358ac5f0dd1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57e3ee0937335a9e3224e5a04592d174"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_progression_qt.html#a57e3ee0937335a9e3224e5a04592d174">was_canceled</a> () const</td></tr>
@@ -333,8 +333,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="af6a11ce897c4074fda7069dc769f7242" name="af6a11ce897c4074fda7069dc769f7242"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af6a11ce897c4074fda7069dc769f7242">&#9670;&#160;</a></span>finish()</h2>
+<a id="a62d17d23c7b6db13ceddc0f3a7ad5d61" name="a62d17d23c7b6db13ceddc0f3a7ad5d61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62d17d23c7b6db13ceddc0f3a7ad5d61">&#9670;&#160;</a></span>finish()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -342,12 +342,13 @@ Additional Inherited Members</h2></td></tr>
         <tr>
           <td class="memname">void SlvProgressionQt::finish </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_remove</em> = <code>true</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Implies that progress monitoring is completely over. Will remove Qt progression from <a class="el" href="class_glv_progress_mgr.html">GlvProgressMgr</a>. Doing so means the progression will need to be added again to a Qt <a class="el" href="class_glv_progress_mgr.html">GlvProgressMgr</a>. Apply iterator finish. Release _terator_ptr pointer (set to NULL). ie: Same as <a class="el" href="class_slv_progression_qt.html#a9dc7b138391ff30751f1a0117d4d8295">end()</a> with removal from <a class="el" href="class_glv_progress_mgr.html">GlvProgressMgr</a>. </p>
+<p>Implies that progress monitoring is completely over. If _l_remove is true, will remove Qt progression from <a class="el" href="class_glv_progress_mgr.html">GlvProgressMgr</a>. Doing so means the progression will need to be added again to a Qt <a class="el" href="class_glv_progress_mgr.html">GlvProgressMgr</a>. Apply iterator finish. Release _terator_ptr pointer (set to NULL). ie: Same as <a class="el" href="class_slv_progression_qt.html#a9dc7b138391ff30751f1a0117d4d8295">end()</a> with removal from <a class="el" href="class_glv_progress_mgr.html">GlvProgressMgr</a> if _l_remove is true. </p>
 
 </div>
 </div>
@@ -462,7 +463,7 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Whether this progress is being called multiple times. If true, default hiding policy on ending will avoid glitches. In this case, hiding must be managed using <a class="el" href="class_slv_progression_qt.html#af6a11ce897c4074fda7069dc769f7242">finish()</a>. </p>
+<p>Whether this progress is being called multiple times. If true, default hiding policy on ending will avoid glitches. In this case, hiding must be managed using <a class="el" href="class_slv_progression_qt.html#a62d17d23c7b6db13ceddc0f3a7ad5d61">finish()</a>. </p>
 
 </div>
 </div>
@@ -714,7 +715,7 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Whether this progress is being called multiple times. If true, default hiding policy on ending will avoid glitches. In this case, hiding must be managed using <a class="el" href="class_slv_progression_qt.html#af6a11ce897c4074fda7069dc769f7242">finish()</a>. </p>
+<p>Whether this progress is being called multiple times. If true, default hiding policy on ending will avoid glitches. In this case, hiding must be managed using <a class="el" href="class_slv_progression_qt.html#a62d17d23c7b6db13ceddc0f3a7ad5d61">finish()</a>. </p>
 
 </div>
 </div>
@@ -943,7 +944,7 @@ template&lt;&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Whether this progress is being called multiple times. If true, default hiding policy on ending will avoid glitches. In this case, hiding must be managed using <a class="el" href="class_slv_progression_qt.html#af6a11ce897c4074fda7069dc769f7242">finish()</a>. </p>
+<p>Whether this progress is being called multiple times. If true, default hiding policy on ending will avoid glitches. In this case, hiding must be managed using <a class="el" href="class_slv_progression_qt.html#a62d17d23c7b6db13ceddc0f3a7ad5d61">finish()</a>. </p>
 
 </div>
 </div>

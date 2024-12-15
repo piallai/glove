@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.4</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.5</span>
    </div>
   </td>
  </tr>
@@ -76,7 +76,8 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">GlvCLI.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -86,6 +87,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="_slv_macros_8h_source.html">SlvMacros.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_slv_macros_declarations_8h_source.html">SlvMacrosDeclarations.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_slv_status_8h_source.html">SlvStatus.h</a>&quot;</code><br />
+<code>#include &lt;QFutureWatcher&gt;</code><br />
 <code>#include &lt;QApplication&gt;</code><br />
 <code>#include &quot;<a class="el" href="_slv_c_l_i_8h_source.html">SlvCLI.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_glv_parametrization_dialog_8h_source.html">GlvParametrizationDialog.h</a>&quot;</code><br />
@@ -94,7 +96,6 @@ $(function() {
 <code>#include &lt;QMessageBox&gt;</code><br />
 <code>#include &quot;<a class="el" href="_glv_progress_mgr_8h_source.html">GlvProgressMgr.h</a>&quot;</code><br />
 <code>#include &lt;QtConcurrent/QtConcurrentRun&gt;</code><br />
-<code>#include &lt;QFutureWatcher&gt;</code><br />
 <code>#include &quot;<a class="el" href="_glv_status_mgr_8h_source.html">GlvStatusMgr.h</a>&quot;</code><br />
 </div>
 <p><a href="_glv_c_l_i_8h_source.html">Go to the source code of this file.</a></p>
@@ -102,6 +103,8 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html">GlvApp</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app_1_1_recurrent_wrapper.html">GlvApp::RecurrentWrapper</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
@@ -122,16 +125,18 @@ Macros</h2></td></tr>
 <tr class="separator:a8ee3056fa75e67daf9a3d2ebd54ce699"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f210810bb060603f8438fdca0b7a038"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a5f210810bb060603f8438fdca0b7a038">glvm_pv_GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY_DECL4</a>(Tparametrization,  parameter_name1,  parameter_name2,  parameter_name3,  parameter_name4)</td></tr>
 <tr class="separator:a5f210810bb060603f8438fdca0b7a038"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7edcc3c4f4e3f4761ddf00369676df71"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7edcc3c4f4e3f4761ddf00369676df71">GLOVE_APP_PARAM</a>(Tparametrization)&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization, false)</td></tr>
+<tr class="memitem:a7edcc3c4f4e3f4761ddf00369676df71"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7edcc3c4f4e3f4761ddf00369676df71">GLOVE_APP_PARAM</a>(Tparametrization)&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization, <a class="el" href="_glv_c_l_i_8h.html#a7a10c098a5a7a5efbfe5f45bdd532aae">GLOVE_APP_AUTO</a>)</td></tr>
 <tr class="separator:a7edcc3c4f4e3f4761ddf00369676df71"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2e59d45defb404971f2ec8f2d08a177d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a2e59d45defb404971f2ec8f2d08a177d">GLOVE_APP</a>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(GLOVE_APP_default_parametrization, false)</td></tr>
+<tr class="memitem:a2e59d45defb404971f2ec8f2d08a177d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a2e59d45defb404971f2ec8f2d08a177d">GLOVE_APP</a>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(GLOVE_APP_default_parametrization, <a class="el" href="_glv_c_l_i_8h.html#a7a10c098a5a7a5efbfe5f45bdd532aae">GLOVE_APP_AUTO</a>)</td></tr>
 <tr class="separator:a2e59d45defb404971f2ec8f2d08a177d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a65b9ec1d97cb98edb637281dc64e7dee"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a65b9ec1d97cb98edb637281dc64e7dee">GLOVE_APP_PARAM_AUTO</a>(Tparametrization)&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization, true)</td></tr>
-<tr class="separator:a65b9ec1d97cb98edb637281dc64e7dee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a10c098a5a7a5efbfe5f45bdd532aae"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7a10c098a5a7a5efbfe5f45bdd532aae">GLOVE_APP_AUTO</a>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(GLOVE_APP_default_parametrization, true)</td></tr>
+<tr class="memitem:a7a10c098a5a7a5efbfe5f45bdd532aae"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7a10c098a5a7a5efbfe5f45bdd532aae">GLOVE_APP_AUTO</a>&#160;&#160;&#160;false</td></tr>
 <tr class="separator:a7a10c098a5a7a5efbfe5f45bdd532aae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a446abd0bda54d05aa72486859aa3df27"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a446abd0bda54d05aa72486859aa3df27">GLOVE_APP_THREAD_MODE</a>&#160;&#160;&#160;true</td></tr>
 <tr class="separator:a446abd0bda54d05aa72486859aa3df27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a424b3db2a3832771a876c60bb32e9e41"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a424b3db2a3832771a876c60bb32e9e41">GLOVE_APP_RECURRENT_MODE</a>&#160;&#160;&#160;false</td></tr>
+<tr class="separator:a424b3db2a3832771a876c60bb32e9e41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9107187acb838d3d8ca92b7411b46305"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a9107187acb838d3d8ca92b7411b46305">GLOVE_APP_RECURRENT_TYPE</a>&#160;&#160;&#160;int</td></tr>
+<tr class="separator:a9107187acb838d3d8ca92b7411b46305"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c09d273b113d266e473ad49f34d682e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization,  _l_auto_glove)</td></tr>
 <tr class="separator:a7c09d273b113d266e473ad49f34d682e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a3eadd29a9e403949ddc1797d786fbc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a2a3eadd29a9e403949ddc1797d786fbc">GLOVE_APP_MSVC_NO_CONSOLE</a>&#160;&#160;&#160;comment(linker, &quot;/SUBSYSTEM:windows /ENTRY:mainCRTStartup&quot;)</td></tr>
@@ -143,9 +148,14 @@ Macros</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:acc4778976d93ca63e51903b16eb06bf7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#acc4778976d93ca63e51903b16eb06bf7">glvm_parametrization</a> (GLOVE_APP_default_parametrization, &quot;default&quot;)</td></tr>
 <tr class="separator:acc4778976d93ca63e51903b16eb06bf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d99e6ba46630cead51f89ffe5416791"><td class="memTemplParams" colspan="2">template&lt;class Tparametrization &gt; </td></tr>
-<tr class="memitem:a3d99e6ba46630cead51f89ffe5416791"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a3d99e6ba46630cead51f89ffe5416791">glv_cli_main</a> (int argc, char *argv[], bool _l_gloved, const Tparametrization &amp;_parametrization)</td></tr>
-<tr class="separator:a3d99e6ba46630cead51f89ffe5416791"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09f83b808347da987b9da975714173c7"><td class="memTemplParams" colspan="2">template&lt;class Tparametrization , class Trecurrent &gt; </td></tr>
+<tr class="memitem:a09f83b808347da987b9da975714173c7"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a09f83b808347da987b9da975714173c7">glv_cli_main</a> (int argc, char *argv[], bool _l_gloved, const Tparametrization &amp;_parametrization, bool _l_recurrent, Trecurrent &amp;_recurrent_var)</td></tr>
+<tr class="separator:a09f83b808347da987b9da975714173c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a62b36613ba5fbefa8317cbb46906c111"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a62b36613ba5fbefa8317cbb46906c111">glove_recurrent_var</a></td></tr>
+<tr class="separator:a62b36613ba5fbefa8317cbb46906c111"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a5b8637b5731207983d4e1d3559abaf64" name="a5b8637b5731207983d4e1d3559abaf64"></a>
@@ -173,10 +183,11 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define GLOVE_APP&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(GLOVE_APP_default_parametrization, false)</td>
+          <td class="memname">#define GLOVE_APP&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(GLOVE_APP_default_parametrization, <a class="el" href="_glv_c_l_i_8h.html#a7a10c098a5a7a5efbfe5f45bdd532aae">GLOVE_APP_AUTO</a>)</td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Same as GLOVE_APP_PARAM, but with no input parametrization. </p>
 
 </div>
 </div>
@@ -187,10 +198,11 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define GLOVE_APP_AUTO&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(GLOVE_APP_default_parametrization, true)</td>
+          <td class="memname">#define GLOVE_APP_AUTO&#160;&#160;&#160;false</td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Optional: Forces use of glove (ie: -glove is set by default). </p>
 
 </div>
 </div>
@@ -290,36 +302,45 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">Tparametrization</td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization, false)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization, <a class="el" href="_glv_c_l_i_8h.html#a7a10c098a5a7a5efbfe5f45bdd532aae">GLOVE_APP_AUTO</a>)</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Transform a program into a GUI application by setting -glove as CLI argument. To be used at the very beginning of the main. Provide two additional variables:</p><ul>
+<p>Transform a program into a GUI application by setting -glove as CLI argument. To be used at the very beginning of the main. Provide four additional variables:</p><ul>
 <li>bool is_glove : whether -glove cli argument was used or not.</li>
-<li>Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one. </li>
+<li>Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one.</li>
+<li>bool is_glove_recurrent : whether glove app is being relaunched recurrently or not.</li>
+<li>GLOVE_APP_RECURRENT_TYPE glove_recurrent_var : variable kept along all recurrent runs. </li>
 </ul>
 
 </div>
 </div>
-<a id="a65b9ec1d97cb98edb637281dc64e7dee" name="a65b9ec1d97cb98edb637281dc64e7dee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a65b9ec1d97cb98edb637281dc64e7dee">&#9670;&#160;</a></span>GLOVE_APP_PARAM_AUTO</h2>
+<a id="a424b3db2a3832771a876c60bb32e9e41" name="a424b3db2a3832771a876c60bb32e9e41"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a424b3db2a3832771a876c60bb32e9e41">&#9670;&#160;</a></span>GLOVE_APP_RECURRENT_MODE</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define GLOVE_APP_PARAM_AUTO</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">Tparametrization</td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization, true)</td>
+          <td class="memname">#define GLOVE_APP_RECURRENT_MODE&#160;&#160;&#160;false</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Same as GLOVE_APP macro, but forces use of glove (ie: -glove is set by default). Transform a program into a GUI application. To be used at the very beginning of the main. Provide two additional variables:</p><ul>
-<li>bool is_glove : whether -glove cli argument was used or not.</li>
-<li>Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one. </li>
-</ul>
+<p>Optional: Set application in recurrent mode. The program will be launched again upon acceptance. Applies only if GLOVE_APP_THREAD_MODE is set to true. </p>
+
+</div>
+</div>
+<a id="a9107187acb838d3d8ca92b7411b46305" name="a9107187acb838d3d8ca92b7411b46305"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9107187acb838d3d8ca92b7411b46305">&#9670;&#160;</a></span>GLOVE_APP_RECURRENT_TYPE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GLOVE_APP_RECURRENT_TYPE&#160;&#160;&#160;int</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -429,12 +450,15 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">return</span> GlvApp::main&lt;Tparametrization&gt;(argc, argv, _l_auto_glove, <a class="code hl_define" href="_glv_c_l_i_8h.html#a446abd0bda54d05aa72486859aa3df27">GLOVE_APP_THREAD_MODE</a>);\</div>
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">return</span> GlvApp::main&lt;Tparametrization&gt;(argc, argv, _l_auto_glove, <a class="code hl_define" href="_glv_c_l_i_8h.html#a446abd0bda54d05aa72486859aa3df27">GLOVE_APP_THREAD_MODE</a>, <a class="code hl_define" href="_glv_c_l_i_8h.html#a424b3db2a3832771a876c60bb32e9e41">GLOVE_APP_RECURRENT_MODE</a>, <a class="code hl_variable" href="_glv_c_l_i_8h.html#a62b36613ba5fbefa8317cbb46906c111">glove_recurrent_var</a>);\</div>
 <div class="line">}\</div>
 <div class="line"><span class="keyword">template</span> &lt;&gt;\</div>
-<div class="line"><span class="keywordtype">int</span> <a class="code hl_function" href="_glv_c_l_i_8h.html#a3d99e6ba46630cead51f89ffe5416791">glv_cli_main</a>(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[], <span class="keywordtype">bool</span> is_glove, <span class="keyword">const</span> Tparametrization&amp; glove_parametrization) {</div>
-<div class="ttc" id="a_glv_c_l_i_8h_html_a3d99e6ba46630cead51f89ffe5416791"><div class="ttname"><a href="_glv_c_l_i_8h.html#a3d99e6ba46630cead51f89ffe5416791">glv_cli_main</a></div><div class="ttdeci">int glv_cli_main(int argc, char *argv[], bool _l_gloved, const Tparametrization &amp;_parametrization)</div></div>
-<div class="ttc" id="a_glv_c_l_i_8h_html_a446abd0bda54d05aa72486859aa3df27"><div class="ttname"><a href="_glv_c_l_i_8h.html#a446abd0bda54d05aa72486859aa3df27">GLOVE_APP_THREAD_MODE</a></div><div class="ttdeci">#define GLOVE_APP_THREAD_MODE</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:121</div></div>
+<div class="line"><span class="keywordtype">int</span> <a class="code hl_function" href="_glv_c_l_i_8h.html#a09f83b808347da987b9da975714173c7">glv_cli_main</a>(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[], <span class="keywordtype">bool</span> is_glove, <span class="keyword">const</span> Tparametrization&amp; glove_parametrization, <span class="keywordtype">bool</span> is_glove_recurrent, <a class="code hl_define" href="_glv_c_l_i_8h.html#a9107187acb838d3d8ca92b7411b46305">GLOVE_APP_RECURRENT_TYPE</a>&amp; <a class="code hl_variable" href="_glv_c_l_i_8h.html#a62b36613ba5fbefa8317cbb46906c111">glove_recurrent_var</a>) {</div>
+<div class="ttc" id="a_glv_c_l_i_8h_html_a09f83b808347da987b9da975714173c7"><div class="ttname"><a href="_glv_c_l_i_8h.html#a09f83b808347da987b9da975714173c7">glv_cli_main</a></div><div class="ttdeci">int glv_cli_main(int argc, char *argv[], bool _l_gloved, const Tparametrization &amp;_parametrization, bool _l_recurrent, Trecurrent &amp;_recurrent_var)</div></div>
+<div class="ttc" id="a_glv_c_l_i_8h_html_a424b3db2a3832771a876c60bb32e9e41"><div class="ttname"><a href="_glv_c_l_i_8h.html#a424b3db2a3832771a876c60bb32e9e41">GLOVE_APP_RECURRENT_MODE</a></div><div class="ttdeci">#define GLOVE_APP_RECURRENT_MODE</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:120</div></div>
+<div class="ttc" id="a_glv_c_l_i_8h_html_a446abd0bda54d05aa72486859aa3df27"><div class="ttname"><a href="_glv_c_l_i_8h.html#a446abd0bda54d05aa72486859aa3df27">GLOVE_APP_THREAD_MODE</a></div><div class="ttdeci">#define GLOVE_APP_THREAD_MODE</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:116</div></div>
+<div class="ttc" id="a_glv_c_l_i_8h_html_a62b36613ba5fbefa8317cbb46906c111"><div class="ttname"><a href="_glv_c_l_i_8h.html#a62b36613ba5fbefa8317cbb46906c111">glove_recurrent_var</a></div><div class="ttdeci">static int glove_recurrent_var</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:123</div></div>
+<div class="ttc" id="a_glv_c_l_i_8h_html_a9107187acb838d3d8ca92b7411b46305"><div class="ttname"><a href="_glv_c_l_i_8h.html#a9107187acb838d3d8ca92b7411b46305">GLOVE_APP_RECURRENT_TYPE</a></div><div class="ttdeci">#define GLOVE_APP_RECURRENT_TYPE</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:121</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -619,13 +643,13 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a3d99e6ba46630cead51f89ffe5416791" name="a3d99e6ba46630cead51f89ffe5416791"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d99e6ba46630cead51f89ffe5416791">&#9670;&#160;</a></span>glv_cli_main()</h2>
+<a id="a09f83b808347da987b9da975714173c7" name="a09f83b808347da987b9da975714173c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a09f83b808347da987b9da975714173c7">&#9670;&#160;</a></span>glv_cli_main()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class Tparametrization &gt; </div>
+template&lt;class Tparametrization , class Trecurrent &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">int glv_cli_main </td>
@@ -649,7 +673,19 @@ template&lt;class Tparametrization &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const Tparametrization &amp;&#160;</td>
-          <td class="paramname"><em>_parametrization</em>&#160;</td>
+          <td class="paramname"><em>_parametrization</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_recurrent</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Trecurrent &amp;&#160;</td>
+          <td class="paramname"><em>_recurrent_var</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -686,6 +722,30 @@ template&lt;class Tparametrization &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="a62b36613ba5fbefa8317cbb46906c111" name="a62b36613ba5fbefa8317cbb46906c111"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62b36613ba5fbefa8317cbb46906c111">&#9670;&#160;</a></span>glove_recurrent_var</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int glove_recurrent_var</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Usef only if GLOVE_APP_RECURRENT_MODE is left false. </p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Glove: SlvParameterSpecIstream&lt; std::string &gt; Struct Reference</title>
+<title>Glove: slv_parse.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.4</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.5</span>
    </div>
   </td>
  </tr>
@@ -67,64 +67,35 @@ $(function() {
 </div>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_64356af55a4c91f9454f44381d292183.html">src_sleeve</a></li>  </ul>
+</div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
-<a href="struct_slv_parameter_spec_istream_3_01std_1_1string_01_4-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">SlvParameterSpecIstream&lt; std::string &gt; Struct Reference</div></div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle"><div class="title">slv_parse.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-
-<p><code>#include &lt;<a class="el" href="_slv_parameter_8h_source.html">SlvParameter.h</a>&gt;</code></p>
+<div class="textblock"><code>#include &lt;string&gt;</code><br />
+</div>
+<p><a href="slv__parse_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
-Static Public Member Functions</h2></td></tr>
-<tr class="memitem:aec123584432dde614ca44eca778ee09d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_slv_parameter_spec_istream_3_01std_1_1string_01_4.html#aec123584432dde614ca44eca778ee09d">istream</a> (std::string &amp;_parameter_value, std::istream &amp;_is)</td></tr>
-<tr class="separator:aec123584432dde614ca44eca778ee09d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespaceslv"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceslv.html">slv</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:aac53185587f1a7d40c2df4904750dba8"><td class="memTemplParams" colspan="2">template&lt;class T &gt; </td></tr>
+<tr class="memitem:aac53185587f1a7d40c2df4904750dba8"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceslv.html#aac53185587f1a7d40c2df4904750dba8">slv::parse</a> (const std::string &amp;_string, T &amp;_value)</td></tr>
+<tr class="separator:aac53185587f1a7d40c2df4904750dba8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5559c28e0c43f02b3acee75df7679864"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceslv.html#a5559c28e0c43f02b3acee75df7679864">slv::parse</a> (const std::string &amp;_string, std::string &amp;_value)</td></tr>
+<tr class="separator:a5559c28e0c43f02b3acee75df7679864"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>std::string specialization because _is &gt;&gt; _parameter_value does not manage space. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="aec123584432dde614ca44eca778ee09d" name="aec123584432dde614ca44eca778ee09d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aec123584432dde614ca44eca778ee09d">&#9670;&#160;</a></span>istream()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void <a class="el" href="struct_slv_parameter_spec_istream.html">SlvParameterSpecIstream</a>&lt; std::string &gt;::istream </td>
-          <td>(</td>
-          <td class="paramtype">std::string &amp;&#160;</td>
-          <td class="paramname"><em>_parameter_value</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::istream &amp;&#160;</td>
-          <td class="paramname"><em>_is</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<hr/>The documentation for this struct was generated from the following file:<ul>
-<li><a class="el" href="_slv_parameter_8h_source.html">SlvParameter.h</a></li>
-</ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
