@@ -230,7 +230,7 @@ $(function() {
 <div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>    <span class="keyword">struct </span>Interface {</div>
 <div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>        QFuture&lt;int&gt; future;</div>
 <div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>        QFutureWatcher&lt;int&gt; future_watcher;</div>
-<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>        <a class="code hl_class" href="class_glv_app_1_1_recurrent_wrapper.html">RecurrentWrapper</a>* interactive_wrapper = NULL;</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>        <a class="code hl_class" href="class_glv_app_1_1_recurrent_wrapper.html">RecurrentWrapper</a>* recurrent_wrapper = NULL;</div>
 <div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>    };</div>
 <div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span> </div>
 <div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span><span class="keyword">public</span>:</div>
@@ -255,218 +255,216 @@ $(function() {
 <div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    <a class="code hl_define" href="_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe">glvm_staticVariable</a>(, <a class="code hl_class" href="class_glv_status_mgr.html">GlvStatusMgr</a>*, status_mgr, NULL);</div>
 <div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    <a class="code hl_define" href="_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe">glvm_staticVariable</a>(, Interface, interface, );</div>
 <div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span> </div>
-<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    <a class="code hl_define" href="_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe">glvm_staticVariable</a>(, <span class="keywordtype">bool</span>, l_app_running, <span class="keyword">false</span>);</div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>public :</div>
 <div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span> </div>
-<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>public :</div>
-<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span> </div>
-<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>    <span class="keyword">static</span> <a class="code hl_class" href="class_slv_progression_qt.html">SlvProgressionQt</a>* get_progression(<span class="keyword">const</span> <a class="code hl_typedef" href="namespaceslv_1_1lbl.html#ab51033eb34a2e588bc7b9fa5f48e950d">slv::lbl::Name</a>&amp; _name);</div>
-<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> show(<span class="keyword">const</span> <a class="code hl_class" href="class_slv_status.html">SlvStatus</a>&amp; _status, <span class="keywordtype">bool</span> _l_wait = <span class="keyword">true</span>);</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>    <span class="keyword">static</span> <a class="code hl_class" href="class_slv_progression_qt.html">SlvProgressionQt</a>* get_progression(<span class="keyword">const</span> <a class="code hl_typedef" href="namespaceslv_1_1lbl.html#ab51033eb34a2e588bc7b9fa5f48e950d">slv::lbl::Name</a>&amp; _name);</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> show(<span class="keyword">const</span> <a class="code hl_class" href="class_slv_status.html">SlvStatus</a>&amp; _status, <span class="keywordtype">bool</span> _l_wait = <span class="keyword">true</span>);</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span> </div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>};</div>
 <div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span> </div>
-<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>};</div>
-<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span> </div>
-<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span><span class="preprocessor">#include &lt;QApplication&gt;</span></div>
-<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span><span class="preprocessor">#include &quot;<a class="code" href="_slv_c_l_i_8h.html">SlvCLI.h</a>&quot;</span></div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span><span class="preprocessor">#include &quot;<a class="code" href="_glv_parametrization_dialog_8h.html">GlvParametrizationDialog.h</a>&quot;</span></div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span><span class="preprocessor">#include &quot;<a class="code" href="_glv_parametrization_save_load_8h.html">GlvParametrizationSaveLoad.h</a>&quot;</span></div>
-<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span><span class="preprocessor">#include &quot;<a class="code" href="_slv_progression_qt_8h.html">SlvProgressionQt.h</a>&quot;</span></div>
-<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span><span class="preprocessor">#include &lt;QMessageBox&gt;</span></div>
-<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span><span class="preprocessor">#include &quot;<a class="code" href="_glv_progress_mgr_8h.html">GlvProgressMgr.h</a>&quot;</span></div>
-<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span><span class="preprocessor">#include &lt;QtConcurrent/QtConcurrentRun&gt;</span></div>
-<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span><span class="preprocessor">#include &lt;QFutureWatcher&gt;</span></div>
-<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span><span class="preprocessor">#include &quot;<a class="code" href="_glv_status_mgr_8h.html">GlvStatusMgr.h</a>&quot;</span></div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span><span class="preprocessor">#include &lt;QApplication&gt;</span></div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span><span class="preprocessor">#include &quot;<a class="code" href="_slv_c_l_i_8h.html">SlvCLI.h</a>&quot;</span></div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span><span class="preprocessor">#include &quot;<a class="code" href="_glv_parametrization_dialog_8h.html">GlvParametrizationDialog.h</a>&quot;</span></div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span><span class="preprocessor">#include &quot;<a class="code" href="_glv_parametrization_save_load_8h.html">GlvParametrizationSaveLoad.h</a>&quot;</span></div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span><span class="preprocessor">#include &quot;<a class="code" href="_slv_progression_qt_8h.html">SlvProgressionQt.h</a>&quot;</span></div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span><span class="preprocessor">#include &lt;QMessageBox&gt;</span></div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span><span class="preprocessor">#include &quot;<a class="code" href="_glv_progress_mgr_8h.html">GlvProgressMgr.h</a>&quot;</span></div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span><span class="preprocessor">#include &lt;QtConcurrent/QtConcurrentRun&gt;</span></div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span><span class="preprocessor">#include &lt;QFutureWatcher&gt;</span></div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span><span class="preprocessor">#include &quot;<a class="code" href="_glv_status_mgr_8h.html">GlvStatusMgr.h</a>&quot;</span></div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span> </div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno"><a class="line" href="class_glv_app_1_1_recurrent_wrapper.html">  224</a></span><span class="keyword">class </span><a class="code hl_class" href="class_glv_app_1_1_recurrent_wrapper.html">GlvApp::RecurrentWrapper</a> : <span class="keyword">public</span> QObject {</div>
 <div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span> </div>
-<div class="line"><a id="l00226" name="l00226"></a><span class="lineno"><a class="line" href="class_glv_app_1_1_recurrent_wrapper.html">  226</a></span><span class="keyword">class </span><a class="code hl_class" href="class_glv_app_1_1_recurrent_wrapper.html">GlvApp::RecurrentWrapper</a> : <span class="keyword">public</span> QObject {</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>    Q_OBJECT</div>
 <div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span> </div>
-<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>    Q_OBJECT</div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span><span class="keyword">protected</span>:</div>
 <div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span> </div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span> </div>
-<div class="line"><a id="l00232" name="l00232"></a><span class="lineno"><a class="line" href="class_glv_app_1_1_recurrent_wrapper.html#afa3918ed544a797785a8d16b44198f56">  232</a></span>    <a class="code hl_function" href="class_glv_app_1_1_recurrent_wrapper.html#afa3918ed544a797785a8d16b44198f56">RecurrentWrapper</a>() {}</div>
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno"><a class="line" href="class_glv_app_1_1_recurrent_wrapper.html#a686c4e4ed514245accddf75dacffac06">  233</a></span>    <a class="code hl_function" href="class_glv_app_1_1_recurrent_wrapper.html#a686c4e4ed514245accddf75dacffac06">~RecurrentWrapper</a>() {}</div>
-<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span> </div>
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span><span class="keyword">public</span> slots:</div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno"><a class="line" href="class_glv_app_1_1_recurrent_wrapper.html#a6721a6ae4ea26c997f55c9392fba073d">  236</a></span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_slot" href="class_glv_app_1_1_recurrent_wrapper.html#a6721a6ae4ea26c997f55c9392fba073d">relaunch</a>() = 0;</div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno"><a class="line" href="class_glv_app_1_1_recurrent_wrapper.html#afa3918ed544a797785a8d16b44198f56">  230</a></span>    <a class="code hl_function" href="class_glv_app_1_1_recurrent_wrapper.html#afa3918ed544a797785a8d16b44198f56">RecurrentWrapper</a>() {}</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno"><a class="line" href="class_glv_app_1_1_recurrent_wrapper.html#a686c4e4ed514245accddf75dacffac06">  231</a></span>    <a class="code hl_function" href="class_glv_app_1_1_recurrent_wrapper.html#a686c4e4ed514245accddf75dacffac06">~RecurrentWrapper</a>() {}</div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span> </div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span><span class="keyword">public</span> slots:</div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno"><a class="line" href="class_glv_app_1_1_recurrent_wrapper.html#a6721a6ae4ea26c997f55c9392fba073d">  234</a></span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_slot" href="class_glv_app_1_1_recurrent_wrapper.html#a6721a6ae4ea26c997f55c9392fba073d">relaunch</a>() = 0;</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span> </div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>};</div>
 <div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span> </div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>};</div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span> </div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tparametrization, <span class="keyword">class</span> Trecurrent&gt;</div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span><span class="keyword">class </span>GlvApp::RecurrentWrapperT : <span class="keyword">public</span> <a class="code hl_class" href="class_glv_app_1_1_recurrent_wrapper.html">GlvApp::RecurrentWrapper</a> {</div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tparametrization, <span class="keyword">class</span> Trecurrent&gt;</div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span><span class="keyword">class </span>GlvApp::RecurrentWrapperT : <span class="keyword">public</span> <a class="code hl_class" href="class_glv_app_1_1_recurrent_wrapper.html">GlvApp::RecurrentWrapper</a> {</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span> </div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span><span class="keyword">private</span>:</div>
 <div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span> </div>
-<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span> </div>
-<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>    <span class="keywordtype">int</span> argc;</div>
-<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>    <span class="keywordtype">char</span>** argv;</div>
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>    Trecurrent* interactive_var;</div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>    Interface* <span class="keyword">interface </span>= NULL;</div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>    <span class="keywordtype">int</span> argc;</div>
+<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>    <span class="keywordtype">char</span>** argv;</div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>    Trecurrent* recurrent_var;</div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>    Interface* <span class="keyword">interface </span>= NULL;</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span> </div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span><span class="keyword">public</span>:</div>
 <div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span> </div>
-<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>    RecurrentWrapperT() {}</div>
 <div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span> </div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>    RecurrentWrapperT() {}</div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span> </div>
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>    <span class="keywordtype">void</span> set(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>** _argv, Trecurrent* _recurrent_var) {</div>
-<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>        argc = _argc;</div>
-<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>        argv = _argv;</div>
-<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>        interactive_var = _recurrent_var;</div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>    }</div>
-<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span> </div>
-<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>    <span class="keywordtype">void</span> set_interface(Interface* _interface) {</div>
-<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>        <span class="keyword">interface </span>= _interface;</div>
-<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>    }</div>
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span> </div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_glv_app_1_1_recurrent_wrapper.html#a6721a6ae4ea26c997f55c9392fba073d">relaunch</a>() {</div>
-<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>        <span class="keywordtype">bool</span> l_threaded = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>        <span class="keywordtype">bool</span> l_recurrent = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>        GlvApp::main_recurrent&lt;Tparametrization, Trecurrent&gt;(argc, argv, l_threaded, *interface, l_recurrent, *interactive_var);</div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>    }</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>    <span class="keywordtype">void</span> set(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>** _argv, Trecurrent* _recurrent_var) {</div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>        argc = _argc;</div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>        argv = _argv;</div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>        recurrent_var = _recurrent_var;</div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>    }</div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span> </div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>    <span class="keywordtype">void</span> set_interface(Interface* _interface) {</div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>        <span class="keyword">interface </span>= _interface;</div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>    }</div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span> </div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_glv_app_1_1_recurrent_wrapper.html#a6721a6ae4ea26c997f55c9392fba073d">relaunch</a>() {</div>
+<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>        <span class="keywordtype">bool</span> l_threaded = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>        <span class="keywordtype">bool</span> l_recurrent = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>        GlvApp::main_recurrent&lt;Tparametrization, Trecurrent&gt;(argc, argv, l_threaded, *interface, l_recurrent, *recurrent_var);</div>
+<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>    }</div>
+<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span> </div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>};</div>
 <div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span> </div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>};</div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span> </div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tparametrization, <span class="keyword">class</span> Trecurrent&gt;</div>
-<div class="line"><a id="l00273" name="l00273"></a><span class="lineno"><a class="line" href="class_glv_app.html#a63cc727aa1f22c4eabeb831c7ec2db2b">  273</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="class_glv_app.html#a63cc727aa1f22c4eabeb831c7ec2db2b">GlvApp::main_recurrent</a>(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>* _argv[], <span class="keywordtype">bool</span> _l_threaded, Interface&amp; _interface, <span class="keywordtype">bool</span> _l_recurrent, Trecurrent&amp; _recurrent_var) {</div>
-<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span> </div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>    std::string autosave_file_name = SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), <span class="charliteral">&#39;_&#39;</span>, <span class="keyword">true</span>, <span class="keyword">true</span>);</div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span><span class="preprocessor">#if OPTION_USE_THIRDPARTY_JSON==1</span></div>
-<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>    autosave_file_name += <span class="stringliteral">&quot;.json&quot;</span>;</div>
-<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span> </div>
-<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>    <span class="keywordflow">if</span> (progress_mgr()) {</div>
-<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>        progress_mgr()-&gt;hide();</div>
-<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>    }</div>
-<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span> </div>
-<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>    <a class="code hl_class" href="class_glv_parametrization_dialog.html">GlvParametrizationDialog&lt;Tparametrization&gt;</a> dialog;</div>
-<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>    <a class="code hl_class" href="class_glv_parametrization_save_load.html">GlvParametrizationSaveLoad&lt;Tparametrization&gt;</a>* save_load_widget = <span class="keyword">new</span> <a class="code hl_class" href="class_glv_parametrization_save_load.html">GlvParametrizationSaveLoad&lt;Tparametrization&gt;</a>(dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#ae425c2283504cf9420068e9f087a5c4b">get_parametrization_widget</a>());</div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tparametrization, <span class="keyword">class</span> Trecurrent&gt;</div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno"><a class="line" href="class_glv_app.html#a63cc727aa1f22c4eabeb831c7ec2db2b">  271</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="class_glv_app.html#a63cc727aa1f22c4eabeb831c7ec2db2b">GlvApp::main_recurrent</a>(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>* _argv[], <span class="keywordtype">bool</span> _l_threaded, Interface&amp; _interface, <span class="keywordtype">bool</span> _l_recurrent, Trecurrent&amp; _recurrent_var) {</div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span> </div>
+<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>    std::string autosave_file_name = SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), <span class="charliteral">&#39;_&#39;</span>, <span class="keyword">true</span>, <span class="keyword">true</span>);</div>
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span><span class="preprocessor">#if OPTION_USE_THIRDPARTY_JSON==1</span></div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>    autosave_file_name += <span class="stringliteral">&quot;.json&quot;</span>;</div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span> </div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>    <span class="keywordflow">if</span> (progress_mgr()) {</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>        progress_mgr()-&gt;hide();</div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>    }</div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span> </div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>    <a class="code hl_class" href="class_glv_parametrization_dialog.html">GlvParametrizationDialog&lt;Tparametrization&gt;</a> dialog;</div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>    <a class="code hl_class" href="class_glv_parametrization_save_load.html">GlvParametrizationSaveLoad&lt;Tparametrization&gt;</a>* save_load_widget = <span class="keyword">new</span> <a class="code hl_class" href="class_glv_parametrization_save_load.html">GlvParametrizationSaveLoad&lt;Tparametrization&gt;</a>(dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#ae425c2283504cf9420068e9f087a5c4b">get_parametrization_widget</a>());</div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span> </div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>    <a class="code hl_struct" href="struct_slv_c_l_i_1_1_arguments.html">SlvCLI::Arguments</a> arguments(_argc, _argv);</div>
 <div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span> </div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>    <a class="code hl_struct" href="struct_slv_c_l_i_1_1_arguments.html">SlvCLI::Arguments</a> arguments(_argc, _argv);</div>
+<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>    <span class="keywordflow">if</span> (!arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ae7319792052c58b92c9462d83911b83b">get_glove_argument</a>().empty()) {</div>
 <div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span> </div>
-<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>    <span class="keywordflow">if</span> (!arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ae7319792052c58b92c9462d83911b83b">get_glove_argument</a>().empty()) {</div>
+<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>        save_load_widget-&gt;<a class="code hl_function" href="class_glv_parametrization_save_load.html#aa2d1b711d1206e0beff5a5e9fe7a5cb8">load</a>(arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ae7319792052c58b92c9462d83911b83b">get_glove_argument</a>());</div>
 <div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span> </div>
-<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>        save_load_widget-&gt;<a class="code hl_function" href="class_glv_parametrization_save_load.html#aa2d1b711d1206e0beff5a5e9fe7a5cb8">load</a>(arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ae7319792052c58b92c9462d83911b83b">get_glove_argument</a>());</div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>    }</div>
 <div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span> </div>
-<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>    }</div>
-<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span> </div>
-<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>    Tparametrization parametrization = dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#ae425c2283504cf9420068e9f087a5c4b">get_parametrization_widget</a>()-&gt;get_parametrization();</div>
-<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>    <a class="code hl_class" href="class_slv_status.html">SlvStatus</a> status;</div>
+<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>    Tparametrization parametrization = dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#ae425c2283504cf9420068e9f087a5c4b">get_parametrization_widget</a>()-&gt;get_parametrization();</div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>    <a class="code hl_class" href="class_slv_status.html">SlvStatus</a> status;</div>
+<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span> </div>
+<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>    <span class="keywordflow">if</span> (!arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#adc42c4143fb7d2cb98912291e4631c77">is_empty</a>()) {</div>
 <div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span> </div>
-<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>    <span class="keywordflow">if</span> (!arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#adc42c4143fb7d2cb98912291e4631c77">is_empty</a>()) {</div>
+<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>        status = <a class="code hl_function" href="struct_slv_c_l_i.html#a59c2ef9141b241c9c9e6ea869e7dd7f2">SlvCLI::parse</a>(parametrization, arguments);</div>
 <div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span> </div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>        status = <a class="code hl_function" href="struct_slv_c_l_i.html#a59c2ef9141b241c9c9e6ea869e7dd7f2">SlvCLI::parse</a>(parametrization, arguments);</div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>        <a class="code hl_function" href="namespaceglv_1_1flag.html#a697c009361b1fc366c1c3b3345ba7034">glv::flag::showQMessageBox</a>(QObject::tr(<span class="stringliteral">&quot;Arguments conflict&quot;</span>), status, <span class="keyword">true</span>);</div>
 <div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span> </div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>        <a class="code hl_function" href="namespaceglv_1_1flag.html#a697c009361b1fc366c1c3b3345ba7034">glv::flag::showQMessageBox</a>(QObject::tr(<span class="stringliteral">&quot;Arguments conflict&quot;</span>), status, <span class="keyword">true</span>);</div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>        dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#ac81178ea70b9923e21202ef085ab6a78">set_parametrization</a>(parametrization);</div>
 <div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span> </div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>        dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#ac81178ea70b9923e21202ef085ab6a78">set_parametrization</a>(parametrization);</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code hl_class" href="class_slv_file.html">SlvFile</a>(autosave_file_name).exists() &amp;&amp; arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ae7319792052c58b92c9462d83911b83b">get_glove_argument</a>().empty()) {</div>
 <div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span> </div>
-<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code hl_class" href="class_slv_file.html">SlvFile</a>(autosave_file_name).exists() &amp;&amp; arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ae7319792052c58b92c9462d83911b83b">get_glove_argument</a>().empty()) {</div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>        save_load_widget-&gt;<a class="code hl_function" href="class_glv_parametrization_save_load.html#aa2d1b711d1206e0beff5a5e9fe7a5cb8">load</a>(autosave_file_name);</div>
 <div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span> </div>
-<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>        save_load_widget-&gt;<a class="code hl_function" href="class_glv_parametrization_save_load.html#aa2d1b711d1206e0beff5a5e9fe7a5cb8">load</a>(autosave_file_name);</div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>    }</div>
 <div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span> </div>
-<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>    }</div>
-<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span> </div>
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>    <span class="keywordtype">int</span> result;</div>
-<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>    <span class="keywordflow">if</span> (Tparametrization::Nparameters() &gt; 0) {</div>
-<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>        result = dialog.exec();</div>
-<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>        result = QDialog::Accepted;</div>
-<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>    }</div>
+<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>    <span class="keywordtype">int</span> result;</div>
+<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>    <span class="keywordflow">if</span> (Tparametrization::Nparameters() &gt; 0) {</div>
+<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>        result = dialog.exec();</div>
+<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>        result = QDialog::Accepted;</div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>    }</div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span> </div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>    <span class="keywordflow">if</span> (result == QDialog::Accepted) {</div>
 <div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span> </div>
-<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>    <span class="keywordflow">if</span> (result == QDialog::Accepted) {</div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>        save_load_widget-&gt;<a class="code hl_function" href="class_glv_parametrization_save_load.html#ad6de3716758d4eb93ef5454d30328a67">save</a>(autosave_file_name);</div>
 <div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span> </div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>        save_load_widget-&gt;<a class="code hl_function" href="class_glv_parametrization_save_load.html#ad6de3716758d4eb93ef5454d30328a67">save</a>(autosave_file_name);</div>
-<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span> </div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>        <a class="code hl_class" href="class_slv_directory.html">SlvDirectory</a> directory(ParamOutput&lt;Tparametrization&gt;::get_path(dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>()));</div>
-<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>        <span class="keywordflow">if</span> (directory.<a class="code hl_function" href="class_slv_directory.html#a41ed48c1081c3f813285cdcadc2533b7">exists</a>()) {</div>
-<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>            save_load_widget-&gt;<a class="code hl_function" href="class_glv_parametrization_save_load.html#ad6de3716758d4eb93ef5454d30328a67">save</a>(<a class="code hl_class" href="class_slv_file.html">SlvFile</a>(directory, autosave_file_name).get_path());</div>
-<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>        }</div>
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span> </div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>        std::vector&lt; std::pair&lt;std::string, std::string&gt; &gt; parameter_arguments = dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>().get_string_serialization_bool().first;</div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>        <span class="keywordflow">for</span> (SlvCLI::Arguments::Tparameters::const_iterator it = arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ae519d2a13f275be82d0f59b27345acc5">get_parameter_arguments</a>().begin(); it != arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ae519d2a13f275be82d0f59b27345acc5">get_parameter_arguments</a>().end(); ++it) {</div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>            parameter_arguments.push_back({ it-&gt;first, it-&gt;second[0] });</div>
-<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>        }</div>
-<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span> </div>
-<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>        std::vector&lt;std::string&gt; solo_arguments = dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>().get_string_serialization_bool().second;</div>
-<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>        <a class="code hl_function" href="namespaceslv_1_1vector.html#aebdbbbf2120916179a7eb372ccef90a7">slv::vector::add</a>(solo_arguments, arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ab8a0062e73e11e0254c50a194a526450">get_solo_arguments</a>());</div>
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span> </div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span> </div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>        std::pair&lt;int, char**&gt; cli_arguments = <a class="code hl_function" href="struct_slv_c_l_i.html#abdaea5f80e73410675051c2011a902c9">SlvCLI::get_arguments</a>(parameter_arguments, solo_arguments);</div>
-<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>        cli_arguments.second[0] = _argv[0];</div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>        <a class="code hl_class" href="class_slv_directory.html">SlvDirectory</a> directory(ParamOutput&lt;Tparametrization&gt;::get_path(dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>()));</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>        <span class="keywordflow">if</span> (directory.<a class="code hl_function" href="class_slv_directory.html#a41ed48c1081c3f813285cdcadc2533b7">exists</a>()) {</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>            save_load_widget-&gt;<a class="code hl_function" href="class_glv_parametrization_save_load.html#ad6de3716758d4eb93ef5454d30328a67">save</a>(<a class="code hl_class" href="class_slv_file.html">SlvFile</a>(directory, autosave_file_name).get_path());</div>
+<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>        }</div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span> </div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>        std::vector&lt; std::pair&lt;std::string, std::string&gt; &gt; parameter_arguments = dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>().get_string_serialization_bool().first;</div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>        <span class="keywordflow">for</span> (SlvCLI::Arguments::Tparameters::const_iterator it = arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ae519d2a13f275be82d0f59b27345acc5">get_parameter_arguments</a>().begin(); it != arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ae519d2a13f275be82d0f59b27345acc5">get_parameter_arguments</a>().end(); ++it) {</div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>            parameter_arguments.push_back({ it-&gt;first, it-&gt;second[0] });</div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>        }</div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span> </div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>        std::vector&lt;std::string&gt; solo_arguments = dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>().get_string_serialization_bool().second;</div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>        <a class="code hl_function" href="namespaceslv_1_1vector.html#aebdbbbf2120916179a7eb372ccef90a7">slv::vector::add</a>(solo_arguments, arguments.<a class="code hl_function" href="struct_slv_c_l_i_1_1_arguments.html#ab8a0062e73e11e0254c50a194a526450">get_solo_arguments</a>());</div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span> </div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span> </div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>        std::pair&lt;int, char**&gt; cli_arguments = <a class="code hl_function" href="struct_slv_c_l_i.html#abdaea5f80e73410675051c2011a902c9">SlvCLI::get_arguments</a>(parameter_arguments, solo_arguments);</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>        cli_arguments.second[0] = _argv[0];</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span> </div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>        <span class="keywordflow">if</span> (_l_threaded) {</div>
 <div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span> </div>
-<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>        <span class="keywordflow">if</span> (_l_threaded) {</div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span> </div>
-<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>            <span class="keywordflow">if</span> (_l_recurrent) {</div>
-<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>                <span class="keyword">dynamic_cast&lt;</span>RecurrentWrapperT&lt;Tparametrization, Trecurrent&gt;*<span class="keyword">&gt;</span>(_interface.interactive_wrapper)-&gt;set(cli_arguments.first, cli_arguments.second, &amp;_recurrent_var);</div>
-<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>            }</div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span> </div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>            _interface.future = QtConcurrent::run(&amp;glv_cli_main&lt;Tparametrization, Trecurrent&gt;, cli_arguments.first, cli_arguments.second, <span class="keyword">true</span>, dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>(), _l_recurrent, std::ref(_recurrent_var));</div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>            _interface.future_watcher.setFuture(_interface.future);</div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span> </div>
-<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>            <span class="keywordflow">if</span> (progress_mgr()) {</div>
-<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>                progress_mgr()-&gt;show();</div>
-<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>            }</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>            <span class="keywordflow">if</span> (_l_recurrent) {</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>                <span class="keyword">dynamic_cast&lt;</span>RecurrentWrapperT&lt;Tparametrization, Trecurrent&gt;*<span class="keyword">&gt;</span>(_interface.recurrent_wrapper)-&gt;set(cli_arguments.first, cli_arguments.second, &amp;_recurrent_var);</div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>            }</div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span> </div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>            _interface.future = QtConcurrent::run(&amp;glv_cli_main&lt;Tparametrization, Trecurrent&gt;, cli_arguments.first, cli_arguments.second, <span class="keyword">true</span>, dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>(), _l_recurrent, std::ref(_recurrent_var));</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>            _interface.future_watcher.setFuture(_interface.future);</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span> </div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>            <span class="keywordflow">if</span> (progress_mgr()) {</div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>                progress_mgr()-&gt;show();</div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>            }</div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span> </div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>            <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span> </div>
-<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>            <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span> </div>
-<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>        } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>            status_mgr() = NULL;</div>
-<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>            <span class="keywordflow">return</span> <a class="code hl_function" href="_glv_c_l_i_8h.html#a09f83b808347da987b9da975714173c7">glv_cli_main</a>(cli_arguments.first, cli_arguments.second, <span class="keyword">true</span>, dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>(), _l_recurrent, _recurrent_var);</div>
-<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>        }</div>
-<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span> </div>
-<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>        QCoreApplication::quit();</div>
-<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>        <span class="keywordflow">return</span> 1;</div>
-<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>    }</div>
-<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span> </div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span>            status_mgr() = NULL;</div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>            <span class="keywordflow">return</span> <a class="code hl_function" href="_glv_c_l_i_8h.html#a09f83b808347da987b9da975714173c7">glv_cli_main</a>(cli_arguments.first, cli_arguments.second, <span class="keyword">true</span>, dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>(), _l_recurrent, _recurrent_var);</div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>        }</div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span> </div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>        QCoreApplication::quit();</div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>        <span class="keywordflow">return</span> 1;</div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>    }</div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span> </div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span> </div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>}</div>
 <div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span> </div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>}</div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span> </div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tparametrization, <span class="keyword">class</span> Trecurrent&gt;</div>
-<div class="line"><a id="l00369" name="l00369"></a><span class="lineno"><a class="line" href="class_glv_app.html#a9f4f830898c47249af9383e8182cb04c">  369</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="class_glv_app.html#a9f4f830898c47249af9383e8182cb04c">GlvApp::main</a>(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>* _argv[], <span class="keywordtype">bool</span> _l_auto_glove, <span class="keywordtype">bool</span> _l_threaded, <span class="keywordtype">bool</span> _l_recurrent, Trecurrent&amp; _recurrent_var) {</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tparametrization, <span class="keyword">class</span> Trecurrent&gt;</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno"><a class="line" href="class_glv_app.html#a9f4f830898c47249af9383e8182cb04c">  367</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="class_glv_app.html#a9f4f830898c47249af9383e8182cb04c">GlvApp::main</a>(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>* _argv[], <span class="keywordtype">bool</span> _l_auto_glove, <span class="keywordtype">bool</span> _l_threaded, <span class="keywordtype">bool</span> _l_recurrent, Trecurrent&amp; _recurrent_var) {</div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span> </div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>    <span class="keywordflow">if</span> (<a class="code hl_function" href="struct_slv_c_l_i.html#af343acaf6ec04b0774d49d2fae143b2f">SlvCLI::has_glove</a>(_argc, _argv) || _l_auto_glove) {</div>
 <div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span> </div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>    <span class="keywordflow">if</span> (<a class="code hl_function" href="struct_slv_c_l_i.html#af343acaf6ec04b0774d49d2fae143b2f">SlvCLI::has_glove</a>(_argc, _argv) || _l_auto_glove) {</div>
-<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span> </div>
-<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>        QApplication q_app(_argc, _argv);</div>
-<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>        <span class="keywordflow">if</span> (_l_recurrent) {</div>
-<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>            q_app.setQuitOnLastWindowClosed(<span class="keyword">false</span>);</div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>        }</div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>        QApplication q_app(_argc, _argv);</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>        <span class="keywordflow">if</span> (_l_recurrent) {</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>            q_app.setQuitOnLastWindowClosed(<span class="keyword">false</span>);</div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>        }</div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span> </div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>        <span class="keywordflow">if</span> (_l_threaded) {</div>
 <div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span> </div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>        <span class="keywordflow">if</span> (_l_threaded) {</div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span> </div>
-<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>            status_mgr() = <span class="keyword">new</span> <a class="code hl_class" href="class_glv_status_mgr.html">GlvStatusMgr</a>;</div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>            status_mgr()-&gt;<a class="code hl_function" href="class_glv_status_mgr.html#a2cea3933108592780041819aa195c431">add</a>(&amp;GlvApp::status());</div>
-<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span> </div>
-<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>            <span class="keywordflow">if</span> (!progressions().empty()) {</div>
-<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>                progress_mgr() = <span class="keyword">new</span> <a class="code hl_class" href="class_glv_progress_mgr.html">GlvProgressMgr</a>;</div>
-<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; progressions().psize(); i++) {</div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>                    <span class="keywordtype">bool</span> l_hide_when_over = !progressions()[i]-&gt;is_recurrent();</div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>                    progress_mgr()-&gt;<a class="code hl_function" href="class_glv_progress_mgr.html#ad9cbabe76a6450a2a874e3ce29b96e89">add_progression</a>(progressions()[i], l_hide_when_over);</div>
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>                }</div>
-<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>            }</div>
-<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span> </div>
-<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>            <span class="keywordflow">if</span> (!_l_recurrent) {</div>
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>                QObject::connect(&amp;interface().future_watcher, &amp;QFutureWatcher&lt;int&gt;::finished, &amp;q_app, &amp;QCoreApplication::quit, Qt::QueuedConnection);</div>
-<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>            } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>                RecurrentWrapperT&lt;Tparametrization, Trecurrent&gt;* interactive_wrapper = <span class="keyword">new</span> RecurrentWrapperT&lt;Tparametrization, Trecurrent&gt;;</div>
-<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>                interactive_wrapper-&gt;set_interface(&amp;interface());</div>
-<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>                interface().interactive_wrapper = interactive_wrapper;</div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>                QObject::connect(&amp;interface().future_watcher, SIGNAL(finished()), interface().interactive_wrapper, SLOT(relaunch()));</div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>            }</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>            status_mgr() = <span class="keyword">new</span> <a class="code hl_class" href="class_glv_status_mgr.html">GlvStatusMgr</a>;</div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>            status_mgr()-&gt;<a class="code hl_function" href="class_glv_status_mgr.html#a2cea3933108592780041819aa195c431">add</a>(&amp;GlvApp::status());</div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span> </div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>            <span class="keywordflow">if</span> (!progressions().empty()) {</div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>                progress_mgr() = <span class="keyword">new</span> <a class="code hl_class" href="class_glv_progress_mgr.html">GlvProgressMgr</a>;</div>
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; progressions().psize(); i++) {</div>
+<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>                    <span class="keywordtype">bool</span> l_hide_when_over = !progressions()[i]-&gt;is_recurrent();</div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>                    progress_mgr()-&gt;<a class="code hl_function" href="class_glv_progress_mgr.html#ad9cbabe76a6450a2a874e3ce29b96e89">add_progression</a>(progressions()[i], l_hide_when_over);</div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>                }</div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>            }</div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span> </div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>            <span class="keywordflow">if</span> (!_l_recurrent) {</div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>                QObject::connect(&amp;interface().future_watcher, &amp;QFutureWatcher&lt;int&gt;::finished, &amp;q_app, &amp;QCoreApplication::quit, Qt::QueuedConnection);</div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>            } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>                RecurrentWrapperT&lt;Tparametrization, Trecurrent&gt;* recurrent_wrapper = <span class="keyword">new</span> RecurrentWrapperT&lt;Tparametrization, Trecurrent&gt;;</div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>                recurrent_wrapper-&gt;set_interface(&amp;interface());</div>
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>                interface().recurrent_wrapper = recurrent_wrapper;</div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>                QObject::connect(&amp;interface().future_watcher, SIGNAL(finished()), interface().recurrent_wrapper, SLOT(relaunch()));</div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>            }</div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span> </div>
+<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>        }</div>
 <div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span> </div>
-<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>        }</div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>        <span class="keywordtype">int</span> exit = main_recurrent&lt;Tparametrization&gt;(_argc, _argv, _l_threaded, interface(), _l_recurrent, _recurrent_var);</div>
 <div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span> </div>
-<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>        <span class="keywordtype">int</span> exit = main_recurrent&lt;Tparametrization&gt;(_argc, _argv, _l_threaded, interface(), _l_recurrent, _recurrent_var);</div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>        <span class="keywordflow">if</span> (!exit &amp;&amp; _l_threaded) {</div>
 <div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span> </div>
-<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>        <span class="keywordflow">if</span> (!exit &amp;&amp; _l_threaded) {</div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>            <span class="keywordflow">return</span> q_app.exec();</div>
 <div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span> </div>
-<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>            <span class="keywordflow">return</span> q_app.exec();</div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>        } <span class="keywordflow">else</span> {</div>
 <div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span> </div>
-<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>        } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span> </div>
-<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span>            <span class="keywordflow">return</span> exit;</div>
-<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>        }</div>
-<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span> </div>
-<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span>    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span>        <span class="keywordflow">return</span> <a class="code hl_function" href="_glv_c_l_i_8h.html#a09f83b808347da987b9da975714173c7">glv_cli_main</a>(_argc, _argv, <span class="keyword">false</span>, Tparametrization(), <span class="keyword">false</span>, _recurrent_var);</div>
-<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span>    }</div>
-<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span> </div>
-<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span>}</div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>            <span class="keywordflow">return</span> exit;</div>
+<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>        }</div>
+<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span> </div>
+<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span>        <span class="keywordflow">return</span> <a class="code hl_function" href="_glv_c_l_i_8h.html#a09f83b808347da987b9da975714173c7">glv_cli_main</a>(_argc, _argv, <span class="keyword">false</span>, Tparametrization(), <span class="keyword">false</span>, _recurrent_var);</div>
+<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span>    }</div>
+<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span> </div>
+<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span>}</div>
 <div class="ttc" id="a_glv_c_l_i_8h_html_a09f83b808347da987b9da975714173c7"><div class="ttname"><a href="_glv_c_l_i_8h.html#a09f83b808347da987b9da975714173c7">glv_cli_main</a></div><div class="ttdeci">int glv_cli_main(int argc, char *argv[], bool _l_gloved, const Tparametrization &amp;_parametrization, bool _l_recurrent, Trecurrent &amp;_recurrent_var)</div></div>
 <div class="ttc" id="a_glv_c_l_i_8h_html_a62b36613ba5fbefa8317cbb46906c111"><div class="ttname"><a href="_glv_c_l_i_8h.html#a62b36613ba5fbefa8317cbb46906c111">glove_recurrent_var</a></div><div class="ttdeci">static int glove_recurrent_var</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:123</div></div>
 <div class="ttc" id="a_glv_c_l_i_8h_html_a9107187acb838d3d8ca92b7411b46305"><div class="ttname"><a href="_glv_c_l_i_8h.html#a9107187acb838d3d8ca92b7411b46305">GLOVE_APP_RECURRENT_TYPE</a></div><div class="ttdeci">#define GLOVE_APP_RECURRENT_TYPE</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:121</div></div>
@@ -485,13 +483,13 @@ $(function() {
 <div class="ttc" id="a_slv_pool_factory_8h_html"><div class="ttname"><a href="_slv_pool_factory_8h.html">SlvPoolFactory.h</a></div></div>
 <div class="ttc" id="a_slv_progression_qt_8h_html"><div class="ttname"><a href="_slv_progression_qt_8h.html">SlvProgressionQt.h</a></div></div>
 <div class="ttc" id="a_slv_status_8h_html"><div class="ttname"><a href="_slv_status_8h.html">SlvStatus.h</a></div></div>
-<div class="ttc" id="aclass_glv_app_1_1_recurrent_wrapper_html"><div class="ttname"><a href="class_glv_app_1_1_recurrent_wrapper.html">GlvApp::RecurrentWrapper</a></div><div class="ttdef"><b>Definition:</b> GlvCLI.h:226</div></div>
+<div class="ttc" id="aclass_glv_app_1_1_recurrent_wrapper_html"><div class="ttname"><a href="class_glv_app_1_1_recurrent_wrapper.html">GlvApp::RecurrentWrapper</a></div><div class="ttdef"><b>Definition:</b> GlvCLI.h:224</div></div>
 <div class="ttc" id="aclass_glv_app_1_1_recurrent_wrapper_html_a6721a6ae4ea26c997f55c9392fba073d"><div class="ttname"><a href="class_glv_app_1_1_recurrent_wrapper.html#a6721a6ae4ea26c997f55c9392fba073d">GlvApp::RecurrentWrapper::relaunch</a></div><div class="ttdeci">virtual void relaunch()=0</div></div>
-<div class="ttc" id="aclass_glv_app_1_1_recurrent_wrapper_html_a686c4e4ed514245accddf75dacffac06"><div class="ttname"><a href="class_glv_app_1_1_recurrent_wrapper.html#a686c4e4ed514245accddf75dacffac06">GlvApp::RecurrentWrapper::~RecurrentWrapper</a></div><div class="ttdeci">~RecurrentWrapper()</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:233</div></div>
-<div class="ttc" id="aclass_glv_app_1_1_recurrent_wrapper_html_afa3918ed544a797785a8d16b44198f56"><div class="ttname"><a href="class_glv_app_1_1_recurrent_wrapper.html#afa3918ed544a797785a8d16b44198f56">GlvApp::RecurrentWrapper::RecurrentWrapper</a></div><div class="ttdeci">RecurrentWrapper()</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:232</div></div>
+<div class="ttc" id="aclass_glv_app_1_1_recurrent_wrapper_html_a686c4e4ed514245accddf75dacffac06"><div class="ttname"><a href="class_glv_app_1_1_recurrent_wrapper.html#a686c4e4ed514245accddf75dacffac06">GlvApp::RecurrentWrapper::~RecurrentWrapper</a></div><div class="ttdeci">~RecurrentWrapper()</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:231</div></div>
+<div class="ttc" id="aclass_glv_app_1_1_recurrent_wrapper_html_afa3918ed544a797785a8d16b44198f56"><div class="ttname"><a href="class_glv_app_1_1_recurrent_wrapper.html#afa3918ed544a797785a8d16b44198f56">GlvApp::RecurrentWrapper::RecurrentWrapper</a></div><div class="ttdeci">RecurrentWrapper()</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:230</div></div>
 <div class="ttc" id="aclass_glv_app_html"><div class="ttname"><a href="class_glv_app.html">GlvApp</a></div><div class="ttdef"><b>Definition:</b> GlvCLI.h:165</div></div>
-<div class="ttc" id="aclass_glv_app_html_a63cc727aa1f22c4eabeb831c7ec2db2b"><div class="ttname"><a href="class_glv_app.html#a63cc727aa1f22c4eabeb831c7ec2db2b">GlvApp::main_recurrent</a></div><div class="ttdeci">static int main_recurrent(int _argc, char *_argv[], bool _l_threaded, Interface &amp;_interface, bool _l_recurrent, Trecurrent &amp;_recurrent)</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:273</div></div>
-<div class="ttc" id="aclass_glv_app_html_a9f4f830898c47249af9383e8182cb04c"><div class="ttname"><a href="class_glv_app.html#a9f4f830898c47249af9383e8182cb04c">GlvApp::main</a></div><div class="ttdeci">static int main(int _argc, char *_argv[], bool _l_auto_glove, bool _l_threaded, bool _l_recurrent, Trecurrent &amp;_recurrent)</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:369</div></div>
+<div class="ttc" id="aclass_glv_app_html_a63cc727aa1f22c4eabeb831c7ec2db2b"><div class="ttname"><a href="class_glv_app.html#a63cc727aa1f22c4eabeb831c7ec2db2b">GlvApp::main_recurrent</a></div><div class="ttdeci">static int main_recurrent(int _argc, char *_argv[], bool _l_threaded, Interface &amp;_interface, bool _l_recurrent, Trecurrent &amp;_recurrent)</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:271</div></div>
+<div class="ttc" id="aclass_glv_app_html_a9f4f830898c47249af9383e8182cb04c"><div class="ttname"><a href="class_glv_app.html#a9f4f830898c47249af9383e8182cb04c">GlvApp::main</a></div><div class="ttdeci">static int main(int _argc, char *_argv[], bool _l_auto_glove, bool _l_threaded, bool _l_recurrent, Trecurrent &amp;_recurrent)</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:367</div></div>
 <div class="ttc" id="aclass_glv_parametrization_dialog_html"><div class="ttname"><a href="class_glv_parametrization_dialog.html">GlvParametrizationDialog</a></div><div class="ttdef"><b>Definition:</b> GlvParametrizationDialog.h:30</div></div>
 <div class="ttc" id="aclass_glv_parametrization_dialog_html_a93a202224dc3cae979e3578a54a03eb4"><div class="ttname"><a href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">GlvParametrizationDialog::get_parametrization</a></div><div class="ttdeci">const Tparametrization &amp; get_parametrization() const</div><div class="ttdef"><b>Definition:</b> GlvParametrizationDialog.h:119</div></div>
 <div class="ttc" id="aclass_glv_parametrization_dialog_html_ac81178ea70b9923e21202ef085ab6a78"><div class="ttname"><a href="class_glv_parametrization_dialog.html#ac81178ea70b9923e21202ef085ab6a78">GlvParametrizationDialog::set_parametrization</a></div><div class="ttdeci">void set_parametrization(const Tparametrization &amp;_parametrization, bool _l_param_only=true)</div><div class="ttdef"><b>Definition:</b> GlvParametrizationDialog.h:126</div></div>
