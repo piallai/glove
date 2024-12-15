@@ -45,11 +45,20 @@ glvm_parametrization(ParametersCLI, "CLI parameters",
 ```
 
 ```cpp
+struct RecurrentStruct {
+    int total_loops = 0;
+};
+
 int main(int argc, char* argv[]) {
 
     GlvApp::get_progression("Loop1");
     GlvApp::get_progression("Loop2");
     GlvApp::get_progression("Loop3");
+
+#define GLOVE_APP_RECURRENT_MODE true
+#define GLOVE_APP_RECURRENT_TYPE RecurrentStruct
+    RecurrentStruct glove_recurrent_var;
+    glove_recurrent_var.total_loops = 0;
 
     GLOVE_APP_PARAM(ParametersCLI);
 
@@ -73,6 +82,7 @@ int main(int argc, char* argv[]) {
                     // Simulates computation
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
+                    glove_recurrent_var.total_loops++;
                 }
 
             }
@@ -84,6 +94,8 @@ int main(int argc, char* argv[]) {
         }
 
     }
+
+    GlvApp::show(SlvStatus(SlvStatus::statusType::information, "Total loops: " + std::to_string(glove_recurrent_var.total_loops)), true);
 
     return 0;
 }

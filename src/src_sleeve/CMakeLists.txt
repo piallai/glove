@@ -243,7 +243,8 @@ SET(SLEEVE_SOURCES
 	slv_is_arithmetic.h
 	slv_vector.h
 	slv_optional_text_str.h
-			
+	slv_parse.h
+	
 	SlvSort.h
 			
 	SlvSize2d.h

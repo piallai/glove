@@ -72,7 +72,7 @@ private slots:
     void start();
     /*! Auto hide if enabled.*/
     void end();
-    /*! Remove progression from GlvProgressMgr.*/
-    void final();
+    /*! Remove or hide progression from GlvProgressMgr.*/
+    void final(bool _l_remove);
 
 };

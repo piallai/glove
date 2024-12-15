@@ -88,6 +88,7 @@ private:
 
 #include "filestream/slv_rw.h"
 #include "misc/SlvDataName.h"
+#include "slv_parse.h"
 
 template <class Tparam>
 struct SlvParameterSpecSerialization {
@@ -96,21 +97,6 @@ struct SlvParameterSpecSerialization {
 
 template <>
 struct SlvParameterSpecSerialization<bool>;
-
-template <class Tparam>
-struct SlvParameterSpecIstream {
-    static void istream(Tparam& _parameter_value, std::istream& _is) {
-        _is >> _parameter_value;
-    }
-};
-
-/*! std::string specialization because _is >> _parameter_value does not manage space.*/
-template <>
-struct SlvParameterSpecIstream<std::string> {
-    static void istream(std::string& _parameter_value, std::istream& _is) {
-        slv::string::istream(_is, _parameter_value);
-    }
-};
 
 template <class Tparam, typename = void>
 struct SlvParameterSpec {
@@ -124,10 +110,13 @@ struct SlvParameterSpec {
         slv::rw::writeB(_parameter_value, _output_file);
     }
     static void istream(Tparam& _parameter_value, std::istream& _is) {
-        SlvParameterSpecIstream<Tparam>::istream(_parameter_value, _is);
+        _is >> _parameter_value;
     }
     static void ostream(const Tparam& _parameter_value, std::ostream& _os) {
         _os << _parameter_value;
+    }
+    static void parse(Tparam& _parameter_value, const std::string& _string) {
+        slv::parse(_string, _parameter_value);
     }
     static bool is_equal(const Tparam& _parameter_value1, const Tparam& _parameter_value2) {
         return _parameter_value1 == _parameter_value2;
@@ -182,6 +171,9 @@ struct SlvParameterSpec<Tparam, typename std::enable_if<SlvIsParametrization<Tpa
     }
     static void ostream(const Tparam& _parameter_value, std::ostream& _os) {
         _os << _parameter_value.param_cast();
+    }
+    static void parse(Tparam& _parameter_value, const std::string& _string) {
+        // No string parsing for parametrization
     }
     static bool is_equal(const Tparam& _parameter_value1, const Tparam& _parameter_value2) {
         return _parameter_value1.param_cast() == _parameter_value2.param_cast();
@@ -366,7 +358,7 @@ glvm_staticVariable_const_get(unsigned int, marker, marker_value)\
 typedef class_type Tparam;\
 private:\
 void set_stream_value(const std::string& _string, bool _l_param_only) {\
-class_type value_tmp(default_value()); std::istringstream iss(_string); SlvParameterSpec<class_type>::istream(value_tmp, iss);\
+class_type value_tmp(default_value()); SlvParameterSpec<class_type>::parse(value_tmp, _string);\
 this->set_value(value_tmp, _l_param_only);\
 }\
 std::string get_stream_value(bool _l_param_only) const {\
@@ -443,7 +435,7 @@ typedef class_type Tparam;\
 glvm_staticVariable_const_get(bool, has_rules, rules().size() > 1)\
 private:\
 void set_stream_value(const std::string& _string, bool _l_param_only) {\
-class_type value_tmp(default_value()); std::istringstream iss(_string); SlvParameterSpec<class_type>::istream(value_tmp, iss);\
+class_type value_tmp(default_value()); SlvParameterSpec<class_type>::parse(value_tmp, _string);\
 this->set_value(value_tmp, _l_param_only);\
 }\
 std::string get_stream_value(bool _l_param_only) const {\

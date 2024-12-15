@@ -25,7 +25,7 @@ std::ostream& operator<<(std::ostream& _os, const std::vector<T>& _vector) {
     for (typename std::vector<T>::const_iterator it = _vector.begin(); it != _vector.end(); ++it) {
         _os << *it;
         if (std::next(it) != _vector.end()) {
-            _os << ", ";
+            _os << ",";
         }
     }
     _os << "]";

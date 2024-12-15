@@ -41,7 +41,7 @@ SlvProgressionQt::~SlvProgressionQt() {
 
 	iterator_finish();
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit finished();
+	emit finished(true);
 #endif
 
 }
@@ -263,11 +263,11 @@ void SlvProgressionQt::end() {
 
 }
 
-void SlvProgressionQt::finish() {
+void SlvProgressionQt::finish(bool _l_remove) {
 
 	iterator_finish();
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit finished();
+	emit finished(_l_remove);
 #endif
 
 	clear();

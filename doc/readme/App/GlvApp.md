@@ -6,6 +6,7 @@ The features that can be easily added are:
 - CLI to GUI : Input arguments through a GUI
 - Loop progress to GUI : Show and control progression of loops.
 - Status infos to GUI : Show status messages
+- Use program recurrently to simulate an interactive mode
 
 **Go to [full example](/doc/readme/App/GlvApp_full.md) for an exhaustive example.**
 
@@ -25,19 +26,45 @@ Without relying on Qt, a simple parsing of a 'main' parametrization can be done.
 
 An example detailing how to use all the features managed by a Glove application can be found [here](/doc/readme/App/GlvApp_full.md).
 
-## Important macros
+## Base macros
 
 The <code>GLOVE_APP</code> macro transforms a program into a GUI application. To be used at the very beginning of the main.
 Depending on your needs, several declinaison of the macro exist:
 
 - <code>GLOVE_APP</code> : Enables Glove application by setting "-glove" as CLI argument
-- <code>GLOVE_APP_AUTO</code> : no need to set "-glove", the program is turned into a GUI as default
 - <code>GLOVE_APP_PARAM(Tparametrization)</code> : same as <code>GLOVE_APP</code>, adds CLI arguments by-pass through a parametrization widget defined by [Tparametrization](/doc/readme/Parametrization/Parametrization_basic.md).
-- <code>GLOVE_APP_PARAM_AUTO(Tparametrization)</code> : same as <code>GLOVE_APP_AUTO</code>, adds CLI arguments by-pass through a parametrization widget defined by [Tparametrization](/doc/readme/Parametrization/Parametrization_basic.md).
 
-For example, if one wants to create an application than can be launched using no cli arguments (double clicking on the app for instance), the <code>_AUTO</code> declinaison is more suited.
+## Optional macros
 
-To run the initial program in the same initial thread, add the macro <code>#define GLOVE_APP_THREAD_MODE false </code> before calling <code>GLOVE_APP</code>.
+#### <code>GLOVE_APP_AUTO</code>
+
+To create an application than can be launched using no cli arguments (double clicking on the app for instance), add the macro <code>#define GLOVE_APP_AUTO true</code> before calling <code>GLOVE_APP</code>.
+Default is <code>false</code>.
+
+#### <code>GLOVE_APP_RECURRENT_MODE</code>
+
+To run the program recurrently, add the macro <code>#define GLOVE_APP_RECURRENT_MODE true</code> before calling <code>GLOVE_APP</code>.
+Applies only if <code>GLOVE_APP_THREAD_MODE</code> is set to true.
+Default is <code>false</code>.
+
+#### <code>GLOVE_APP_RECURRENT_TYPE</code>
+
+If <code>GLOVE_APP_RECURRENT_MODE</code> is set to <code>true</code>, the macro defines the type of the variable to be kept across all recurrent runs.
+One can for example define a structure in charge of keeping data from a run to another. Set <code>#define GLOVE_APP_RECURRENT_TYPE *Type*</code> before calling <code>GLOVE_APP</code>.
+Default is <code>int</code>.
+
+#### <code>GLOVE_APP_THREAD_MODE</code>
+
+To run the initial program in the same initial thread, add the macro <code>#define GLOVE_APP_THREAD_MODE false</code> before calling <code>GLOVE_APP</code>.
 However, it will disable progress and status features. Input parametrization using a dedicated widget will still be active though.
+Default is <code>true</code>.
+
+#### <code>GLOVE_APP_MSVC_NO_CONSOLE</code>
 
 Use <code>#pragma GLOVE_APP_MSVC_NO_CONSOLE</code> before <code>int main</code> to disable terminal when using MSVC.
+
+#### <code>GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY</code>
+
+Use a parameter of the CLI parametrization as a location where to save the configuration file in addition to execution location.
+Example: <code>GLOVE_APP_CLI_PARAMETRIZATION_OUTPUT_DIRECTORY(ParametersCLI, "-O")</code>. With <code>ParametersCLI</code> being the CLI parametrization.
+If the parameter does not exist in the CLI parametrization, returns an empty string.

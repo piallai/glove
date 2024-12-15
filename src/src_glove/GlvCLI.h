@@ -90,28 +90,23 @@ Transform a program into a GUI application. To be used at the very beginning of 
 */
 
 /*! Transform a program into a GUI application by setting -glove as CLI argument. To be used at the very beginning of the main.
-* Provide two additional variables:
+* Provide four additional variables:
 * - bool is_glove : whether -glove cli argument was used or not.
-* - Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one.*/
+* - Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one.
+* - bool is_glove_recurrent : whether glove app is being relaunched recurrently or not.
+* - GLOVE_APP_RECURRENT_TYPE glove_recurrent_var : variable kept along all recurrent runs.*/
 #define GLOVE_APP_PARAM(Tparametrization) \
-glvm_pv_GLOVE_APP(Tparametrization, false)
+glvm_pv_GLOVE_APP(Tparametrization, GLOVE_APP_AUTO)
 
+/*! Same as GLOVE_APP_PARAM, but with no input parametrization.*/
 #define GLOVE_APP \
-glvm_pv_GLOVE_APP(GLOVE_APP_default_parametrization, false)
-
-/*! Same as GLOVE_APP macro, but forces use of glove (ie: -glove is set by default).
-* Transform a program into a GUI application. To be used at the very beginning of the main.
-* Provide two additional variables:
-* - bool is_glove : whether -glove cli argument was used or not.
-* - Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one.*/
-#define GLOVE_APP_PARAM_AUTO(Tparametrization) \
-glvm_pv_GLOVE_APP(Tparametrization, true)
-
-#define GLOVE_APP_AUTO \
-glvm_pv_GLOVE_APP(GLOVE_APP_default_parametrization, true)
+glvm_pv_GLOVE_APP(GLOVE_APP_default_parametrization, GLOVE_APP_AUTO)
 
 #include "param/SlvParametrizationMacro.h"
 glvm_parametrization(GLOVE_APP_default_parametrization, "default");
+
+/*! Optional: Forces use of glove (ie: -glove is set by default).*/
+#define GLOVE_APP_AUTO false
 
 /*! Optional: Disable program execution in a separate thread. Progressions and status display can not be managed in this mode, only input parametrization can.
 * Can be convenient if one wants to execute the program in the closest conditions as the initial program is.
@@ -120,14 +115,23 @@ glvm_parametrization(GLOVE_APP_default_parametrization, "default");
 * To be set just before calling GLOVE_APP.*/
 #define GLOVE_APP_THREAD_MODE true
 
+/*! Optional: Set application in recurrent mode. The program will be launched again upon acceptance.
+* Applies only if GLOVE_APP_THREAD_MODE is set to true.*/
+#define GLOVE_APP_RECURRENT_MODE false
+#define GLOVE_APP_RECURRENT_TYPE int
+/*! Usef only if GLOVE_APP_RECURRENT_MODE is left false.*/
+static GLOVE_APP_RECURRENT_TYPE glove_recurrent_var;
+
+
+//#define Trecurrent_tmp RecurrentStruct
 #define glvm_pv_GLOVE_APP(Tparametrization, _l_auto_glove) \
-return GlvApp::main<Tparametrization>(argc, argv, _l_auto_glove, GLOVE_APP_THREAD_MODE);\
+return GlvApp::main<Tparametrization>(argc, argv, _l_auto_glove, GLOVE_APP_THREAD_MODE, GLOVE_APP_RECURRENT_MODE, glove_recurrent_var);\
 }\
 template <>\
-int glv_cli_main(int argc, char* argv[], bool is_glove, const Tparametrization& glove_parametrization) {
+int glv_cli_main(int argc, char* argv[], bool is_glove, const Tparametrization& glove_parametrization, bool is_glove_recurrent, GLOVE_APP_RECURRENT_TYPE& glove_recurrent_var) {
 
-template <class Tparametrization>
-int glv_cli_main(int argc, char* argv[], bool _l_gloved, const Tparametrization& _parametrization);//forward declare for gcc
+template <class Tparametrization, class Trecurrent>
+int glv_cli_main(int argc, char* argv[], bool _l_gloved, const Tparametrization& _parametrization, bool _l_recurrent, Trecurrent & _recurrent_var);//forward declare for gcc
 
 #define GLOVE_APP_MSVC_NO_CONSOLE \
 comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
@@ -156,12 +160,28 @@ class SlvProgressionQt;
 #define GLOVE_APP_SHARED_API
 #endif
 
+#include <QFutureWatcher>
+
 class GLOVE_APP_SHARED_API GlvApp {
 	
+private :
+
+	class RecurrentWrapper;
+	template <class Tparametrization, class Trecurrent>
+	class RecurrentWrapperT;
+
+	struct Interface {
+		QFuture<int> future;
+		QFutureWatcher<int> future_watcher;
+		RecurrentWrapper* recurrent_wrapper = NULL;
+	};
+
 public:
 
-	template <class Tparametrization>
-	static int main(int _argc, char* _argv[], bool _l_auto_glove = false, bool _l_threaded = true);
+	template <class Tparametrization, class Trecurrent>
+	static int main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_threaded, bool _l_recurrent, Trecurrent& _recurrent);
+	template <class Tparametrization, class Trecurrent>
+	static int main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface& _interface, bool _l_recurrent, Trecurrent& _recurrent);
 
 private:
 
@@ -176,8 +196,9 @@ private:
 	/*! Progressions managed by GLOVE_APP_CLI.*/
 	glvm_staticVariable_def(, SlvPoolFactory<SlvProgressionQt COMMA slv::lbl::Name>, progressions);
 	glvm_staticVariable(, SlvStatus, status, {});
+	glvm_staticVariable(, GlvProgressMgr*, progress_mgr, NULL);
 	glvm_staticVariable(, GlvStatusMgr*, status_mgr, NULL);
-
+	glvm_staticVariable(, Interface, interface, );
 
 public :
 
@@ -200,116 +221,195 @@ public :
 #include <QFutureWatcher>
 #include "GlvStatusMgr.h"
 
-template <class Tparametrization>
-int GlvApp::main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_threaded) {
+class GlvApp::RecurrentWrapper : public QObject {
+
+	Q_OBJECT
+
+protected:
+
+	RecurrentWrapper() {}
+	~RecurrentWrapper() {}
+
+public slots:
+	virtual void relaunch() = 0;
+
+};
+
+template <class Tparametrization, class Trecurrent>
+class GlvApp::RecurrentWrapperT : public GlvApp::RecurrentWrapper {
+
+private:
+
+	int argc;
+	char** argv;
+	Trecurrent* recurrent_var;
+	Interface* interface = NULL;
+
+public:
+
+	RecurrentWrapperT() {}
+
+	void set(int _argc, char** _argv, Trecurrent* _recurrent_var) {
+		argc = _argc;
+		argv = _argv;
+		recurrent_var = _recurrent_var;
+	}
+
+	void set_interface(Interface* _interface) {
+		interface = _interface;
+	}
+
+	void relaunch() {
+		bool l_threaded = true;
+		bool l_recurrent = true;
+		GlvApp::main_recurrent<Tparametrization, Trecurrent>(argc, argv, l_threaded, *interface, l_recurrent, *recurrent_var);
+	}
+
+};
+
+template <class Tparametrization, class Trecurrent>
+int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface& _interface, bool _l_recurrent, Trecurrent& _recurrent_var) {
+
+	std::string autosave_file_name = SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true);
+#if OPTION_USE_THIRDPARTY_JSON==1
+	autosave_file_name += ".json";
+#endif
+
+	if (progress_mgr()) {
+		progress_mgr()->hide();
+	}
+
+	GlvParametrizationDialog<Tparametrization> dialog;
+	GlvParametrizationSaveLoad<Tparametrization>* save_load_widget = new GlvParametrizationSaveLoad<Tparametrization>(dialog.get_parametrization_widget());
+
+	SlvCLI::Arguments arguments(_argc, _argv);
+
+	if (!arguments.get_glove_argument().empty()) {
+
+		save_load_widget->load(arguments.get_glove_argument());
+
+	}
+
+	Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
+	SlvStatus status;
+
+	if (!arguments.is_empty()) {
+
+		status = SlvCLI::parse(parametrization, arguments);
+
+		glv::flag::showQMessageBox(QObject::tr("Arguments conflict"), status, true);
+
+		dialog.set_parametrization(parametrization);
+
+	} else if (SlvFile(autosave_file_name).exists() && arguments.get_glove_argument().empty()) {
+
+		save_load_widget->load(autosave_file_name);
+
+	}
+
+	int result;
+	if (Tparametrization::Nparameters() > 0) {
+		result = dialog.exec();
+	} else {
+		result = QDialog::Accepted;
+	}
+
+	if (result == QDialog::Accepted) {
+
+		save_load_widget->save(autosave_file_name);
+
+		SlvDirectory directory(ParamOutput<Tparametrization>::get_path(dialog.get_parametrization()));
+		if (directory.exists()) {
+			save_load_widget->save(SlvFile(directory, autosave_file_name).get_path());
+		}
+
+		std::vector< std::pair<std::string, std::string> > parameter_arguments = dialog.get_parametrization().get_string_serialization_bool().first;
+		for (SlvCLI::Arguments::Tparameters::const_iterator it = arguments.get_parameter_arguments().begin(); it != arguments.get_parameter_arguments().end(); ++it) {
+			parameter_arguments.push_back({ it->first, it->second[0] });
+		}
+
+		std::vector<std::string> solo_arguments = dialog.get_parametrization().get_string_serialization_bool().second;
+		slv::vector::add(solo_arguments, arguments.get_solo_arguments());
+
+
+		std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(parameter_arguments, solo_arguments);
+		cli_arguments.second[0] = _argv[0];
+
+		if (_l_threaded) {
+
+			if (_l_recurrent) {
+				dynamic_cast<RecurrentWrapperT<Tparametrization, Trecurrent>*>(_interface.recurrent_wrapper)->set(cli_arguments.first, cli_arguments.second, &_recurrent_var);
+			}
+
+			_interface.future = QtConcurrent::run(&glv_cli_main<Tparametrization, Trecurrent>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization(), _l_recurrent, std::ref(_recurrent_var));
+			_interface.future_watcher.setFuture(_interface.future);
+
+			if (progress_mgr()) {
+				progress_mgr()->show();
+			}
+
+			return 0;
+
+		} else {
+			status_mgr() = NULL;
+			return glv_cli_main(cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization(), _l_recurrent, _recurrent_var);
+		}
+
+	} else {
+		QCoreApplication::quit();
+		return 1;
+	}
+
+
+}
+
+template <class Tparametrization, class Trecurrent>
+int GlvApp::main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_threaded, bool _l_recurrent, Trecurrent& _recurrent_var) {
 
 	if (SlvCLI::has_glove(_argc, _argv) || _l_auto_glove) {
 
 		QApplication q_app(_argc, _argv);
-
-		std::string autosave_file_name = SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true);
-#if OPTION_USE_THIRDPARTY_JSON==1
-		autosave_file_name += ".json";
-#endif
-
-		GlvParametrizationDialog<Tparametrization> dialog;
-		GlvParametrizationSaveLoad<Tparametrization>* save_load_widget = new GlvParametrizationSaveLoad<Tparametrization>(dialog.get_parametrization_widget());
-
-		SlvCLI::Arguments arguments(_argc, _argv);
-
-		if (!arguments.get_glove_argument().empty()) {
-
-			save_load_widget->load(arguments.get_glove_argument());
-
+		if (_l_recurrent) {
+			q_app.setQuitOnLastWindowClosed(false);
 		}
 
-		Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
-		SlvStatus status;
+		if (_l_threaded) {
 
-		if (!arguments.is_empty()) {
+			status_mgr() = new GlvStatusMgr;
+			status_mgr()->add(&GlvApp::status());
 
-			status = SlvCLI::parse(parametrization, arguments);
-
-			glv::flag::showQMessageBox(QObject::tr("Arguments conflict"), status, true);
-
-			dialog.set_parametrization(parametrization);
-
-		} else if (SlvFile(autosave_file_name).exists() && arguments.get_glove_argument().empty()) {
-
-			save_load_widget->load(autosave_file_name);
-
-		}
-
-		int result;
-		if (Tparametrization::Nparameters() > 0) {
-			result = dialog.exec();
-		} else {
-			result = QDialog::Accepted;
-		}
-
-		if (result == QDialog::Accepted) {
-
-			save_load_widget->save(autosave_file_name);
-			
-			SlvDirectory directory(ParamOutput<Tparametrization>::get_path(dialog.get_parametrization()));
-			if (directory.exists()) {
-				save_load_widget->save(SlvFile(directory, autosave_file_name).get_path());
-			}
-
-			std::vector< std::pair<std::string, std::string> > parameter_arguments = dialog.get_parametrization().get_string_serialization_bool().first;
-			for (SlvCLI::Arguments::Tparameters::const_iterator it = arguments.get_parameter_arguments().begin(); it != arguments.get_parameter_arguments().end(); ++it) {
-				parameter_arguments.push_back({ it->first, it->second[0] });
-			}
-
-			std::vector<std::string> solo_arguments = dialog.get_parametrization().get_string_serialization_bool().second;
-			slv::vector::add(solo_arguments, arguments.get_solo_arguments());
-
-
-			std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(parameter_arguments, solo_arguments);
-			cli_arguments.second[0] = _argv[0];
-
-#ifdef GLOVE_DEBUG
-			if (!_l_threaded && !GlvApp::progressions().empty()) {
-
-				glv::flag::showQMessageBox(QObject::tr("Thread issue"), SlvStatus(SlvStatus::statusType::critical, "Can not manage progressions if thread mode is not active."), true);
-				return 0;
-
-			} else {
-#endif
-
-				if (_l_threaded) {
-
-					status_mgr() = new GlvStatusMgr;
-					status_mgr()->add(&GlvApp::status());
-
-					GlvProgressMgr progress_mgr;
-					for (int i = 0; i < progressions().psize(); i++) {
-						bool l_hide_when_over = !progressions()[i]->is_recurrent();
-						progress_mgr.add_progression(progressions()[i], l_hide_when_over);
-					}
-					progress_mgr.show();
-
-					QFuture<int> future = QtConcurrent::run(&glv_cli_main<Tparametrization>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization());
-					QFutureWatcher<int> future_watcher;
-					QObject::connect(&future_watcher, SIGNAL(finished()), &q_app, SLOT(closeAllWindows()));
-					future_watcher.setFuture(future);
-
-					return q_app.exec();
-				} else {
-					status_mgr() = NULL;
-					return glv_cli_main(cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization());
+			if (!progressions().empty()) {
+				progress_mgr() = new GlvProgressMgr;
+				for (int i = 0; i < progressions().psize(); i++) {
+					bool l_hide_when_over = !progressions()[i]->is_recurrent();
+					progress_mgr()->add_progression(progressions()[i], l_hide_when_over);
 				}
-
-#ifdef GLOVE_DEBUG
 			}
-#endif
+
+			if (!_l_recurrent) {
+				QObject::connect(&interface().future_watcher, &QFutureWatcher<int>::finished, &q_app, &QCoreApplication::quit, Qt::QueuedConnection);
+			} else {
+				RecurrentWrapperT<Tparametrization, Trecurrent>* recurrent_wrapper = new RecurrentWrapperT<Tparametrization, Trecurrent>;
+				recurrent_wrapper->set_interface(&interface());
+				interface().recurrent_wrapper = recurrent_wrapper;
+				QObject::connect(&interface().future_watcher, SIGNAL(finished()), interface().recurrent_wrapper, SLOT(relaunch()));
+			}
+
+		}
+
+		int exit = main_recurrent<Tparametrization>(_argc, _argv, _l_threaded, interface(), _l_recurrent, _recurrent_var);
+
+		if (!exit && _l_threaded) {
+
+			return q_app.exec();
 
 		} else {
-			return 0;
+
+			return exit;
 		}
 
 	} else {
-		return glv_cli_main(_argc, _argv, false, Tparametrization());
+		return glv_cli_main(_argc, _argv, false, Tparametrization(), false, _recurrent_var);
 	}
 
 }

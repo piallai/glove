@@ -138,12 +138,12 @@ public :
 	* Apply iterator finish.
 	* Release iterator_ptr pointer (set to NULL).*/
 	void end();
-	/*! Implies that progress monitoring is completely over. Will remove Qt progression from GlvProgressMgr.
-	* Doing so means the progression will need to be added again to a Qt GlvProgressMgr.
+	/*! Implies that progress monitoring is completely over. 
+	* If _l_remove is true, will remove Qt progression from GlvProgressMgr. Doing so means the progression will need to be added again to a Qt GlvProgressMgr.
 	* Apply iterator finish.
 	* Release _terator_ptr pointer (set to NULL).
-	* ie: Same as end() with removal from GlvProgressMgr.*/
-	void finish();
+	* ie: Same as end() with removal from GlvProgressMgr if _l_remove is true.*/
+	void finish(bool _l_remove = true);
 
 	/*! Apply cancel to tracked iterator/iterator_ptr.
 	* Ends the loop.
@@ -203,8 +203,8 @@ signals:
 	void updated(int _value);
 	/*! If an iterator or iterator_ptr is provided, is automatically emitted at end of loop.*/
 	void ended();
-	/*! Emitted when progress is completely over.*/
-	void finished();
+	/*! Emitted when progress is completely over. If _l_remove is true, the progression will be removed of the progression manager (if managed by one).*/
+	void finished(bool _l_remove);
 #endif
 
 };

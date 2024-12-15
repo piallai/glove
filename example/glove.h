@@ -21,7 +21,7 @@
 
 #define GLOVE_VERSION_MAJOR 0
 #define GLOVE_VERSION_MINOR 7
-#define GLOVE_VERSION_PATCH 4
+#define GLOVE_VERSION_PATCH 5
 
 #ifndef GLOVE_DISABLE_QT
 #define OPTION_ENABLE_SLV_QT_PROGRESS 1
@@ -84,10 +84,10 @@
 #include <QRect>
 #include <QWidget>
 #include <QVBoxLayout>
+#include <QFutureWatcher>
 #include <QApplication>
 #include <QMessageBox>
 #include <QtConcurrent/QtConcurrentRun>
-#include <QFutureWatcher>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QLineEdit>
@@ -586,7 +586,7 @@ std::ostream& operator<<(std::ostream& _os, const std::vector<T>& _vector) {
     for (typename std::vector<T>::const_iterator it = _vector.begin(); it != _vector.end(); ++it) {
         _os << *it;
         if (std::next(it) != _vector.end()) {
-            _os << ", ";
+            _os << ",";
         }
     }
     _os << "]";
@@ -1706,647 +1706,63 @@ struct SlvDataName< std::unordered_map<Tkey, Tvalue> > {
     }
 };
 
-#define VECTOR_EXPLICIT_ALGORITHM 0 //Explicit reimplementation of algorithms
-
 namespace slv {
 
-    /*! Methods related to manipulation of std::vector which is by default std::vector. See OPTION_STD_VECTOR_DEBUG.*/
-    namespace vector {
-
-        /*! Remove from \p _elements the first value which equals \p _element.
-        * Return true if found and removed.*/
-        template <class T>
-        bool remove(const T& _element, std::vector<T>& _elements);
-        /*! Remove all \p _elements in \p element.*/
-        template <class T>
-        void remove(std::vector<T>& elements, const std::vector<T>& _elements);
-        /*! Add all \p _elements in \p elements.*/
-        template <class T>
-        void add(std::vector<const T*>& elements, const std::vector<T*>& _elements);
-        /*! Add all \p _elements in \p element.*/
-        template <class T>
-        void add(std::vector<const T>& elements, const std::vector<T>& _elements);
-        /*! Add all \p _elements in \p element.*/
-        template <class T>
-        void add(std::vector<T>& elements, const std::vector<T>& _elements);
-        /*! Add all \p _elements1 and \p _elements2 (concatenate) and return result.*/
-        template <class T>
-        std::vector<T> add(const std::vector<T>& _elements1, const std::vector<T>& _elements2);
-        /*! Add all \p _elements in \p elements (concatenate). Static cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void add_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
-        /*! Add all \p _elements in \p elements (concatenate). Static cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void add_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements);
-        /*! Add all \p _elements in \p elements (concatenate). Dynamic cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void add_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
-        /*! Converts \p _elements into \p elements by static cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void assign_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
-        /*! Converts \p _elements into \p elements by static cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void assign_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements);
-        /*! Converts \p _elements into \p elements by dynamic cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void assign_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
-        /*! Return the first index where \p _elements is equal to \p _element. Returns -1 if no match is found.*/
-        template <class T>
-        unsigned int getIndex(const T& _element, const std::vector<T>& _elements);
-        /*! Check if \p _elements contains a value equal to \p _element*/
-        template <class T>
-        bool find(const T& _element, const std::vector<T>& _elements);
-        /*! Check if \p _elements contains a value equal to \p _element*/
-        template <class T>
-        bool find(const T& _element, const std::vector<const T>& _elements);
-        /*! Check if \p _elements contains a dereferenced pointer equal to \p _element*/
-        template <class T>
-        bool find(const T& _element, const std::vector<T*>& _elements);
-        /*! Returns the position where \p _element should be inserted in \p _elements in descending order.*/
-        template <class T>
-        unsigned int sortIndex_descending(const T& _element, const std::vector<T>& _elements);
-        /*! Returns the position where \p _element should be inserted in \p _elements in ascending order.*/
-        template <class T>
-        unsigned int sortIndex_ascending(const T& _element, const std::vector<T>& _elements);
-
-        /*! Return true if for each element of \p _vector1, there is an equal element in \p _vector2. False otherwise.*/
-        template <class T>
-        bool equalUnordered(const std::vector<T>& _vector1, const std::vector<T>& _vector2);
-
-        /*! Return ascending sequence [\p _start, \p _start + \p _increment, \p _start + 2* \p _increment, ..] of size \p _size.*/
-        template <class T>
-        std::vector<T> make_sequence(const unsigned int _size, const T _start = 0, const T _increment = T(1));
-
-        /*! Sort \p _element in ascending order up to \p _range index. If \p _range is 0, sort all vector.*/
-        template <class T>
-        void sort_ascending(std::vector<T>& _elements, unsigned int _range = 0);
-        /*! Sort \p _element in ascending order up to \p _range index. If \p _range is 0, sort all vector.
-        * Provided \p _elements_arg has the same size as \p elements, rearrange \p _elements_arg in the same way as \p _elements.*/
-        template <class T, class Targ>
-        void sort_ascending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range = 0);
-        /*! Sort \p _element in descending order up to \p _range index. If \p _range is 0, sort all vector.*/
-        template <class T>
-        void sort_descending(std::vector<T>& _elements, unsigned int _range = 0);
-        /*! Sort \p _element in descending order up to \p _range index. If \p _range is 0, sort all vector.
-        * Provided \p _elements_arg has the same size as \p elements, rearrange \p _elements_arg in the same way as \p _elements.*/
-        template <class T, class Targ>
-        void sort_descending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range = 0);
-
-        /*! Returns the position where \p _element would be inserted in \p _elements in descending order.*/
-        template <class T>
-        unsigned int sortInsert_descending(const T& _element, std::vector<T>& _elements);
-        /*! Returns the position where \p _element would be inserted in \p _elements in ascending order.*/
-        template <class T>
-        unsigned int sortInsert_ascending(const T& _element, std::vector<T>& _elements);
-
-        /*! Return true if every element of \p _elements1 matches the element of \p _elements2 (same order).*/
-        template <class T>
-        bool is_equal(const std::vector<T>& _elements1, const std::vector<T>& _elements2);
-
-    }
+	/*! Parse \p _string to assign \p _value. Default parsing is using >> operator.*/
+	template <class T>
+	void parse(const std::string& _string, T& _value);
+	/*! Parse \p _string to assign \p _value.
+	* Specialization by direct assignment because >> will parse a string separated by spaces.*/
+	void parse(const std::string& _string, std::string& _value);
 }
 
 template <class T>
-bool slv::vector::remove(const T& _element, std::vector<T>& _elements) {
+void slv::parse(const std::string& _string, T& _value) {
 
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element == _elements[el]);
-        el++;
-    }
-    if (l_found) {
-        el--;
-        _elements.erase(_elements.begin() + el);
-    }
-    return l_found;
-#else
+	std::istringstream iss(_string);
 
-    typename std::vector<T>::iterator it = std::find(_elements.begin(), _elements.end(), _element);
-    if (it != _elements.end()) {
-        _elements.erase(it);
-        return true;
-    } else {
-        return false;
-    }
-#endif
-}
-
-template <class T>
-void slv::vector::remove(std::vector<T>& elements, const std::vector<T>& _elements) {
-
-    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
-        remove(*it, elements);
-    }
+	iss >> _value;
 
 }
 
-template <class T>
-void slv::vector::add(std::vector<const T*>& elements, const std::vector<T*>& _elements) {
+inline void slv::parse(const std::string& _string, std::string& _value) {
 
-    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
-        elements.push_back(*it);
-    }
-}
-
-template <class T>
-void slv::vector::add(std::vector<const T>& elements, const std::vector<T>& _elements) {
-
-    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
-        elements.push_back(*it);
-    }
+	_value = _string;
 
 }
 
-template <class T>
-void slv::vector::add(std::vector<T>& elements, const std::vector<T>& _elements) {
-    elements.insert(elements.end(), _elements.begin(), _elements.end());
-}
-
-template <class T>
-std::vector<T> slv::vector::add(const std::vector<T>& _elements1, const std::vector<T>& _elements2) {
-    std::vector<T> elements = _elements1;
-    slv::vector::add(elements, _elements2);
-    return elements;
-}
-
-template <class T, class Targ>
-void slv::vector::add_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
-
-    for (typename std::vector<const Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
-        elements.push_back(static_cast<const T*> (*it));
-    }
-}
-
-template <class T, class Targ>
-void slv::vector::add_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements) {
-
-    for (typename std::vector<Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
-        elements.push_back(static_cast<T*> (*it));
-    }
-}
-
-template <class T, class Targ>
-void slv::vector::add_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
-
-    for (typename std::vector<const Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
-        elements.push_back(dynamic_cast<const T*> (*it));
-    }
-}
-
-template <class T, class Targ>
-void slv::vector::assign_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
-
-    elements.resize(0);
-    add_static_cast(elements, _elements);
-}
-
-template <class T, class Targ>
-void slv::vector::assign_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements) {
-
-    elements.resize(0);
-    add_static_cast(elements, _elements);
-}
-
-template <class T, class Targ>
-void slv::vector::assign_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
-
-    elements.resize(0);
-    vectorAdd_dynamic_cast(elements, _elements);
-}
-
-template <class T>
-unsigned int slv::vector::getIndex(const T& _element, const std::vector<T>& _elements) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element == _elements[el]);
-        el++;
-    }
-    if (l_found) {
-        el--;
-        return el;
-    } else {
-        //std::cout << "WARNING - vectorGetIndex - there is no element " << _element << " in the vector" << std::endl;
-        return -1;
-    }
-#else
-    typename std::vector<T>::const_iterator it = std::find(_elements.begin(), _elements.end(), _element);
-    if (it != _elements.end()) {
-        return std::distance(_elements.begin(), it);
-    } else {
-        return -1;
-    }
-#endif
-}
-
-template <class T>
-bool slv::vector::find(const T& _element, const std::vector<T>& _elements) {
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element == _elements[el]);
-        el++;
-    }
-    return l_found;
-#else
-    return std::find(_elements.begin(), _elements.end(), _element) != _elements.end();
-#endif
-}
-
-template <class T>
-bool slv::vector::find(const T& _element, const std::vector<const T>& _elements) {
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element == _elements[el]);
-        el++;
-    }
-    return l_found;
-#else
-    return std::find(_elements.begin(), _elements.end(), _element) != _elements.end();
-#endif
-}
-
-template <class T>
-bool slv::vector::find(const T& _element, const std::vector<T*>& _elements) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element == *_elements[el]);
-        el++;
-    }
-    return l_found;
-#else
-
-    typename std::vector<T*>::const_iterator it = _elements.begin();
-    while (it != _elements.end() && **it != _element) {
-        ++it;
-    }
-
-    return it != _elements.end();
-#endif
-}
-
-template <class T>
-unsigned int slv::vector::sortIndex_descending(const T& _element, const std::vector<T>& _elements) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element > _elements[el]);
-        el++;
-    }
-    if (l_found) {
-        el--;
-    }
-    return el;
-#else
-
-    typename std::vector<T>::const_iterator it = _elements.begin();
-    bool l_found = false;
-    while (!l_found && it != _elements.end()) {
-        l_found = (_element > *it);
-        if (!l_found) ++it;
-    }
-
-    return std::distance(_elements.begin(), it);
-#endif
-}
-
-template <class T>
-unsigned int slv::vector::sortIndex_ascending(const T& _element, const std::vector<T>& _elements) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element < _elements[el]);
-        el++;
-    }
-    if (l_found) {
-        el--;
-    }
-    return el;
-#else
-
-    typename std::vector<T>::const_iterator it = _elements.begin();
-    bool l_found = false;
-    while (!l_found && it != _elements.end()) {
-        l_found = (_element < *it);
-        if (!l_found) ++it;
-    }
-
-    return std::distance(_elements.begin(), it);
-#endif
-}
-
-template <class T>
-unsigned int slv::vector::sortInsert_descending(const T& _element, std::vector<T>& _elements) {
-
-    unsigned int el = sortIndex_decrease(_element, _elements);
-    _elements.insert(_elements.begin() + el, _element);
-    return el;
-}
-
-template <class T>
-unsigned int slv::vector::sortInsert_ascending(const T& _element, std::vector<T>& _elements) {
-
-    unsigned int el = sortIndex_increase(_element, _elements);
-    _elements.insert(_elements.begin() + el, _element);
-    return el;
-}
-
-template <class T>
-bool slv::vector::equalUnordered(const std::vector<T>& _vector1, const std::vector<T>& _vector2) {
-
-    if (_vector1.size() != _vector2.size()) {
-        return false;
-    } else {
-        unsigned int i = 0;
-        unsigned int j;
-        std::vector<bool> vector2_already_match(_vector2.size(), false);
-        bool l_equal = true;
-        while (l_equal && i < _vector1.size()) {
-            j = 0;
-            while (j < _vector2.size() && (_vector1[i] != _vector2[j] || vector2_already_match[j])) {
-                j++;
-            }//stops : either if j out of range, either if matching is found (provided not already match)
-            if (j == _vector2.size()) {
-                l_equal = false;//no matching found
-            } else {
-                vector2_already_match[j] = true;
-                i++;
-            }
-        }
-        return l_equal;
-    }
-
-}
-
-template <class T>
-std::vector<T> slv::vector::make_sequence(const unsigned int _size, const T _start, const T _increment) {
-
-    std::vector<T> vector_sequence;
-    vector_sequence.push_back(_start);
-    for (unsigned int i = 1; i < _size; i++) {
-        vector_sequence.push_back(vector_sequence.back() + _increment);
-    }
-
-    return vector_sequence;
-}
-
-template <class T>
-void slv::vector::sort_ascending(std::vector<T>& _elements, unsigned int _range) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    if (_range == 0) {
-        _range = _elements.size();
-    }
-
-    unsigned int el, el2;
-    for (el = 1; el < _range; el++) {
-        el2 = el;
-        while (el2 > 0 && _elements[el2] < _elements[el2 - 1]) {
-            std::swap(_elements[el2 - 1], _elements[el2]);
-            el2--;
-        }
-    }
-#else
-    typename std::vector<T>::iterator it;
-    if (_range != 0) {
-        it = _elements.begin() + _range;
-    } else {
-        it = _elements.end();
-    }
-    std::sort(_elements.begin(), it);
-#endif
-}
-
-template <class T, class Targ>
-void slv::vector::sort_ascending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range) {
-
-    if (_elements.size() == _elements_arg.size()) {
-
-        if (_range == 0) {
-            _range = _elements.size();
-        }
-
-        unsigned int el, el2;
-        for (el = 1; el < _range; el++) {
-            el2 = el;
-            while (el2 > 0 && _elements[el2] < _elements[el2 - 1]) {
-                std::swap(_elements[el2 - 1], _elements[el2]);
-                std::swap(_elements_arg[el2 - 1], _elements_arg[el2]);
-                el2--;
-            }
-        }
-
-    } else {
-        slv::flag::ISSUE(slv::flag::InvalidArgument, "bad size");
-    }
-
-}
-
-template <class T>
-void slv::vector::sort_descending(std::vector<T>& _elements, unsigned int _range) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    if (_range == 0) {
-        _range = _elements.size();
-    }
-
-    unsigned int el, el2;
-    for (el = 1; el < _range; el++) {
-        el2 = el;
-        while (el2 > 0 && _elements[el2] > _elements[el2 - 1]) {
-            std::swap(_elements[el2 - 1], _elements[el2]);
-            el2--;
-        }
-    }
-#else
-
-    typename std::vector<T>::iterator it;
-    if (_range != 0) {
-        it = _elements.begin() + _range;
-    } else {
-        it = _elements.end();
-    }
-    std::sort(_elements.begin(), it, std::greater<T>());
-#endif
-
-}
-
-template <class T, class Targ>
-void slv::vector::sort_descending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range) {
-
-    if (_elements.size() == _elements_arg.size()) {
-
-        if (_range == 0) {
-            _range = _elements.size();
-        }
-
-        unsigned int el, el2;
-        for (el = 1; el < _range; el++) {
-            el2 = el;
-            while (el2 > 0 && _elements[el2] > _elements[el2 - 1]) {
-                std::swap(_elements[el2 - 1], _elements[el2]);
-                std::swap(_elements_arg[el2 - 1], _elements_arg[el2]);
-                el2--;
-            }
-        }
-
-    } else {
-        slv::flag::ISSUE(slv::flag::InvalidArgument, "bad size");
-    }
-
-}
-
-template <class T>
-bool slv::vector::is_equal(const std::vector<T>& _elements1, const std::vector<T>& _elements2) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    if (_elements1.size() == _elements2.size()) {
-        unsigned int i = 0;
-        bool l_ok = true;
-        while (l_ok && i < _elements1.size()) {
-            l_ok = (_elements1[i] == _elements2[i]);
-            i++;
-        }
-        return l_ok;
-    } else {
-        return false;
-    }
-#else
-    bool l_equal = true;
-    if (_elements1.size() == _elements2.size()) {
-
-        typename std::vector<T>::const_iterator it1 = _elements1.begin();
-        typename std::vector<T>::const_iterator it2 = _elements2.begin();
-
-        while (l_equal && it1 != _elements1.end()) {
-            l_equal = (*it1 == *it2);
-            ++it1;
-            ++it2;
-        }
-
-    } else {
-        l_equal = false;
-    }
-    return l_equal;
-#endif
-
-}
-
-#undef VECTOR_EXPLICIT_ALGORITHM
-
-/*! Class allowing to access the name of instance when the type is not known.
-* Usefull for templated parametrizations to redirect pure virtual get_name() to base parametrization's.
-* Usefull to be inherited by classes having a static name, defined by macro staticGetVariable.*/
-class SlvVirtualGetName {
-
-public:
-    SlvVirtualGetName() {}
-    virtual ~SlvVirtualGetName() {}
-    /*! Get name of the instance.*/
-    virtual const std::string& get_name() const = 0;
-};
-
-namespace slv {
-    /*! Some typical labels. Related to SlvLabeling.*/
-    namespace lbl {
-        typedef unsigned int Identifier;
-        static const Identifier null_Id = 99999999;
-        typedef std::string Name;// Related to SlvLblName.
-        static const Name null_name = "";
-    }
-}
-
-/*! Label class for unicity check. Mostly used to be inherited. Allows labeling of the child class with template type Tlabel.
-* The label is not supposed to change after instantation.*/
-template <class Tlabel>
-class SlvLabeling : virtual public SlvOS {
-
-public:
-
-	typedef Tlabel Tlabeling;
-
-private:
-
-	const Tlabel label;
-
-public:
-
-	SlvLabeling(const Tlabel& _label);
-	~SlvLabeling();
-
-	/*! Get label value.*/
-	const Tlabel& get_label() const;
+/*! Class inherited by SlvParameterRuleT managing the value of the rule if the template type requires one.*/
+template <class Tparam>
+class SlvParameterRuleValue {
 
 protected:
 
-	void ostream(std::ostream& _os) const;
-
-};
-
-template <class Tlabel>
-SlvLabeling<Tlabel>::SlvLabeling(const Tlabel& _label) :label(_label) {
-
-}
-
-template <class Tlabel>
-SlvLabeling<Tlabel>::~SlvLabeling() {
-
-}
-
-template <class Tlabel>
-const Tlabel& SlvLabeling<Tlabel>::get_label() const {
-	return label;
-}
-
-template <class Tlabel>
-void SlvLabeling<Tlabel>::ostream(std::ostream& _os) const {
-
-	_os << "SlvLabeling: " << label << std::endl;
-}
-
-/*! Convenience class to label as name (unsigned int)*/
-class SlvLblIdentifier : public SlvLabeling<slv::lbl::Identifier> {
+    Tparam rule_value;
 
 public:
 
-	SlvLblIdentifier(slv::lbl::Identifier _Id);
-	~SlvLblIdentifier();
+    SlvParameterRuleValue(Tparam _rule_value);
+    ~SlvParameterRuleValue();
 
-	/*! Reimplementation of get_label() as get_Id().*/
-	const slv::lbl::Identifier& get_Id() const;
-
-};
-
-/*! Convenience class to label as name (std::string) using dedicated class SlvLabeling.*/
-class SlvLblName : public SlvLabeling<slv::lbl::Name>, virtual public SlvOS, virtual public SlvVirtualGetName {
-
-public:
-
-	SlvLblName(std::string _name);
-	virtual ~SlvLblName();
-
-	/*! Reimplementation of get_label() as get_name().*/
-	const std::string& get_name() const;
-
-private:
-
-	void ostream(std::ostream& _os) const;
+    /*! Get rule value.*/
+    const Tparam& get_rule_value() const;
 
 };
+
+template <class Tparam>
+SlvParameterRuleValue<Tparam>::SlvParameterRuleValue(Tparam _rule_value) {
+    rule_value = _rule_value;
+}
+
+template <class Tparam>
+SlvParameterRuleValue<Tparam>::~SlvParameterRuleValue() {
+
+}
+
+template <class Tparam>
+const Tparam& SlvParameterRuleValue<Tparam>::get_rule_value() const {
+    return rule_value;
+}
 
 /*! Class in charge of enum management. Not recommended to use directly. Use glvm_SlvEnum of glvm_SlvEnum_simple for instantiation.
 * Example: glvm_SlvEnum(EnumName, A, B, C, D), or glvm_SlvEnum_named(EnumName, A, "A", B, "B", C, "C", D, "D").*/
@@ -5281,255 +4697,400 @@ SlvStatus SlvCLI::parse(Tparametrization& _parametrization, Arguments& _argument
 	return status;
 }
 
-class SlvParametrization_base;
+/*! Class allowing to access the name of instance when the type is not known.
+* Usefull for templated parametrizations to redirect pure virtual get_name() to base parametrization's.
+* Usefull to be inherited by classes having a static name, defined by macro staticGetVariable.*/
+class SlvVirtualGetName {
 
-/*! Parent class of SlvParameter<T> to handle vectors of parameters.*/
-class SlvParameter_base : virtual public SlvIOS {
+public:
+    SlvVirtualGetName() {}
+    virtual ~SlvVirtualGetName() {}
+    /*! Get name of the instance.*/
+    virtual const std::string& get_name() const = 0;
+};
 
-protected:
+namespace slv {
+    /*! Some typical labels. Related to SlvLabeling.*/
+    namespace lbl {
+        typedef unsigned int Identifier;
+        static const Identifier null_Id = 99999999;
+        typedef std::string Name;// Related to SlvLblName.
+        static const Name null_name = "";
+    }
+}
 
-	SlvParametrization_base* parametrization;
-
-protected:
-
-	SlvParameter_base(SlvParametrization_base* _parametrization);
-	virtual ~SlvParameter_base();
-
-	bool is_param_init_auto() const;
+/*! Label class for unicity check. Mostly used to be inherited. Allows labeling of the child class with template type Tlabel.
+* The label is not supposed to change after instantation.*/
+template <class Tlabel>
+class SlvLabeling : virtual public SlvOS {
 
 public:
 
-	/*! Set parameter value using >> operator.*/
-	virtual void set_stream_value(const std::string& _string, bool _l_param_only = true) = 0;
-	/*! Get parameter value using << operator.*/
-	virtual std::string get_stream_value(bool _l_param_only = true) const = 0;
-
-	/*! Get parameter name.*/
-	virtual const std::string& get_name() const = 0;
-	/*! Get parameter description.*/
-	virtual const std::string& get_description() const = 0;
-	/*! Get parameter marker.*/
-	virtual const unsigned int& get_marker() const = 0;
-
-	/*! Check if rules are abided for this parameter. Rules can either depend only the parameter or either depend on other ones.*/
-	virtual SlvStatus check_rules() const = 0;
-
-	glvm_staticVariable(const, unsigned int, default_marker_value, 0)
-
-	/*! Get the number of rules.*/
-	virtual unsigned int get_Nrules() const = 0;
+	typedef Tlabel Tlabeling;
 
 private:
-	/*! Static cast attempt of parameter value. Returns NULL if the parameter value is not a parametrization.*/
-	virtual const SlvParametrization_base* parametrization_cast() const = 0;
 
-	friend class SlvParametrization_base;//for parametrization_cast
+	const Tlabel label;
 
-};
+public:
 
-/*! Class inherited by SlvParameterRuleT managing the value of the rule if the template type requires one.*/
-template <class Tparam>
-class SlvParameterRuleValue {
+	SlvLabeling(const Tlabel& _label);
+	~SlvLabeling();
+
+	/*! Get label value.*/
+	const Tlabel& get_label() const;
 
 protected:
 
-    Tparam rule_value;
-
-public:
-
-    SlvParameterRuleValue(Tparam _rule_value);
-    ~SlvParameterRuleValue();
-
-    /*! Get rule value.*/
-    const Tparam& get_rule_value() const;
+	void ostream(std::ostream& _os) const;
 
 };
 
-template <class Tparam>
-SlvParameterRuleValue<Tparam>::SlvParameterRuleValue(Tparam _rule_value) {
-    rule_value = _rule_value;
-}
-
-template <class Tparam>
-SlvParameterRuleValue<Tparam>::~SlvParameterRuleValue() {
+template <class Tlabel>
+SlvLabeling<Tlabel>::SlvLabeling(const Tlabel& _label) :label(_label) {
 
 }
 
-template <class Tparam>
-const Tparam& SlvParameterRuleValue<Tparam>::get_rule_value() const {
-    return rule_value;
+template <class Tlabel>
+SlvLabeling<Tlabel>::~SlvLabeling() {
+
 }
 
-template <class Tparam>
-class SlvParameter;
+template <class Tlabel>
+const Tlabel& SlvLabeling<Tlabel>::get_label() const {
+	return label;
+}
 
-/*! Class to specialize if necessary to manage validation a template type. Used by SlvParameterRuleT.*/
-template <class Tparam>
-struct SlvParameterRuleValidation {
+template <class Tlabel>
+void SlvLabeling<Tlabel>::ostream(std::ostream& _os) const {
+
+	_os << "SlvLabeling: " << label << std::endl;
+}
+
+/*! Convenience class to label as name (unsigned int)*/
+class SlvLblIdentifier : public SlvLabeling<slv::lbl::Identifier> {
+
 public:
-    static SlvStatus is_valid(const SlvParameter<Tparam>* _parameter) {
-        return SlvStatus();
-    }
+
+	SlvLblIdentifier(slv::lbl::Identifier _Id);
+	~SlvLblIdentifier();
+
+	/*! Reimplementation of get_label() as get_Id().*/
+	const slv::lbl::Identifier& get_Id() const;
+
 };
 
-template <>
-struct SlvParameterRuleValidation<SlvFile> {
+/*! Convenience class to label as name (std::string) using dedicated class SlvLabeling.*/
+class SlvLblName : public SlvLabeling<slv::lbl::Name>, virtual public SlvOS, virtual public SlvVirtualGetName {
+
 public:
-	static SlvStatus is_valid(const SlvParameter<SlvFile>* _parameter);
+
+	SlvLblName(std::string _name);
+	virtual ~SlvLblName();
+
+	/*! Reimplementation of get_label() as get_name().*/
+	const std::string& get_name() const;
+
+private:
+
+	void ostream(std::ostream& _os) const;
+
 };
 
-template <>
-struct SlvParameterRuleValidation<SlvDirectory> {
+/*! Convenience class to be inherited to provide a direct method to write the instance into a binary file.*/
+class SlvWriteBinary {
+
 public:
-	static SlvStatus is_valid(const SlvParameter<SlvDirectory>* _parameter);
+
+	SlvWriteBinary();
+	virtual ~SlvWriteBinary();
+
+	/*! Export the object by writing the BINARY file at \p _file_path.*/
+	SlvStatus write_binary(std::string _file_path, std::ios::openmode _position = std::ios::trunc) const;
+
+	/*! Binary write method to implement.*/
+	virtual void writeB(std::ofstream& _output_file) const = 0;
+
+};
+
+/*! Convenience class to be inherited to provide a direct method to read the instance from a binary file.*/
+class SlvReadBinary {
+
+public:
+
+	SlvReadBinary();
+	virtual ~SlvReadBinary();
+
+	/*! Set the object by reading the BINARY file at \p _file_path.*/
+	SlvStatus read_binary(std::string _file_path);
+
+	/*! Binary read method to implement.*/
+	virtual bool readB(std::ifstream& _input_file) = 0;
+
+};
+
+/*! Convenience class to both read and write the instance into a binary file.*/
+class SlvReadWriteBinary : virtual public SlvReadBinary, virtual public SlvWriteBinary {
+
+public:
+
+	SlvReadWriteBinary() {}
+	~SlvReadWriteBinary() {}
+
+};
+
+/*! Class providing basic name management with get/set accessors.*/
+class SlvName {
+
+protected:
+
+    std::string name;
+
+public:
+
+    SlvName(std::string _name);
+    ~SlvName();
+
+    const std::string& get_name() const;
+    void set_name(const std::string& _name);
+
+};
+
+/*! Convenience class to manage file writing by using automatically the name of the instance.
+* Tname_class must have the method std::string get_name().*/
+template <class Tname_class>
+class SlvWriteBinaryNamedT : virtual public SlvWriteBinary, public Tname_class {
+
+public:
+
+	SlvWriteBinaryNamedT(std::string _name = "") :Tname_class(_name) {}
+	~SlvWriteBinaryNamedT() {}
+
+	/*! Write the instance in a file named after the instance's name.
+	* \p _prefix_path can be set so that the path will be such as \p _prefix_path + get_name()*/
+	SlvStatus write_binary_auto(std::string _prefix_path = "", std::ios::openmode _position = std::ios::trunc) const;
+
+};
+
+template <class Tname_class>
+SlvStatus SlvWriteBinaryNamedT<Tname_class>::write_binary_auto(std::string _prefix, std::ios::openmode _position) const {
+
+	return SlvWriteBinary::write_binary(_prefix + Tname_class::get_name(), _position);
+
+}
+
+/*! Convenience class.*/
+typedef SlvWriteBinaryNamedT<SlvLblName> SlvWriteBinaryLblNamed;
+
+/*! Convenience class.*/
+typedef SlvWriteBinaryNamedT<SlvName> SlvWriteBinaryNamed;
+
+/*! Class to be inherited to provide file output stream.*/
+class SlvOFS {
+
+public:
+
+	SlvOFS();
+	virtual ~SlvOFS();
+
+	friend std::ofstream& operator<<(std::ofstream& _os, const SlvOFS& _OFS);
+
+protected:
+
+	/*! Output file stream method to reimplement.*/
+	virtual void ofstream(std::ofstream& _ofs) const = 0;
+
+};
+
+/*! Convenience class to be inherited to provide a direct method to write the instance into a text file.*/
+class SlvWriteText : public SlvOFS {
+
+public:
+
+	SlvWriteText();
+	virtual ~SlvWriteText();
+
+	/*! Export the object by writing the TEXT file (Clear writing) at \p _file_path.
+	* Uses operator<<.*/
+	SlvStatus write_text(std::string _file_path, std::ios::openmode _position = std::ios::trunc) const;
+
+};
+
+/*! Class to be inherited to provide file input stream.*/
+class SlvIFS {
+
+public:
+
+	SlvIFS();
+	virtual ~SlvIFS();
+
+	friend std::ifstream& operator>>(std::ifstream& _is, SlvIFS& _IFS);
+
+protected:
+
+	/*! Input file stream method to reimplement.*/
+	virtual void ifstream(std::ifstream& _ifs) = 0;
+
+};
+
+/*! Convenience class to be inherited to provide a direct method to read the instance from a text file.*/
+class SlvReadText : public SlvIFS {
+
+public:
+
+	SlvReadText();
+	virtual ~SlvReadText();
+
+	/*! Set the object by reading the TEXT file (Clear reading) at \p _file_path.
+	* Uses operator>>.*/
+	SlvStatus read_text(std::string _file_path);
+
+};
+
+/*! Convenience class to both read and write the instance into a text file.*/
+class SlvReadWriteText : virtual public SlvReadText, virtual public SlvWriteText {
+
+public:
+
+	SlvReadWriteText() {}
+	~SlvReadWriteText() {}
+
+};
+
+/*! Convenience class to inherit both from SlvIFS and SlvOFS.*/
+class SlvIOFS : virtual public SlvIFS, virtual public SlvOFS {
+
+public:
+
+	SlvIOFS() {}
+	~SlvIOFS() {}
+
+};
+
+/*! Macro for method detection in a struct/class/type, for instance when using std::enable_if.
+* struct_name is the name of the structure to be used such as: std::enable_if<struct_name<T>::value>
+* method_name is the method struct_name is supposed to contain such as: struct_name::method_name.
+* method_name must be a public method.*/
+#define glvm_SlvHasMethod(struct_name, method_name) \
+template <typename T>\
+class struct_name {\
+    typedef char one;\
+    struct two { char x[2]; };\
+    template <typename C> static one test(decltype(&C::method_name));\
+    template <typename C> static two test(...);\
+public:\
+    enum { value = sizeof(test<T>(0)) == sizeof(char) };\
+};
+
+/*! Same as glvm_SlvHasMethod but can manage overloaded methods.*/
+#define glvm_SlvHasMethodSignature(struct_name, method_type, method_name, method_argument) \
+template <typename T>\
+class struct_name {\
+    typedef char one;\
+    struct two { char x[2]; };\
+    template <typename C> static one test(decltype(method_type (std::declval<C &>().method_name(method_argument)))*);\
+    template <typename C> static two test(...);\
+public:\
+    enum { value = sizeof(test<T>(0)) == sizeof(char) };\
+};
+
+template <typename T>
+struct SlvHasOstreamOperator {
+    template <typename V>
+    static auto test(void*) -> decltype(std::declval<std::ostream>() << std::declval<V>(), void());
+    template <typename>
+    static auto test(...) -> std::false_type;
+
+    static constexpr bool value = std::is_same<decltype(test<T>(nullptr)), void>::value;
+};
+
+template <typename T>
+struct SlvHasIstreamOperator {
+    template <typename V>
+    static auto test(void*) -> decltype(std::declval<std::istream>() >> std::declval<V&>(), void());
+    template <typename>
+    static auto test(...) -> std::false_type;
+
+    static constexpr bool value = std::is_same<decltype(test<T>(nullptr)), void>::value;
+};
+
+/*! Macro for type detection, for instance when using std::enable_if.
+* struct_name is the name of the structure to be used such as: std::enable_if<struct_name<T>::value>
+* Ttest_subtype is the type struct_name is supposed to contain such as: struct_name::Ttest_subtype */
+#define glvm_SlvIsType(struct_name, Ttest_subtype) \
+template <class Ttested_type>\
+struct struct_name  {\
+    template <class T>\
+    static char test(typename T::Ttest_subtype*);\
+    template <class T>\
+    static long test(T*);\
+    static const bool value = sizeof(test<Ttested_type>(0)) == 1;\
+};
+
+template <typename Tcontainer, typename = void>
+struct SlvIsContainer {
+    static constexpr bool value = false;
+};
+
+glvm_SlvIsType(SlvHasValueType, value_type)
+
+template <typename T, typename = void>
+struct SlvIsIterable : std::false_type {};
+
+template <typename T>
+struct SlvIsIterable<T, std::void_t<decltype(std::begin(std::declval<T&>())), decltype(std::end(std::declval<T&>()))> > : std::true_type {
+};
+
+template <typename Tcontainer>
+struct SlvIsContainer<Tcontainer, typename std::enable_if<SlvIsIterable<Tcontainer>::value && SlvHasValueType<Tcontainer>::value>::type> {
+    static constexpr bool value = true;
 };
 
 #ifndef GLOVE_DISABLE_QT
 
-class QLineEdit;
+class QVBoxLayout;
 class QPushButton;
-class QLabel;
+class QSpinBox;
 
-/*! Widget for selecting a file.
-* By default the widget is set to manage a file for read only.
-* Toggle Read/Write button to change mode.*/
-class GlvOpenFile : public QWidget {
+class GlvVectorWidget_base : public QWidget {
 
     Q_OBJECT
 
 private:
 
-    QLineEdit* line_edit;
-    QPushButton* push_button_read;
-    QPushButton* push_button_write;
-    QPushButton* button_rw;
-    SlvFileExtensions allowed_extensions;
-    /*! File filter for QFileDialog.*/
-    QString file_filter;
-    QStringList file_filters;
-    QLabel* read_status;
-    QLabel* write_status;
+    QWidget* widget_scroll;
+    QPushButton* button_push;
+    QPushButton* button_insert;
+    QSpinBox* index_spinbox;
 
-    /*! Input/output mode for the widget. Set once at construction.
-    * If IO::Any, both read an write are allowed.*/
-    const SlvFile::IO io_mode;
+protected:
 
-    /*! Whether a valid file has been selected or not.*/
-    std::map<QIODevice::OpenMode, bool> l_ready;
+    QWidget* buttons_widget;
+    QVBoxLayout* layout_items;
+    QPushButton* button_pop;
+
+    GlvVectorWidget_base(QWidget* _parent = 0);
+    virtual ~GlvVectorWidget_base();
 
 public:
 
-    /*! \p _file : default file.*/
-    GlvOpenFile(SlvFile _file, QWidget* _parent = 0);
-    /*! \p _default : default file path.*/
-    GlvOpenFile(QString _default = "", QWidget* _parent = 0);
-    /*! File filter, description as \p _description and extensions as \p _allowed_extensions/*/
-    GlvOpenFile(const std::string& _description, const SlvFileExtensions& _allowed_extensions, QWidget* _parent = 0);
-    ~GlvOpenFile();
-
-    /*! Return file instance. Check if is_ready() before using returned value.*/
-    SlvFile get_file() const;
-
-    /*! Whether a valid file has been selected or not for mode \p _mode.*/
-    bool is_ready(QIODevice::OpenMode _mode) const;
-    /*! Makes line edit read-only or not. Shows/hides the open directory button.*/
     void set_editable(bool l_editable);
-    /*! Set the file filter for QFileDialog.*/
-    void set_file_filter(QString _file_filter = QString(tr("All Files (*)")));
 
-private:
+protected slots:
 
-    /*! Return the file filter for QFileDialog based on \p _file properties (allowed extensions, etc).*/
-    static QString get_file_filter(const SlvFile& _file);
-    static QString get_file_filter(const std::string& _description, const SlvFileExtensions& _allowed_extensions);
-    /*! Return separate file filters for QFileDialog based on \p _file allowed extensions.*/
-    static QStringList get_file_filters(const SlvFile& _file);
-
-    /*! Check if file instance is ready for read and write.*/
-    void update_readiness();
-
-    static bool is_valid_read_file(const QString& _path);
-    static bool is_valid_write_file(const QString& _path);
-
-public slots:
-    /*! Opens QFileDialog to select a file. Read only. Returns true if a file was selected. Returns false if cancelled.*/
-    bool getOpenFileName();
-    /*! Opens QFileDialog to select a file. Write only.*/
-    void getSaveFileName();
-    /*! Set file instance by editing QLineEdit. If file is valid, sets instance as ready.
-    * Also set file filter based on the new \p _file.*/
-    void set_file(const SlvFile& _file);
-
-    /*! Changes read/write mode.*/
-    void change_mode(bool _l_write);
+    virtual void valueChanged_slot() = 0;
 
 private slots:
 
-    void file_changed_slot(const QString& _file_name);
+    virtual void pushValue() = 0;
+    virtual void popValue() = 0;
+    void insertValue();
+    virtual void insertValue(const unsigned int i) = 0;
 
 signals:
-
-    /*! Emitted when QLineEdit changes.*/
-    void file_changed(const QString& _file_name);
-
+    /*! Emitted when the value of the \p i -th widget is modified.*/
+    void valueChanged(int _index);
 };
-
-#if __cplusplus > 201402L
-
-#define Tdata std::filesystem::path
-/*! GlvWidgetData specialization for template type: std::filesystem::path.*/
-template <>
-class GlvWidgetData<Tdata> : public GlvOpenFile {
-
-public:
-    GlvWidgetData(Tdata _path = Tdata(), QWidget* _parent = 0) :GlvOpenFile(_path.generic_string(), _parent) {}
-    ~GlvWidgetData() {}
-
-    Tdata get_value() const {
-        return GlvOpenFile::get_file().get_path();
-    }
-    void set_value(const Tdata& _value) {
-        return GlvOpenFile::set_file(SlvFile(_value.generic_string()));
-    }
-};
-
-template <>
-struct GlvWidgetMakerConnect<Tdata> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(file_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
-    }
-};
-
-#undef Tdata
-#endif
-
-#define Tdata SlvFile
-
-/*! GlvWidgetData for type SlvFile.*/
-template <>
-class GlvWidgetData<Tdata> : public GlvOpenFile {
-
-public:
-    GlvWidgetData(Tdata _file = Tdata(), QWidget* _parent = 0);
-    ~GlvWidgetData();
-
-    Tdata get_value() const {
-        return GlvOpenFile::get_file();
-    }
-    void set_value(const Tdata& _value) {
-        return GlvOpenFile::set_file(_value);
-    }
-
-};
-
-template <>
-struct GlvWidgetMakerConnect<Tdata> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(file_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
-    }
-};
-
-#undef Tdata
 
 /*! First layer of template specialization possibility.
 * GlvWidgetMaker is also in charge of signals connection through GlvWidgetMakerConnect provided corresponding specialization is defined.
@@ -5661,50 +5222,6 @@ typename GlvWidgetMaker<Tvalue>::Twidget* GlvWidget<Tvalue>::get_widget() {
 
     return dynamic_cast<typename GlvWidgetMaker<Tvalue>::Twidget*>(data_widget);
 }
-
-class QVBoxLayout;
-class QPushButton;
-class QSpinBox;
-
-class GlvVectorWidget_base : public QWidget {
-
-    Q_OBJECT
-
-private:
-
-    QWidget* widget_scroll;
-    QPushButton* button_push;
-    QPushButton* button_insert;
-    QSpinBox* index_spinbox;
-
-protected:
-
-    QWidget* buttons_widget;
-    QVBoxLayout* layout_items;
-    QPushButton* button_pop;
-
-    GlvVectorWidget_base(QWidget* _parent = 0);
-    virtual ~GlvVectorWidget_base();
-
-public:
-
-    void set_editable(bool l_editable);
-
-protected slots:
-
-    virtual void valueChanged_slot() = 0;
-
-private slots:
-
-    virtual void pushValue() = 0;
-    virtual void popValue() = 0;
-    void insertValue();
-    virtual void insertValue(const unsigned int i) = 0;
-
-signals:
-    /*! Emitted when the value of the \p i -th widget is modified.*/
-    void valueChanged(int _index);
-};
 
 class QHBoxLayout;
 class QLabel;
@@ -5917,6 +5434,1297 @@ void GlvDescribedWidget<Tdata>::append_tool_tip(const std::string& _string) {
     }
 
 }
+
+#endif
+
+template <class Tparam>
+class SlvParameter;
+
+/*! Class to specialize if necessary to manage validation a template type. Used by SlvParameterRuleT.*/
+template <class Tparam>
+struct SlvParameterRuleValidation {
+public:
+    static SlvStatus is_valid(const SlvParameter<Tparam>* _parameter) {
+        return SlvStatus();
+    }
+};
+
+template <>
+struct SlvParameterRuleValidation<SlvFile> {
+public:
+	static SlvStatus is_valid(const SlvParameter<SlvFile>* _parameter);
+};
+
+template <>
+struct SlvParameterRuleValidation<SlvDirectory> {
+public:
+	static SlvStatus is_valid(const SlvParameter<SlvDirectory>* _parameter);
+};
+
+#ifndef GLOVE_DISABLE_QT
+
+class QLineEdit;
+class QPushButton;
+class QLabel;
+
+/*! Widget for selecting a file.
+* By default the widget is set to manage a file for read only.
+* Toggle Read/Write button to change mode.*/
+class GlvOpenFile : public QWidget {
+
+    Q_OBJECT
+
+private:
+
+    QLineEdit* line_edit;
+    QPushButton* push_button_read;
+    QPushButton* push_button_write;
+    QPushButton* button_rw;
+    SlvFileExtensions allowed_extensions;
+    /*! File filter for QFileDialog.*/
+    QString file_filter;
+    QStringList file_filters;
+    QLabel* read_status;
+    QLabel* write_status;
+
+    /*! Input/output mode for the widget. Set once at construction.
+    * If IO::Any, both read an write are allowed.*/
+    const SlvFile::IO io_mode;
+
+    /*! Whether a valid file has been selected or not.*/
+    std::map<QIODevice::OpenMode, bool> l_ready;
+
+public:
+
+    /*! \p _file : default file.*/
+    GlvOpenFile(SlvFile _file, QWidget* _parent = 0);
+    /*! \p _default : default file path.*/
+    GlvOpenFile(QString _default = "", QWidget* _parent = 0);
+    /*! File filter, description as \p _description and extensions as \p _allowed_extensions/*/
+    GlvOpenFile(const std::string& _description, const SlvFileExtensions& _allowed_extensions, QWidget* _parent = 0);
+    ~GlvOpenFile();
+
+    /*! Return file instance. Check if is_ready() before using returned value.*/
+    SlvFile get_file() const;
+
+    /*! Whether a valid file has been selected or not for mode \p _mode.*/
+    bool is_ready(QIODevice::OpenMode _mode) const;
+    /*! Makes line edit read-only or not. Shows/hides the open directory button.*/
+    void set_editable(bool l_editable);
+    /*! Set the file filter for QFileDialog.*/
+    void set_file_filter(QString _file_filter = QString(tr("All Files (*)")));
+
+private:
+
+    /*! Return the file filter for QFileDialog based on \p _file properties (allowed extensions, etc).*/
+    static QString get_file_filter(const SlvFile& _file);
+    static QString get_file_filter(const std::string& _description, const SlvFileExtensions& _allowed_extensions);
+    /*! Return separate file filters for QFileDialog based on \p _file allowed extensions.*/
+    static QStringList get_file_filters(const SlvFile& _file);
+
+    /*! Check if file instance is ready for read and write.*/
+    void update_readiness();
+
+    static bool is_valid_read_file(const QString& _path);
+    static bool is_valid_write_file(const QString& _path);
+
+public slots:
+    /*! Opens QFileDialog to select a file. Read only. Returns true if a file was selected. Returns false if cancelled.*/
+    bool getOpenFileName();
+    /*! Opens QFileDialog to select a file. Write only.*/
+    void getSaveFileName();
+    /*! Set file instance by editing QLineEdit. If file is valid, sets instance as ready.
+    * Also set file filter based on the new \p _file.*/
+    void set_file(const SlvFile& _file);
+
+    /*! Changes read/write mode.*/
+    void change_mode(bool _l_write);
+
+private slots:
+
+    void file_changed_slot(const QString& _file_name);
+
+signals:
+
+    /*! Emitted when QLineEdit changes.*/
+    void file_changed(const QString& _file_name);
+
+};
+
+#if __cplusplus > 201402L
+
+#define Tdata std::filesystem::path
+/*! GlvWidgetData specialization for template type: std::filesystem::path.*/
+template <>
+class GlvWidgetData<Tdata> : public GlvOpenFile {
+
+public:
+    GlvWidgetData(Tdata _path = Tdata(), QWidget* _parent = 0) :GlvOpenFile(_path.generic_string(), _parent) {}
+    ~GlvWidgetData() {}
+
+    Tdata get_value() const {
+        return GlvOpenFile::get_file().get_path();
+    }
+    void set_value(const Tdata& _value) {
+        return GlvOpenFile::set_file(SlvFile(_value.generic_string()));
+    }
+};
+
+template <>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(file_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
+    }
+};
+
+#undef Tdata
+#endif
+
+#define Tdata SlvFile
+
+/*! GlvWidgetData for type SlvFile.*/
+template <>
+class GlvWidgetData<Tdata> : public GlvOpenFile {
+
+public:
+    GlvWidgetData(Tdata _file = Tdata(), QWidget* _parent = 0);
+    ~GlvWidgetData();
+
+    Tdata get_value() const {
+        return GlvOpenFile::get_file();
+    }
+    void set_value(const Tdata& _value) {
+        return GlvOpenFile::set_file(_value);
+    }
+
+};
+
+template <>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(file_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
+    }
+};
+
+#undef Tdata
+
+/*! Widget for std::pair.*/
+class GlvPairWidget_base : public QWidget {
+    Q_OBJECT
+protected:
+    GlvPairWidget_base(QWidget* _parent = 0) : QWidget(_parent) {}
+    virtual ~GlvPairWidget_base() {}
+public:
+    void set_editable(bool l_editable) {
+        QWidget::setEnabled(l_editable);
+    }
+signals:
+    /*! Emitted when first of pair is modified.*/
+    void valueChanged_first();
+    /*! Emitted when second of pair is modified.*/
+    void valueChanged_second();
+};
+
+template <class T>
+class GlvWidget;
+
+#define _Tdata_ std::pair<T1, T2>
+
+/*! Widget for std::pair.*/
+template <class T1, class T2>
+class GlvPairWidget : public GlvPairWidget_base {
+
+private:
+
+    GlvWidget<T1>* subwidget1;
+    GlvWidget<T2>* subwidget2;
+
+public:
+
+    GlvPairWidget(_Tdata_ _pair = _Tdata_(), QWidget* _parent = 0);
+    ~GlvPairWidget();
+
+    void set_pair(const _Tdata_ _pair);
+    _Tdata_ get_pair() const;
+
+};
+
+template <class T1, class T2>
+GlvPairWidget<T1, T2>::GlvPairWidget(_Tdata_ _pair, QWidget* _parent) : GlvPairWidget_base(_parent) {
+
+    QHBoxLayout* layout = new QHBoxLayout;
+    setLayout(layout);
+
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    bool l_editable = true;
+    subwidget1 = new GlvWidget<T1>(_pair.first, l_editable, _parent);
+    connect(subwidget1, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_first()));
+    layout->addWidget(subwidget1);
+    subwidget2 = new GlvWidget<T2>(_pair.second, l_editable, _parent);
+    connect(subwidget2, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_second()));
+    layout->addWidget(subwidget2);
+
+}
+
+template <class T1, class T2>
+GlvPairWidget<T1, T2>::~GlvPairWidget() {
+
+}
+
+template <class T1, class T2>
+void GlvPairWidget<T1, T2>::set_pair(const _Tdata_ _pair) {
+
+    subwidget1->set_value(_pair.first);
+    subwidget2->set_value(_pair.second);
+
+}
+
+template <class T1, class T2>
+_Tdata_ GlvPairWidget<T1, T2>::get_pair() const {
+
+    _Tdata_ value;
+    value.first = subwidget1->get_value();
+    value.second = subwidget2->get_value();
+    return value;
+
+}
+
+#undef _Tdata_
+
+#define Tdata std::pair<T1, T2>
+/*! GlvWidgetData specialization for template type: std::pair.*/
+template <class T1, class T2>
+class GlvWidgetData<Tdata> : public GlvPairWidget<T1, T2> {
+
+public:
+    GlvWidgetData(Tdata _pair = Tdata(), QWidget* _parent = 0) :GlvPairWidget<T1, T2>(_pair, _parent) {}
+    ~GlvWidgetData() {}
+
+    Tdata get_value() const {
+        return GlvPairWidget<T1, T2>::get_pair();
+    }
+    void set_value(const Tdata& _value) {
+        return GlvPairWidget<T1, T2>::set_pair(_value);
+    }
+
+};
+
+template <class T1, class T2>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(valueChanged_first()), _widget_connector, SLOT(valueChanged_slot()));
+        QObject::connect(_widget, SIGNAL(valueChanged_second()), _widget_connector, SLOT(valueChanged_slot()));
+    }
+};
+
+#undef Tdata
+
+template <class T>
+class GlvWidget;
+template <class T>
+class GlvVectorWidget;
+
+/*! Item widget for GlvVectorWidget.*/
+template <class T>
+class GlvVectorWidgetItem : public GlvVectorWidgetItem_base {
+
+private:
+
+    /*! Widget of the data.*/
+    GlvWidget<T>* widget;
+    /*! Vector widget the item belongs to.*/
+    GlvVectorWidget<T>* parent;
+
+private:
+
+    /*! \p _value : Initialization value.
+    * \p _index : index in GlvVectorWidget.*
+    * \p _parent : Vector widget the item belongs to.*/
+    GlvVectorWidgetItem(const T& _value, const unsigned int _index, GlvVectorWidget<T>* _parent);
+    ~GlvVectorWidgetItem();
+
+public:
+    T get_value() const;
+    void set_value(const T _value);
+private:
+    GlvWidget<T>* get_widget() const;
+    void increment_index();
+    void decrement_index();
+    void update_label_index();
+
+    /*! Remove in GlvVectorWidget at index contained in the instance.*/
+    void remove();
+
+    friend class GlvVectorWidget<T>;
+
+};
+
+template <class T>
+GlvVectorWidgetItem<T>::GlvVectorWidgetItem(const T& _value, const unsigned int _index, GlvVectorWidget<T>* _parent) {
+
+    widget = new GlvWidget<T>(_value);
+    index = _index;
+    parent = _parent;
+
+    label_index = new QLabel;
+    update_label_index();
+    remove_button = new QPushButton(tr("Remove"));
+    layout->addWidget(label_index);
+    layout->addWidget(widget);
+    layout->addWidget(remove_button);
+
+    connect(remove_button, SIGNAL(clicked()), this, SLOT(remove()));
+    connect(widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged()));
+
+}
+
+template <class T>
+GlvVectorWidgetItem<T>::~GlvVectorWidgetItem() {
+
+}
+
+template <class T>
+T GlvVectorWidgetItem<T>::get_value() const {
+
+    return widget->get_value();
+
+}
+
+template <class T>
+void GlvVectorWidgetItem<T>::set_value(const T _value) {
+
+    widget->set_value(_value);
+
+}
+
+template <class T>
+GlvWidget<T>* GlvVectorWidgetItem<T>::get_widget() const {
+    return widget;
+}
+
+template <class T>
+void GlvVectorWidgetItem<T>::increment_index() {
+    index++;
+    update_label_index();
+}
+
+template <class T>
+void GlvVectorWidgetItem<T>::decrement_index() {
+    index--;
+    update_label_index();
+}
+
+template <class T>
+void GlvVectorWidgetItem<T>::update_label_index() {
+    label_index->setText(glv::toQString(index));
+}
+
+template <class T>
+void GlvVectorWidgetItem<T>::remove() {
+    parent->removeWidget(index);
+}
+
+#define _Tdata_ std::vector<T>
+
+class QVBoxLayout;
+template <class T>
+class GlvVectorWidgetItem;
+template <class Tvalue>
+class GlvWidget;
+
+/*! Widget to manage interface of std::vector.*/
+template <class T>
+class GlvVectorWidget : public GlvVectorWidget_base {
+
+protected:
+
+    std::vector<GlvVectorWidgetItem<T>*> widgets;
+
+public:
+
+    GlvVectorWidget(_Tdata_ _vector = _Tdata_(), QWidget* _parent = 0);
+    ~GlvVectorWidget();
+
+    /*! Set vector.*/
+    void set_value(const _Tdata_& _vector);
+    /*! Get vector.*/
+    _Tdata_ get_value() const;
+
+    void pushValue(T _value);
+    /*! Reimplementation of virtual method.*/
+    void pushValue();
+    void popValue();
+    /*! New value at index \p i.*/
+    void insertValue(const unsigned int i);
+    /*! Get widget of index \p i.*/
+    GlvWidget<T>* operator[] (const unsigned int i);
+
+private:
+
+    void valueChanged_slot();
+    void removeWidget(const unsigned int i);
+
+    friend class GlvVectorWidgetItem<T>;
+};
+
+template <class T>
+GlvVectorWidget<T>::GlvVectorWidget(_Tdata_ _vector, QWidget* _parent) : GlvVectorWidget_base(_parent) {
+
+    set_value(_vector);
+
+}
+
+template <class T>
+GlvVectorWidget<T>::~GlvVectorWidget() {
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::set_value(const _Tdata_& _vector) {
+
+    int N = (int)std::min(widgets.size(), _vector.size());
+
+    for (int i = 0; i < N; i++) {
+        widgets[i]->set_value(_vector[i]);
+    }
+
+    if (widgets.size() < _vector.size()) {
+        for (int i = N; i < _vector.size(); i++) {
+            pushValue(_vector[i]);
+        }
+    } else if (widgets.size() > _vector.size()) {
+        for (int i = N; i < widgets.size(); i++) {
+            layout_items->removeWidget(widgets[i]);
+            delete widgets[i];
+        }
+        widgets.resize(_vector.size());
+    }
+
+}
+
+template <class T>
+_Tdata_ GlvVectorWidget<T>::get_value() const {
+
+    _Tdata_ value(widgets.size());
+    for (int i = 0; i < widgets.size(); i++) {
+        value[i] = widgets[i]->get_value();
+    }
+    return value;
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::pushValue(T _value) {
+
+    GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(_value, (int)widgets.size(), this);
+    widgets.push_back(widget);
+    layout_items->insertWidget((int)widgets.size() - 1, widget);
+    connect(widget, SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
+    button_pop->setEnabled(true);
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::insertValue(const unsigned int i) {
+
+    unsigned int j = i;
+    if (j >= (unsigned int)widgets.size()) {
+        j = (unsigned int)widgets.size() - 1;
+    }
+    GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(T(), j, this);
+    layout_items->insertWidget(j, widget);
+    widgets.insert(widgets.begin() + j, widget);
+    connect(widget->get_widget(), SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
+    button_pop->setEnabled(true);
+
+    for (unsigned int k = j + 1; k < widgets.size(); k++) {
+        widgets[k]->increment_index();
+    }
+
+}
+
+template <class T>
+GlvWidget<T>* GlvVectorWidget<T>::operator[] (const unsigned int i) {
+    return widgets[i]->get_widget();
+}
+
+template <class T>
+void GlvVectorWidget<T>::pushValue() {
+
+    pushValue(T());
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::popValue() {
+
+    if (!widgets.empty()) {
+        removeWidget((int)widgets.size() - 1);
+    }
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::valueChanged_slot() {
+
+    GlvVectorWidgetItem<T>* item = dynamic_cast<GlvVectorWidgetItem<T>*>(QObject::sender());
+    if (item) {
+        emit valueChanged(item->index);
+    }
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::removeWidget(const unsigned int i) {
+
+    if (!widgets.empty()) {
+
+        layout_items->removeWidget(widgets[i]);
+        delete widgets[i];
+        widgets.erase(widgets.begin() + i);
+
+        for (unsigned int j = i; j < widgets.size(); j++) {
+            widgets[j]->decrement_index();
+        }
+    }
+
+    if (widgets.empty()) {
+        button_pop->setEnabled(false);
+    }
+
+}
+
+#undef _Tdata_
+
+#define _Tdata_ std::array<T, N>
+
+/*! Widget to manage interface of std::vector.*/
+template <class T, size_t N>
+class GlvArrayWidget : public GlvVectorWidget<T> {
+
+public:
+
+    GlvArrayWidget(_Tdata_ _array = _Tdata_(), QWidget* _parent = 0);
+    ~GlvArrayWidget();
+
+    /*! Set vector.*/
+    void set_value(const _Tdata_& _array);
+    /*! Get vector.*/
+    _Tdata_ get_value() const;
+
+private:
+    using GlvVectorWidget<T>::pushValue;
+    using GlvVectorWidget<T>::popValue;
+    using GlvVectorWidget<T>::insertValue;
+
+};
+
+template <class T, size_t N>
+GlvArrayWidget<T, N>::GlvArrayWidget(_Tdata_ _array, QWidget* _parent) : GlvVectorWidget<T>({}, _parent) {
+
+    this->buttons_widget->hide();
+
+    for (int i = 0; i < N; i++) {
+        pushValue();
+        this->widgets[i]->show_remove_button(false);
+    }
+
+    set_value(_array);
+
+}
+
+template <class T, size_t N>
+GlvArrayWidget<T, N>::~GlvArrayWidget() {
+
+}
+
+template <class T, size_t N>
+void GlvArrayWidget<T, N>::set_value(const _Tdata_& _array) {
+
+    for (int i = 0; i < N; i++) {
+        this->widgets[i]->set_value(_array[i]);
+    }
+
+}
+
+template <class T, size_t N>
+_Tdata_ GlvArrayWidget<T, N>::get_value() const {
+
+    _Tdata_ value;
+    for (int i = 0; i < N; i++) {
+        value[i] = this->widgets[i]->get_value();
+    }
+    return value;
+
+}
+
+#undef _Tdata_
+
+#endif
+
+template <typename Tcontainer, typename = void>
+struct SlvIsMap {
+    static constexpr bool value = false;
+};
+
+template <class Tkey, class Tvalue>
+struct SlvIsMap< std::map<Tkey, Tvalue> > {
+    static constexpr bool value = true;
+};
+
+template <class Tkey, class Tvalue>
+struct SlvIsMap< std::unordered_map<Tkey, Tvalue> > {
+    static constexpr bool value = true;
+};
+
+#ifndef GLOVE_DISABLE_QT
+
+// Do not enable if value_type is a container. GlvWidgetData_spec_std_container_container.h is used instead
+#define Tenable typename std::enable_if<!SlvIsContainer<T>::value || SlvIsMap<T>::value || std::is_same<T, std::string>::value>::type
+
+#define Tdata std::array<T, N>
+/*! GlvWidgetData specialization for template type: std::vector.*/
+template <class T, size_t N>
+class GlvWidgetData<Tdata, Tenable> : public GlvArrayWidget<T, N> {
+
+public:
+    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvArrayWidget<T, N>(_vector, _parent) {}
+    ~GlvWidgetData() {}
+
+};
+
+template <class T, size_t N>
+struct GlvWidgetMakerConnect<Tdata, Tenable> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
+    }
+};
+
+#undef Tdata
+#undef Tenable
+
+// Do not enable if value_type is a container. GlvWidgetData_spec_std_container_container.h is used instead
+#define Tenable typename std::enable_if<!SlvIsContainer<T>::value || SlvIsMap<T>::value || std::is_same<T, std::string>::value>::type
+
+#define Tdata std::vector<T>
+/*! GlvWidgetData specialization for template type: std::vector.*/
+template <class T>
+class GlvWidgetData<Tdata, Tenable> : public GlvVectorWidget<T> {
+
+public:
+    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvVectorWidget<T>(_vector, _parent) {}
+    ~GlvWidgetData() {}
+
+};
+
+template <class T>
+struct GlvWidgetMakerConnect<Tdata, Tenable> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
+    }
+};
+
+#undef Tdata
+#undef Tenable
+
+class QVBoxLayout;
+class QHBoxLayout;
+class QPushButton;
+
+class GlvMapWidget_base : public QWidget {
+
+    Q_OBJECT
+
+private:
+
+    QWidget* widget_scroll;
+    QPushButton* button_insert;
+
+protected:
+
+    QVBoxLayout* layout_items;
+    QHBoxLayout* insert_layout;
+
+    GlvMapWidget_base(QWidget* _parent = 0);
+    virtual ~GlvMapWidget_base();
+
+public:
+
+    void set_editable(bool l_editable);
+
+protected slots:
+
+    virtual void valueChanged_slot() = 0;
+
+private slots:
+
+    virtual void insertValue() = 0;
+
+signals:
+    /*! Emitted when the value of the \p index-th widget is modified.*/
+    void valueChanged(int _index);
+};
+
+class QHBoxLayout;
+class QLabel;
+class QPushButton;
+
+/*! Item widget for GlvMapWidget.*/
+class GlvMapWidgetItem_base : public QWidget {
+
+    Q_OBJECT
+
+protected:
+
+    QHBoxLayout* layout;
+    /*! Index of the widget in its GlvMapWidget.*/
+    unsigned int index;
+    QPushButton* remove_button;
+
+    GlvMapWidgetItem_base();
+    virtual ~GlvMapWidgetItem_base();
+
+protected slots:
+
+    virtual void remove() = 0;
+
+signals:
+    void valueChanged();
+};
+
+template <class T>
+class GlvWidget;
+template <class Tkey, class Tvalue, class Tcompare>
+class GlvMapWidget;
+
+/*! Item widget for GlvMapWidget.*/
+template <class Tkey, class Tvalue, class Tcompare>
+class GlvMapWidgetItem : public GlvMapWidgetItem_base {
+
+private:
+
+    /*! Widget of the key.*/
+    GlvWidget<Tkey>* key_widget;
+    /*! Widget of the data.*/
+    GlvWidget<Tvalue>* value_widget;
+    /*! Map widget the item belongs to.*/
+    GlvMapWidget<Tkey, Tvalue, Tcompare>* parent;
+
+private:
+
+    /*! \p _key : Key.
+    * \p _value : Initialization value.
+    * \p _index : index in GlvMapWidget.*
+    * \p _parent : Vector widget the item belongs to.*/
+    GlvMapWidgetItem(const Tkey& _key, const Tvalue& _value, const unsigned int _index, GlvMapWidget<Tkey, Tvalue, Tcompare>* _parent);
+    ~GlvMapWidgetItem();
+
+    Tkey get_key() const;
+    void set_key(const Tkey _key);
+    Tvalue get_value() const;
+    void set_value(const Tvalue _value);
+    GlvWidget<Tkey>* get_key_widget() const;
+    GlvWidget<Tvalue>* get_value_widget() const;
+    void increment_index();
+    void decrement_index();
+
+    /*! Remove in GlvMapWidget at index contained in the instance.*/
+    void remove();
+
+    friend class GlvMapWidget<Tkey, Tvalue, Tcompare>;
+};
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::GlvMapWidgetItem(const Tkey& _key, const Tvalue& _value, const unsigned int _index, GlvMapWidget<Tkey, Tvalue, Tcompare>* _parent) {
+
+    key_widget = new GlvWidget<Tkey>(_key);
+    value_widget = new GlvWidget<Tvalue>(_value);
+    index = _index;
+    parent = _parent;
+
+    remove_button = new QPushButton(tr("Remove"));
+    layout->addWidget(key_widget);
+    layout->addWidget(value_widget);
+    layout->addWidget(remove_button);
+
+    connect(remove_button, SIGNAL(clicked()), this, SLOT(remove()));
+    connect(value_widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged()));
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::~GlvMapWidgetItem() {
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+Tkey GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_key() const {
+
+    return key_widget->get_value();
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::set_key(const Tkey _key) {
+
+    key_widget->set_value(_key);
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+Tvalue GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_value() const {
+
+    return value_widget->get_value();
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::set_value(const Tvalue _value) {
+
+    value_widget->set_value(_value);
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvWidget<Tkey>* GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_key_widget() const {
+    return key_widget;
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvWidget<Tvalue>* GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_value_widget() const {
+    return value_widget;
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::increment_index() {
+    index++;
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::decrement_index() {
+    index--;
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::remove() {
+    parent->removeWidget(index);
+}
+
+#define _Tdata_ std::map<Tkey, Tvalue>
+
+class QVBoxLayout;
+template <class Tkey, class Tvalue, class Tcompare>
+class GlvMapWidgetItem;
+template <class Tvalue>
+class GlvWidget;
+
+/*! Widget to manage interface of std::map.*/
+template <class Tkey, class Tvalue, class Tcompare = std::less<Tkey> >
+class GlvMapWidget : public GlvMapWidget_base {
+
+private:
+
+    std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*> widgets;
+
+    GlvWidget<Tkey>* insert_key_widget;
+
+    Tcompare compare_function;
+
+    bool l_editable_key;
+
+public:
+
+    GlvMapWidget(_Tdata_ _map = _Tdata_(), QWidget* _parent = 0);
+    ~GlvMapWidget();
+
+    /*! Set map.*/
+    void set_value(const _Tdata_& _map);
+    /*! Get map.*/
+    _Tdata_ get_value() const;
+
+    /*! Whether key is editable or not (default: false).*/
+    void set_key_editable(bool _l_editable);
+
+    /*! New value at current key.*/
+    void insertValue();
+    /*! Return true if inserted, false otherwise (key already exsists).*/
+    bool insertValue(const Tkey& _key, const Tvalue& _value);
+
+    /*! Get widget of index \p i.*/
+    GlvWidget<Tvalue>* operator[] (const unsigned int i);
+    /*! Get widget of key \p _key.*/
+    GlvWidget<Tvalue>* operator[] (const Tkey _key);
+
+private:
+
+    void insertValue(const int _i, const Tkey& _key, const Tvalue& _value);
+
+    void valueChanged_slot();
+    typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator removeWidget(const unsigned int i);
+    /*! Return index of the corresponding key. Second of pair for existence of the key (true).*/
+    std::pair<int, bool> find(const Tkey& _key) const;
+
+    friend class GlvMapWidgetItem<Tkey, Tvalue, Tcompare>;
+};
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvMapWidget<Tkey, Tvalue, Tcompare>::GlvMapWidget(_Tdata_ _map, QWidget* _parent) : GlvMapWidget_base(_parent) {
+
+    /*! Widget of the key for insert.*/
+    insert_key_widget = new GlvWidget<Tkey>();
+    this->insert_layout->addWidget(insert_key_widget);
+    l_editable_key = false;
+    set_value(_map);
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvMapWidget<Tkey, Tvalue, Tcompare>::~GlvMapWidget() {
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidget<Tkey, Tvalue, Tcompare>::set_value(const _Tdata_& _map) {
+
+    compare_function = _map.key_comp();
+
+    for (typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it = widgets.begin(); it != widgets.end();) {
+
+        if (_map.find((*it)->get_key_widget()->get_value()) == _map.end()) {
+            it = removeWidget((*it)->index);
+        } else {
+            ++it;
+        }
+
+    }
+
+    std::pair<int, bool> index;
+    for (typename _Tdata_::const_iterator it = _map.begin(); it != _map.end(); ++it) {
+
+        index = find(it->first);
+        if (index.second) {
+            widgets[index.first]->get_value_widget()->set_value(it->second);
+        } else {
+            insertValue(index.first, it->first, it->second);
+        }
+
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+_Tdata_ GlvMapWidget<Tkey, Tvalue, Tcompare>::get_value() const {
+
+    _Tdata_ value;
+    for (int i = 0; i < widgets.size(); i++) {
+        value[i] = widgets[i]->get_value();
+    }
+    return value;
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidget<Tkey, Tvalue, Tcompare>::set_key_editable(bool _l_editable) {
+
+    l_editable_key = _l_editable;
+
+    for (int i = 0; i < widgets.size(); i++) {
+        widgets[i]->get_key_widget()->set_editable(l_editable_key);
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue() {
+
+    Tkey key = insert_key_widget->get_value();
+
+    insertValue(key, Tvalue());
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+bool GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue(const Tkey& _key, const Tvalue& _value) {
+
+    std::pair<int, bool> index = find(_key);
+
+    if (!index.second) {
+        insertValue(index.first, _key, _value);
+        return true;
+    } else {
+        return false;
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue(const int _i, const Tkey& _key, const Tvalue& _value) {
+
+    GlvMapWidgetItem<Tkey, Tvalue, Tcompare>* widget = new GlvMapWidgetItem<Tkey, Tvalue, Tcompare>(_key, _value, _i, this);
+    widget->get_key_widget()->set_editable(l_editable_key);
+    layout_items->insertWidget(_i, widget);
+    widgets.insert(widgets.begin() + _i, widget);
+    connect(widget, SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
+
+    for (unsigned int k = _i + 1; k < widgets.size(); k++) {
+        widgets[k]->increment_index();
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvWidget<Tvalue>* GlvMapWidget<Tkey, Tvalue, Tcompare>::operator[] (const unsigned int i) {
+
+    return widgets[i]->get_value_widget();
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+GlvWidget<Tvalue>* GlvMapWidget<Tkey, Tvalue, Tcompare>::operator[] (const Tkey _key) {
+
+    std::pair<int, bool> index = find(_key);
+
+    if (index.second) {
+        return (*this)[index.first];
+    } else {
+        return NULL;
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+void GlvMapWidget<Tkey, Tvalue, Tcompare>::valueChanged_slot() {
+
+    GlvMapWidgetItem<Tkey, Tvalue, Tcompare>* item = dynamic_cast<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>(QObject::sender());
+    if (item) {
+        emit valueChanged(item->index);
+    }
+
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator GlvMapWidget<Tkey, Tvalue, Tcompare>::removeWidget(const unsigned int i) {
+
+    typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it;
+
+    if (!widgets.empty()) {
+
+        layout_items->removeWidget(widgets[i]);
+        delete widgets[i];
+        it = widgets.erase(widgets.begin() + i);
+
+        for (unsigned int j = i; j < widgets.size(); j++) {
+            widgets[j]->decrement_index();
+        }
+    } else {
+        it = widgets.end();
+    }
+
+    return it;
+}
+
+template <class Tkey, class Tvalue, class Tcompare>
+std::pair<int, bool> GlvMapWidget<Tkey, Tvalue, Tcompare>::find(const Tkey& _key) const {
+
+    std::pair<int, bool> result(0, false);
+
+    bool l_found = false;
+    for (typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it = widgets.begin(); it != widgets.end() && !l_found; ++it, result.first++) {
+        l_found = !compare_function((*it)->get_key_widget()->get_value(), _key);
+        if (l_found) {
+            result.second = ((*it)->get_key_widget()->get_value() == _key);
+        }
+    }
+
+    if (l_found) result.first--;
+
+    return result;
+
+}
+
+#undef _Tdata_
+
+#define Tdata std::map<Tkey, Tvalue>
+/*! GlvWidgetData specialization for template type: std::map.*/
+template <class Tkey, class Tvalue>
+class GlvWidgetData<Tdata> : public GlvMapWidget<Tkey, Tvalue> {
+
+public:
+    GlvWidgetData(Tdata _map = Tdata(), QWidget* _parent = 0) :GlvMapWidget<Tkey, Tvalue>(_map, _parent) {}
+    ~GlvWidgetData() {}
+
+};
+
+template <class Tkey, class Tvalue>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
+    }
+};
+
+#undef Tdata
+
+class GlvEnumWidget_base : public QComboBox {
+protected:
+    GlvEnumWidget_base(QWidget* _parent = 0) : QComboBox(_parent) {}
+    virtual ~GlvEnumWidget_base() {}
+public:
+    void set_editable(bool l_editable) {
+        QComboBox::setEnabled(l_editable);
+    }
+};
+
+template <class T, typename = void>
+class GlvEnumWidget;
+
+/*! Widget managing an enum type.
+* The enum must be created using the macro: glvm_SlvEnum. See sample001 for example.*/
+template <class Tenum>
+class GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type> : public GlvEnumWidget_base {
+
+public:
+
+    GlvEnumWidget(Tenum _enum = Tenum(), QWidget* _parent = 0);
+    ~GlvEnumWidget();
+
+    /*! Set the enum value.*/
+    void set_value(const Tenum _enum);
+    /*! Get the enum value.*/
+    Tenum get_value() const;
+
+};
+
+template <class Tenum>
+GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::GlvEnumWidget(Tenum _enum, QWidget* _parent) : GlvEnumWidget_base(_parent) {
+
+    for (unsigned int i = 0; i < SlvEnum<Tenum>::size(); i++) {
+        QString enum_name = glv::toQString(SlvEnum<Tenum>::get_name(i));
+        QComboBox::addItem(enum_name);
+    }
+    set_value(_enum);
+
+}
+
+template <class Tenum>
+GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::~GlvEnumWidget() {
+
+}
+
+template <class Tenum>
+void GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::set_value(const Tenum _enum) {
+
+    QComboBox::setCurrentIndex(SlvEnum<Tenum>::enum_positions().at(_enum));
+
+}
+
+template <class Tenum>
+Tenum GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::get_value() const {
+
+    return SlvEnum<Tenum>::enum_positions_inv()[QComboBox::currentIndex()];
+
+}
+
+/*! GlvWidgetData for enum type.*/
+template <class Tdata>
+class GlvWidgetData<Tdata, typename std::enable_if<std::is_enum<Tdata>::value>::type> : public GlvEnumWidget<Tdata> {
+
+public:
+    GlvWidgetData(Tdata _enum = Tdata(), QWidget* _parent = 0) :GlvEnumWidget<Tdata>(_enum, _parent) {}
+    ~GlvWidgetData() {}
+
+};
+
+template <class Tdata>
+struct GlvWidgetMakerConnect<Tdata, typename std::enable_if<std::is_enum<Tdata>::value>::type> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(currentIndexChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
+    }
+};
+
+class QLineEdit;
+class QPushButton;
+class QLabel;
+class QHBoxLayout;
+
+/*! Widget for selecting a directory.*/
+class GlvOpenDirectory : public QWidget {
+
+    Q_OBJECT
+
+private:
+
+    QLineEdit* line_edit;
+    QPushButton* push_button;
+    QLabel* status;
+    /*! Whether a valid directory has been selected or not.*/
+    bool l_ready;
+
+public:
+
+    /*! \p _directory : default directory.*/
+    GlvOpenDirectory(SlvDirectory _directory, QWidget* _parent = 0);
+    /*! \p _default : default directory path.*/
+    GlvOpenDirectory(QString _default = "", QWidget* _parent = 0);
+    ~GlvOpenDirectory();
+
+    /*! Return directory item. Check if is_ready() before using returned value.*/
+    SlvDirectory get_directory() const;
+
+    /*! Whether a valid directory has been selected or not.*/
+    bool is_ready() const;
+    /*! Makes line edit read-only or not. Shows/hides the open directory button.*/
+    void set_editable(bool l_editable);
+
+private:
+
+    /*! Check if directory is valid.*/
+    void update_readiness();
+
+public slots:
+    /*! Opens QFileDialog to select a directory.*/
+    void getExistingDirectory();
+    /*! Set directory item by editing QLineEdit. If directory is valid, sets instance as ready.*/
+    void set_directory(const SlvDirectory& _directory);
+
+private slots:
+
+    void directory_changed_slot(const QString& _directory_path);
+
+signals:
+
+    /*! Emitted when QLineEdit changes.*/
+    void directory_changed(const QString& _directory_path);
+
+};
+
+#define Tdata SlvDirectory
+
+/*! GlvWidgetData for type SlvDirectory.*/
+template <>
+class GlvWidgetData<Tdata> : public GlvOpenDirectory {
+
+public:
+	GlvWidgetData(Tdata _file = Tdata(), QWidget* _parent = 0);
+	~GlvWidgetData();
+
+	Tdata get_value() const {
+		return GlvOpenDirectory::get_directory();
+	}
+	void set_value(const Tdata& _value) {
+		return GlvOpenDirectory::set_directory(_value);
+	}
+
+};
+
+template <>
+struct GlvWidgetMakerConnect<Tdata> {
+	static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+		QObject::connect(_widget, SIGNAL(directory_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
+	}
+};
+
+#undef Tdata
 
 #endif
 
@@ -6519,1851 +7327,55 @@ public:
 
 #endif
 
-/*! Enable if not of specified type in an other file. For instance SlvParameterRuleT_spec_ParameterArithmetic.h*/
-#define Tenable typename std::enable_if<\
-(!slv::ts::is_arithmetic<Tparam>::value || \
-std::is_same<Tparam, bool>::value)\
->::type
-
-/*! Rule that a parameter SlvParameter is supposed to abide.
-* Same as SlvParameterRuleT_spec_Arithmetic, but instead of using static values for rule, uses a dynamic value in a SlvParameter. See dynamic_rules in SlvParameter.*/
-template <class Tparam>
-class SlvParameterRuleT<SlvParameter<Tparam>, Tenable> {
-
-public:
-	enum RuleType { valid, exception };
-
-private:
-	RuleType rule_type;
-	const SlvParameter<Tparam>* rule_parameter;
-
-public:
-	SlvParameterRuleT();
-	SlvParameterRuleT(RuleType _rule_type, const SlvParameter<Tparam>* _rule_parameter);
-	~SlvParameterRuleT();
-
-	/*! Get rule type of this parameter. Only one per rule instance.*/
-	const RuleType& get_rule_type() const;
-	/*! Return value the parameter this rule is associated to.*/
-	const Tparam& get_rule_value() const;
-
-	/*! Get string description of the rule.*/
-	std::string get_rule_description() const;
-
-	/*! Whether \p _parameter abides the rule or not.*/
-	SlvStatus is_abided(const SlvParameter<Tparam>* _parameter) const;
-	/*! Enforce rule to \p _parameter. Return true if the parameters was abiding the rule. Return false if the parameter was changed.*/
-	bool abide(SlvParameter<Tparam>* _parameter) const;
-};
-
-template <class Tparam>
-SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::SlvParameterRuleT() :SlvParameterRuleT(valid, 0) {
-
-}
-
-template <class Tparam>
-SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::SlvParameterRuleT(RuleType _rule_type, const SlvParameter<Tparam>* _rule_parameter) {
-
-	rule_type = _rule_type;
-	rule_parameter = _rule_parameter;
-}
-
-template <class Tparam>
-SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::~SlvParameterRuleT() {
-
-}
-
-template <class Tparam>
-const typename SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::RuleType& SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_type() const {
-
-	return rule_type;
-}
-
-template <class Tparam>
-const Tparam& SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_value() const {
-	return rule_parameter->get_value();
-}
-
-template <class Tparam>
-std::string SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_description() const {
-
-	return std::string();
-
-}
-
-template <class Tparam>
-SlvStatus SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::is_abided(const SlvParameter<Tparam>* _parameter) const {
-
-	return SlvStatus();
-}
-
-template <class Tparam>
-bool SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::abide(SlvParameter<Tparam>* _parameter) const {
-	return true;
-}
-
-#undef Tenable
-
 class SlvParametrization_base;
 
-/*! Rule that a parameter SlvParameter is supposed to abide. Specialization for template type which is a SlvParametrization.*/
-template <class Tparam>
-class SlvParameterRuleT<Tparam, typename std::enable_if<std::is_base_of<SlvParametrization_base, Tparam>::value>::type> {
-
-public:
-    SlvParameterRuleT() {}
-    ~SlvParameterRuleT() {}
-
-    /*! Whether \p _parameter abides the rule or not.*/
-    SlvStatus is_abided(const SlvParameter<Tparam>* _parameter) const {
-        return _parameter->get_value().check_parameters();
-    }
-    /*! Enforce rule to \p _parameter. Return true if the parameters was abiding the rule. Return false if the parameter was changed.*/
-    bool abide(SlvParameter<Tparam>* _parameter) const {
-        //return true;
-        Tparam parametrization = _parameter->get_value();
-        bool l_abide = parametrization.abide_rules();
-        _parameter->set_value(parametrization);
-        return l_abide;
-    }
-
-    /*! Get string description of the rule.*/
-    std::string get_rule_description() const {
-        return std::string();
-    }
-
-};
-
-/*! Macro for type detection, for instance when using std::enable_if.
-* struct_name is the name of the structure to be used such as: std::enable_if<struct_name<T>::value>
-* Ttest_subtype is the type struct_name is supposed to contain such as: struct_name::Ttest_subtype */
-#define glvm_SlvIsType(struct_name, Ttest_subtype) \
-template <class Ttested_type>\
-struct struct_name  {\
-    template <class T>\
-    static char test(typename T::Ttest_subtype*);\
-    template <class T>\
-    static long test(T*);\
-    static const bool value = sizeof(test<Ttested_type>(0)) == 1;\
-};
-
-template <typename Tcontainer, typename = void>
-struct SlvIsContainer {
-    static constexpr bool value = false;
-};
-
-glvm_SlvIsType(SlvHasValueType, value_type)
-
-template <typename T, typename = void>
-struct SlvIsIterable : std::false_type {};
-
-template <typename T>
-struct SlvIsIterable<T, std::void_t<decltype(std::begin(std::declval<T&>())), decltype(std::end(std::declval<T&>()))> > : std::true_type {
-};
-
-template <typename Tcontainer>
-struct SlvIsContainer<Tcontainer, typename std::enable_if<SlvIsIterable<Tcontainer>::value && SlvHasValueType<Tcontainer>::value>::type> {
-    static constexpr bool value = true;
-};
-
-#ifndef GLOVE_DISABLE_QT
-
-template <class T>
-class GlvWidget;
-template <class T>
-class GlvVectorWidget;
-
-/*! Item widget for GlvVectorWidget.*/
-template <class T>
-class GlvVectorWidgetItem : public GlvVectorWidgetItem_base {
-
-private:
-
-    /*! Widget of the data.*/
-    GlvWidget<T>* widget;
-    /*! Vector widget the item belongs to.*/
-    GlvVectorWidget<T>* parent;
-
-private:
-
-    /*! \p _value : Initialization value.
-    * \p _index : index in GlvVectorWidget.*
-    * \p _parent : Vector widget the item belongs to.*/
-    GlvVectorWidgetItem(const T& _value, const unsigned int _index, GlvVectorWidget<T>* _parent);
-    ~GlvVectorWidgetItem();
-
-public:
-    T get_value() const;
-    void set_value(const T _value);
-private:
-    GlvWidget<T>* get_widget() const;
-    void increment_index();
-    void decrement_index();
-    void update_label_index();
-
-    /*! Remove in GlvVectorWidget at index contained in the instance.*/
-    void remove();
-
-    friend class GlvVectorWidget<T>;
-
-};
-
-template <class T>
-GlvVectorWidgetItem<T>::GlvVectorWidgetItem(const T& _value, const unsigned int _index, GlvVectorWidget<T>* _parent) {
-
-    widget = new GlvWidget<T>(_value);
-    index = _index;
-    parent = _parent;
-
-    label_index = new QLabel;
-    update_label_index();
-    remove_button = new QPushButton(tr("Remove"));
-    layout->addWidget(label_index);
-    layout->addWidget(widget);
-    layout->addWidget(remove_button);
-
-    connect(remove_button, SIGNAL(clicked()), this, SLOT(remove()));
-    connect(widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged()));
-
-}
-
-template <class T>
-GlvVectorWidgetItem<T>::~GlvVectorWidgetItem() {
-
-}
-
-template <class T>
-T GlvVectorWidgetItem<T>::get_value() const {
-
-    return widget->get_value();
-
-}
-
-template <class T>
-void GlvVectorWidgetItem<T>::set_value(const T _value) {
-
-    widget->set_value(_value);
-
-}
-
-template <class T>
-GlvWidget<T>* GlvVectorWidgetItem<T>::get_widget() const {
-    return widget;
-}
-
-template <class T>
-void GlvVectorWidgetItem<T>::increment_index() {
-    index++;
-    update_label_index();
-}
-
-template <class T>
-void GlvVectorWidgetItem<T>::decrement_index() {
-    index--;
-    update_label_index();
-}
-
-template <class T>
-void GlvVectorWidgetItem<T>::update_label_index() {
-    label_index->setText(glv::toQString(index));
-}
-
-template <class T>
-void GlvVectorWidgetItem<T>::remove() {
-    parent->removeWidget(index);
-}
-
-#define _Tdata_ std::vector<T>
-
-class QVBoxLayout;
-template <class T>
-class GlvVectorWidgetItem;
-template <class Tvalue>
-class GlvWidget;
-
-/*! Widget to manage interface of std::vector.*/
-template <class T>
-class GlvVectorWidget : public GlvVectorWidget_base {
+/*! Parent class of SlvParameter<T> to handle vectors of parameters.*/
+class SlvParameter_base : virtual public SlvIOS {
 
 protected:
 
-    std::vector<GlvVectorWidgetItem<T>*> widgets;
-
-public:
-
-    GlvVectorWidget(_Tdata_ _vector = _Tdata_(), QWidget* _parent = 0);
-    ~GlvVectorWidget();
-
-    /*! Set vector.*/
-    void set_value(const _Tdata_& _vector);
-    /*! Get vector.*/
-    _Tdata_ get_value() const;
-
-    void pushValue(T _value);
-    /*! Reimplementation of virtual method.*/
-    void pushValue();
-    void popValue();
-    /*! New value at index \p i.*/
-    void insertValue(const unsigned int i);
-    /*! Get widget of index \p i.*/
-    GlvWidget<T>* operator[] (const unsigned int i);
-
-private:
-
-    void valueChanged_slot();
-    void removeWidget(const unsigned int i);
-
-    friend class GlvVectorWidgetItem<T>;
-};
-
-template <class T>
-GlvVectorWidget<T>::GlvVectorWidget(_Tdata_ _vector, QWidget* _parent) : GlvVectorWidget_base(_parent) {
-
-    set_value(_vector);
-
-}
-
-template <class T>
-GlvVectorWidget<T>::~GlvVectorWidget() {
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::set_value(const _Tdata_& _vector) {
-
-    int N = (int)std::min(widgets.size(), _vector.size());
-
-    for (int i = 0; i < N; i++) {
-        widgets[i]->set_value(_vector[i]);
-    }
-
-    if (widgets.size() < _vector.size()) {
-        for (int i = N; i < _vector.size(); i++) {
-            pushValue(_vector[i]);
-        }
-    } else if (widgets.size() > _vector.size()) {
-        for (int i = N; i < widgets.size(); i++) {
-            layout_items->removeWidget(widgets[i]);
-            delete widgets[i];
-        }
-        widgets.resize(_vector.size());
-    }
-
-}
-
-template <class T>
-_Tdata_ GlvVectorWidget<T>::get_value() const {
-
-    _Tdata_ value(widgets.size());
-    for (int i = 0; i < widgets.size(); i++) {
-        value[i] = widgets[i]->get_value();
-    }
-    return value;
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::pushValue(T _value) {
-
-    GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(_value, (int)widgets.size(), this);
-    widgets.push_back(widget);
-    layout_items->insertWidget((int)widgets.size() - 1, widget);
-    connect(widget, SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
-    button_pop->setEnabled(true);
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::insertValue(const unsigned int i) {
-
-    unsigned int j = i;
-    if (j >= (unsigned int)widgets.size()) {
-        j = (unsigned int)widgets.size() - 1;
-    }
-    GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(T(), j, this);
-    layout_items->insertWidget(j, widget);
-    widgets.insert(widgets.begin() + j, widget);
-    connect(widget->get_widget(), SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
-    button_pop->setEnabled(true);
-
-    for (unsigned int k = j + 1; k < widgets.size(); k++) {
-        widgets[k]->increment_index();
-    }
-
-}
-
-template <class T>
-GlvWidget<T>* GlvVectorWidget<T>::operator[] (const unsigned int i) {
-    return widgets[i]->get_widget();
-}
-
-template <class T>
-void GlvVectorWidget<T>::pushValue() {
-
-    pushValue(T());
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::popValue() {
-
-    if (!widgets.empty()) {
-        removeWidget((int)widgets.size() - 1);
-    }
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::valueChanged_slot() {
-
-    GlvVectorWidgetItem<T>* item = dynamic_cast<GlvVectorWidgetItem<T>*>(QObject::sender());
-    if (item) {
-        emit valueChanged(item->index);
-    }
-
-}
-
-template <class T>
-void GlvVectorWidget<T>::removeWidget(const unsigned int i) {
-
-    if (!widgets.empty()) {
-
-        layout_items->removeWidget(widgets[i]);
-        delete widgets[i];
-        widgets.erase(widgets.begin() + i);
-
-        for (unsigned int j = i; j < widgets.size(); j++) {
-            widgets[j]->decrement_index();
-        }
-    }
-
-    if (widgets.empty()) {
-        button_pop->setEnabled(false);
-    }
-
-}
-
-#undef _Tdata_
-
-#define _Tdata_ std::array<T, N>
-
-/*! Widget to manage interface of std::vector.*/
-template <class T, size_t N>
-class GlvArrayWidget : public GlvVectorWidget<T> {
-
-public:
-
-    GlvArrayWidget(_Tdata_ _array = _Tdata_(), QWidget* _parent = 0);
-    ~GlvArrayWidget();
-
-    /*! Set vector.*/
-    void set_value(const _Tdata_& _array);
-    /*! Get vector.*/
-    _Tdata_ get_value() const;
-
-private:
-    using GlvVectorWidget<T>::pushValue;
-    using GlvVectorWidget<T>::popValue;
-    using GlvVectorWidget<T>::insertValue;
-
-};
-
-template <class T, size_t N>
-GlvArrayWidget<T, N>::GlvArrayWidget(_Tdata_ _array, QWidget* _parent) : GlvVectorWidget<T>({}, _parent) {
-
-    this->buttons_widget->hide();
-
-    for (int i = 0; i < N; i++) {
-        pushValue();
-        this->widgets[i]->show_remove_button(false);
-    }
-
-    set_value(_array);
-
-}
-
-template <class T, size_t N>
-GlvArrayWidget<T, N>::~GlvArrayWidget() {
-
-}
-
-template <class T, size_t N>
-void GlvArrayWidget<T, N>::set_value(const _Tdata_& _array) {
-
-    for (int i = 0; i < N; i++) {
-        this->widgets[i]->set_value(_array[i]);
-    }
-
-}
-
-template <class T, size_t N>
-_Tdata_ GlvArrayWidget<T, N>::get_value() const {
-
-    _Tdata_ value;
-    for (int i = 0; i < N; i++) {
-        value[i] = this->widgets[i]->get_value();
-    }
-    return value;
-
-}
-
-#undef _Tdata_
-
-#endif
-
-template <typename Tcontainer, typename = void>
-struct SlvIsMap {
-    static constexpr bool value = false;
-};
-
-template <class Tkey, class Tvalue>
-struct SlvIsMap< std::map<Tkey, Tvalue> > {
-    static constexpr bool value = true;
-};
-
-template <class Tkey, class Tvalue>
-struct SlvIsMap< std::unordered_map<Tkey, Tvalue> > {
-    static constexpr bool value = true;
-};
-
-#ifndef GLOVE_DISABLE_QT
-
-// Do not enable if value_type is a container. GlvWidgetData_spec_std_container_container.h is used instead
-#define Tenable typename std::enable_if<!SlvIsContainer<T>::value || SlvIsMap<T>::value || std::is_same<T, std::string>::value>::type
-
-#define Tdata std::array<T, N>
-/*! GlvWidgetData specialization for template type: std::vector.*/
-template <class T, size_t N>
-class GlvWidgetData<Tdata, Tenable> : public GlvArrayWidget<T, N> {
-
-public:
-    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvArrayWidget<T, N>(_vector, _parent) {}
-    ~GlvWidgetData() {}
-
-};
-
-template <class T, size_t N>
-struct GlvWidgetMakerConnect<Tdata, Tenable> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
-    }
-};
-
-#undef Tdata
-#undef Tenable
-
-// Do not enable if value_type is a container. GlvWidgetData_spec_std_container_container.h is used instead
-#define Tenable typename std::enable_if<!SlvIsContainer<T>::value || SlvIsMap<T>::value || std::is_same<T, std::string>::value>::type
-
-#define Tdata std::vector<T>
-/*! GlvWidgetData specialization for template type: std::vector.*/
-template <class T>
-class GlvWidgetData<Tdata, Tenable> : public GlvVectorWidget<T> {
-
-public:
-    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvVectorWidget<T>(_vector, _parent) {}
-    ~GlvWidgetData() {}
-
-};
-
-template <class T>
-struct GlvWidgetMakerConnect<Tdata, Tenable> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
-    }
-};
-
-#undef Tdata
-#undef Tenable
-
-/*! Widget for std::pair.*/
-class GlvPairWidget_base : public QWidget {
-    Q_OBJECT
-protected:
-    GlvPairWidget_base(QWidget* _parent = 0) : QWidget(_parent) {}
-    virtual ~GlvPairWidget_base() {}
-public:
-    void set_editable(bool l_editable) {
-        QWidget::setEnabled(l_editable);
-    }
-signals:
-    /*! Emitted when first of pair is modified.*/
-    void valueChanged_first();
-    /*! Emitted when second of pair is modified.*/
-    void valueChanged_second();
-};
-
-template <class T>
-class GlvWidget;
-
-#define _Tdata_ std::pair<T1, T2>
-
-/*! Widget for std::pair.*/
-template <class T1, class T2>
-class GlvPairWidget : public GlvPairWidget_base {
-
-private:
-
-    GlvWidget<T1>* subwidget1;
-    GlvWidget<T2>* subwidget2;
-
-public:
-
-    GlvPairWidget(_Tdata_ _pair = _Tdata_(), QWidget* _parent = 0);
-    ~GlvPairWidget();
-
-    void set_pair(const _Tdata_ _pair);
-    _Tdata_ get_pair() const;
-
-};
-
-template <class T1, class T2>
-GlvPairWidget<T1, T2>::GlvPairWidget(_Tdata_ _pair, QWidget* _parent) : GlvPairWidget_base(_parent) {
-
-    QHBoxLayout* layout = new QHBoxLayout;
-    setLayout(layout);
-
-    layout->setContentsMargins(0, 0, 0, 0);
-
-    bool l_editable = true;
-    subwidget1 = new GlvWidget<T1>(_pair.first, l_editable, _parent);
-    connect(subwidget1, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_first()));
-    layout->addWidget(subwidget1);
-    subwidget2 = new GlvWidget<T2>(_pair.second, l_editable, _parent);
-    connect(subwidget2, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_second()));
-    layout->addWidget(subwidget2);
-
-}
-
-template <class T1, class T2>
-GlvPairWidget<T1, T2>::~GlvPairWidget() {
-
-}
-
-template <class T1, class T2>
-void GlvPairWidget<T1, T2>::set_pair(const _Tdata_ _pair) {
-
-    subwidget1->set_value(_pair.first);
-    subwidget2->set_value(_pair.second);
-
-}
-
-template <class T1, class T2>
-_Tdata_ GlvPairWidget<T1, T2>::get_pair() const {
-
-    _Tdata_ value;
-    value.first = subwidget1->get_value();
-    value.second = subwidget2->get_value();
-    return value;
-
-}
-
-#undef _Tdata_
-
-#define Tdata std::pair<T1, T2>
-/*! GlvWidgetData specialization for template type: std::pair.*/
-template <class T1, class T2>
-class GlvWidgetData<Tdata> : public GlvPairWidget<T1, T2> {
-
-public:
-    GlvWidgetData(Tdata _pair = Tdata(), QWidget* _parent = 0) :GlvPairWidget<T1, T2>(_pair, _parent) {}
-    ~GlvWidgetData() {}
-
-    Tdata get_value() const {
-        return GlvPairWidget<T1, T2>::get_pair();
-    }
-    void set_value(const Tdata& _value) {
-        return GlvPairWidget<T1, T2>::set_pair(_value);
-    }
-
-};
-
-template <class T1, class T2>
-struct GlvWidgetMakerConnect<Tdata> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(valueChanged_first()), _widget_connector, SLOT(valueChanged_slot()));
-        QObject::connect(_widget, SIGNAL(valueChanged_second()), _widget_connector, SLOT(valueChanged_slot()));
-    }
-};
-
-#undef Tdata
-
-class QVBoxLayout;
-class QHBoxLayout;
-class QPushButton;
-
-class GlvMapWidget_base : public QWidget {
-
-    Q_OBJECT
-
-private:
-
-    QWidget* widget_scroll;
-    QPushButton* button_insert;
+	SlvParametrization_base* parametrization;
 
 protected:
 
-    QVBoxLayout* layout_items;
-    QHBoxLayout* insert_layout;
+	SlvParameter_base(SlvParametrization_base* _parametrization);
+	virtual ~SlvParameter_base();
 
-    GlvMapWidget_base(QWidget* _parent = 0);
-    virtual ~GlvMapWidget_base();
+	bool is_param_init_auto() const;
 
 public:
 
-    void set_editable(bool l_editable);
+	/*! Set parameter value using >> operator.*/
+	virtual void set_stream_value(const std::string& _string, bool _l_param_only = true) = 0;
+	/*! Get parameter value using << operator.*/
+	virtual std::string get_stream_value(bool _l_param_only = true) const = 0;
 
-protected slots:
+	/*! Get parameter name.*/
+	virtual const std::string& get_name() const = 0;
+	/*! Get parameter description.*/
+	virtual const std::string& get_description() const = 0;
+	/*! Get parameter marker.*/
+	virtual const unsigned int& get_marker() const = 0;
 
-    virtual void valueChanged_slot() = 0;
+	/*! Check if rules are abided for this parameter. Rules can either depend only the parameter or either depend on other ones.*/
+	virtual SlvStatus check_rules() const = 0;
 
-private slots:
+	glvm_staticVariable(const, unsigned int, default_marker_value, 0)
 
-    virtual void insertValue() = 0;
-
-signals:
-    /*! Emitted when the value of the \p index-th widget is modified.*/
-    void valueChanged(int _index);
-};
-
-class QHBoxLayout;
-class QLabel;
-class QPushButton;
-
-/*! Item widget for GlvMapWidget.*/
-class GlvMapWidgetItem_base : public QWidget {
-
-    Q_OBJECT
-
-protected:
-
-    QHBoxLayout* layout;
-    /*! Index of the widget in its GlvMapWidget.*/
-    unsigned int index;
-    QPushButton* remove_button;
-
-    GlvMapWidgetItem_base();
-    virtual ~GlvMapWidgetItem_base();
-
-protected slots:
-
-    virtual void remove() = 0;
-
-signals:
-    void valueChanged();
-};
-
-template <class T>
-class GlvWidget;
-template <class Tkey, class Tvalue, class Tcompare>
-class GlvMapWidget;
-
-/*! Item widget for GlvMapWidget.*/
-template <class Tkey, class Tvalue, class Tcompare>
-class GlvMapWidgetItem : public GlvMapWidgetItem_base {
+	/*! Get the number of rules.*/
+	virtual unsigned int get_Nrules() const = 0;
 
 private:
+	/*! Static cast attempt of parameter value. Returns NULL if the parameter value is not a parametrization.*/
+	virtual const SlvParametrization_base* parametrization_cast() const = 0;
 
-    /*! Widget of the key.*/
-    GlvWidget<Tkey>* key_widget;
-    /*! Widget of the data.*/
-    GlvWidget<Tvalue>* value_widget;
-    /*! Map widget the item belongs to.*/
-    GlvMapWidget<Tkey, Tvalue, Tcompare>* parent;
-
-private:
-
-    /*! \p _key : Key.
-    * \p _value : Initialization value.
-    * \p _index : index in GlvMapWidget.*
-    * \p _parent : Vector widget the item belongs to.*/
-    GlvMapWidgetItem(const Tkey& _key, const Tvalue& _value, const unsigned int _index, GlvMapWidget<Tkey, Tvalue, Tcompare>* _parent);
-    ~GlvMapWidgetItem();
-
-    Tkey get_key() const;
-    void set_key(const Tkey _key);
-    Tvalue get_value() const;
-    void set_value(const Tvalue _value);
-    GlvWidget<Tkey>* get_key_widget() const;
-    GlvWidget<Tvalue>* get_value_widget() const;
-    void increment_index();
-    void decrement_index();
-
-    /*! Remove in GlvMapWidget at index contained in the instance.*/
-    void remove();
-
-    friend class GlvMapWidget<Tkey, Tvalue, Tcompare>;
-};
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::GlvMapWidgetItem(const Tkey& _key, const Tvalue& _value, const unsigned int _index, GlvMapWidget<Tkey, Tvalue, Tcompare>* _parent) {
-
-    key_widget = new GlvWidget<Tkey>(_key);
-    value_widget = new GlvWidget<Tvalue>(_value);
-    index = _index;
-    parent = _parent;
-
-    remove_button = new QPushButton(tr("Remove"));
-    layout->addWidget(key_widget);
-    layout->addWidget(value_widget);
-    layout->addWidget(remove_button);
-
-    connect(remove_button, SIGNAL(clicked()), this, SLOT(remove()));
-    connect(value_widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged()));
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::~GlvMapWidgetItem() {
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-Tkey GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_key() const {
-
-    return key_widget->get_value();
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::set_key(const Tkey _key) {
-
-    key_widget->set_value(_key);
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-Tvalue GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_value() const {
-
-    return value_widget->get_value();
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::set_value(const Tvalue _value) {
-
-    value_widget->set_value(_value);
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvWidget<Tkey>* GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_key_widget() const {
-    return key_widget;
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvWidget<Tvalue>* GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::get_value_widget() const {
-    return value_widget;
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::increment_index() {
-    index++;
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::decrement_index() {
-    index--;
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidgetItem<Tkey, Tvalue, Tcompare>::remove() {
-    parent->removeWidget(index);
-}
-
-#define _Tdata_ std::map<Tkey, Tvalue>
-
-class QVBoxLayout;
-template <class Tkey, class Tvalue, class Tcompare>
-class GlvMapWidgetItem;
-template <class Tvalue>
-class GlvWidget;
-
-/*! Widget to manage interface of std::map.*/
-template <class Tkey, class Tvalue, class Tcompare = std::less<Tkey> >
-class GlvMapWidget : public GlvMapWidget_base {
-
-private:
-
-    std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*> widgets;
-
-    GlvWidget<Tkey>* insert_key_widget;
-
-    Tcompare compare_function;
-
-    bool l_editable_key;
-
-public:
-
-    GlvMapWidget(_Tdata_ _map = _Tdata_(), QWidget* _parent = 0);
-    ~GlvMapWidget();
-
-    /*! Set map.*/
-    void set_value(const _Tdata_& _map);
-    /*! Get map.*/
-    _Tdata_ get_value() const;
-
-    /*! Whether key is editable or not (default: false).*/
-    void set_key_editable(bool _l_editable);
-
-    /*! New value at current key.*/
-    void insertValue();
-    /*! Return true if inserted, false otherwise (key already exsists).*/
-    bool insertValue(const Tkey& _key, const Tvalue& _value);
-
-    /*! Get widget of index \p i.*/
-    GlvWidget<Tvalue>* operator[] (const unsigned int i);
-    /*! Get widget of key \p _key.*/
-    GlvWidget<Tvalue>* operator[] (const Tkey _key);
-
-private:
-
-    void insertValue(const int _i, const Tkey& _key, const Tvalue& _value);
-
-    void valueChanged_slot();
-    typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator removeWidget(const unsigned int i);
-    /*! Return index of the corresponding key. Second of pair for existence of the key (true).*/
-    std::pair<int, bool> find(const Tkey& _key) const;
-
-    friend class GlvMapWidgetItem<Tkey, Tvalue, Tcompare>;
-};
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvMapWidget<Tkey, Tvalue, Tcompare>::GlvMapWidget(_Tdata_ _map, QWidget* _parent) : GlvMapWidget_base(_parent) {
-
-    /*! Widget of the key for insert.*/
-    insert_key_widget = new GlvWidget<Tkey>();
-    this->insert_layout->addWidget(insert_key_widget);
-    l_editable_key = false;
-    set_value(_map);
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvMapWidget<Tkey, Tvalue, Tcompare>::~GlvMapWidget() {
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidget<Tkey, Tvalue, Tcompare>::set_value(const _Tdata_& _map) {
-
-    compare_function = _map.key_comp();
-
-    for (typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it = widgets.begin(); it != widgets.end();) {
-
-        if (_map.find((*it)->get_key_widget()->get_value()) == _map.end()) {
-            it = removeWidget((*it)->index);
-        } else {
-            ++it;
-        }
-
-    }
-
-    std::pair<int, bool> index;
-    for (typename _Tdata_::const_iterator it = _map.begin(); it != _map.end(); ++it) {
-
-        index = find(it->first);
-        if (index.second) {
-            widgets[index.first]->get_value_widget()->set_value(it->second);
-        } else {
-            insertValue(index.first, it->first, it->second);
-        }
-
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-_Tdata_ GlvMapWidget<Tkey, Tvalue, Tcompare>::get_value() const {
-
-    _Tdata_ value;
-    for (int i = 0; i < widgets.size(); i++) {
-        value[i] = widgets[i]->get_value();
-    }
-    return value;
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidget<Tkey, Tvalue, Tcompare>::set_key_editable(bool _l_editable) {
-
-    l_editable_key = _l_editable;
-
-    for (int i = 0; i < widgets.size(); i++) {
-        widgets[i]->get_key_widget()->set_editable(l_editable_key);
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue() {
-
-    Tkey key = insert_key_widget->get_value();
-
-    insertValue(key, Tvalue());
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-bool GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue(const Tkey& _key, const Tvalue& _value) {
-
-    std::pair<int, bool> index = find(_key);
-
-    if (!index.second) {
-        insertValue(index.first, _key, _value);
-        return true;
-    } else {
-        return false;
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue(const int _i, const Tkey& _key, const Tvalue& _value) {
-
-    GlvMapWidgetItem<Tkey, Tvalue, Tcompare>* widget = new GlvMapWidgetItem<Tkey, Tvalue, Tcompare>(_key, _value, _i, this);
-    widget->get_key_widget()->set_editable(l_editable_key);
-    layout_items->insertWidget(_i, widget);
-    widgets.insert(widgets.begin() + _i, widget);
-    connect(widget, SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
-
-    for (unsigned int k = _i + 1; k < widgets.size(); k++) {
-        widgets[k]->increment_index();
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvWidget<Tvalue>* GlvMapWidget<Tkey, Tvalue, Tcompare>::operator[] (const unsigned int i) {
-
-    return widgets[i]->get_value_widget();
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvWidget<Tvalue>* GlvMapWidget<Tkey, Tvalue, Tcompare>::operator[] (const Tkey _key) {
-
-    std::pair<int, bool> index = find(_key);
-
-    if (index.second) {
-        return (*this)[index.first];
-    } else {
-        return NULL;
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-void GlvMapWidget<Tkey, Tvalue, Tcompare>::valueChanged_slot() {
-
-    GlvMapWidgetItem<Tkey, Tvalue, Tcompare>* item = dynamic_cast<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>(QObject::sender());
-    if (item) {
-        emit valueChanged(item->index);
-    }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator GlvMapWidget<Tkey, Tvalue, Tcompare>::removeWidget(const unsigned int i) {
-
-    typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it;
-
-    if (!widgets.empty()) {
-
-        layout_items->removeWidget(widgets[i]);
-        delete widgets[i];
-        it = widgets.erase(widgets.begin() + i);
-
-        for (unsigned int j = i; j < widgets.size(); j++) {
-            widgets[j]->decrement_index();
-        }
-    } else {
-        it = widgets.end();
-    }
-
-    return it;
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-std::pair<int, bool> GlvMapWidget<Tkey, Tvalue, Tcompare>::find(const Tkey& _key) const {
-
-    std::pair<int, bool> result(0, false);
-
-    bool l_found = false;
-    for (typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator it = widgets.begin(); it != widgets.end() && !l_found; ++it, result.first++) {
-        l_found = !compare_function((*it)->get_key_widget()->get_value(), _key);
-        if (l_found) {
-            result.second = ((*it)->get_key_widget()->get_value() == _key);
-        }
-    }
-
-    if (l_found) result.first--;
-
-    return result;
-
-}
-
-#undef _Tdata_
-
-#define Tdata std::map<Tkey, Tvalue>
-/*! GlvWidgetData specialization for template type: std::map.*/
-template <class Tkey, class Tvalue>
-class GlvWidgetData<Tdata> : public GlvMapWidget<Tkey, Tvalue> {
-
-public:
-    GlvWidgetData(Tdata _map = Tdata(), QWidget* _parent = 0) :GlvMapWidget<Tkey, Tvalue>(_map, _parent) {}
-    ~GlvWidgetData() {}
+	friend class SlvParametrization_base;//for parametrization_cast
 
 };
-
-template <class Tkey, class Tvalue>
-struct GlvWidgetMakerConnect<Tdata> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(valueChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
-    }
-};
-
-#undef Tdata
-
-class GlvEnumWidget_base : public QComboBox {
-protected:
-    GlvEnumWidget_base(QWidget* _parent = 0) : QComboBox(_parent) {}
-    virtual ~GlvEnumWidget_base() {}
-public:
-    void set_editable(bool l_editable) {
-        QComboBox::setEnabled(l_editable);
-    }
-};
-
-template <class T, typename = void>
-class GlvEnumWidget;
-
-/*! Widget managing an enum type.
-* The enum must be created using the macro: glvm_SlvEnum. See sample001 for example.*/
-template <class Tenum>
-class GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type> : public GlvEnumWidget_base {
-
-public:
-
-    GlvEnumWidget(Tenum _enum = Tenum(), QWidget* _parent = 0);
-    ~GlvEnumWidget();
-
-    /*! Set the enum value.*/
-    void set_value(const Tenum _enum);
-    /*! Get the enum value.*/
-    Tenum get_value() const;
-
-};
-
-template <class Tenum>
-GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::GlvEnumWidget(Tenum _enum, QWidget* _parent) : GlvEnumWidget_base(_parent) {
-
-    for (unsigned int i = 0; i < SlvEnum<Tenum>::size(); i++) {
-        QString enum_name = glv::toQString(SlvEnum<Tenum>::get_name(i));
-        QComboBox::addItem(enum_name);
-    }
-    set_value(_enum);
-
-}
-
-template <class Tenum>
-GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::~GlvEnumWidget() {
-
-}
-
-template <class Tenum>
-void GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::set_value(const Tenum _enum) {
-
-    QComboBox::setCurrentIndex(SlvEnum<Tenum>::enum_positions().at(_enum));
-
-}
-
-template <class Tenum>
-Tenum GlvEnumWidget<Tenum, typename std::enable_if<std::is_enum<Tenum>::value>::type>::get_value() const {
-
-    return SlvEnum<Tenum>::enum_positions_inv()[QComboBox::currentIndex()];
-
-}
-
-/*! GlvWidgetData for enum type.*/
-template <class Tdata>
-class GlvWidgetData<Tdata, typename std::enable_if<std::is_enum<Tdata>::value>::type> : public GlvEnumWidget<Tdata> {
-
-public:
-    GlvWidgetData(Tdata _enum = Tdata(), QWidget* _parent = 0) :GlvEnumWidget<Tdata>(_enum, _parent) {}
-    ~GlvWidgetData() {}
-
-};
-
-template <class Tdata>
-struct GlvWidgetMakerConnect<Tdata, typename std::enable_if<std::is_enum<Tdata>::value>::type> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(currentIndexChanged(int)), _widget_connector, SLOT(valueChanged_slot(int)));
-    }
-};
-
-class QLineEdit;
-class QPushButton;
-class QLabel;
-class QHBoxLayout;
-
-/*! Widget for selecting a directory.*/
-class GlvOpenDirectory : public QWidget {
-
-    Q_OBJECT
-
-private:
-
-    QLineEdit* line_edit;
-    QPushButton* push_button;
-    QLabel* status;
-    /*! Whether a valid directory has been selected or not.*/
-    bool l_ready;
-
-public:
-
-    /*! \p _directory : default directory.*/
-    GlvOpenDirectory(SlvDirectory _directory, QWidget* _parent = 0);
-    /*! \p _default : default directory path.*/
-    GlvOpenDirectory(QString _default = "", QWidget* _parent = 0);
-    ~GlvOpenDirectory();
-
-    /*! Return directory item. Check if is_ready() before using returned value.*/
-    SlvDirectory get_directory() const;
-
-    /*! Whether a valid directory has been selected or not.*/
-    bool is_ready() const;
-    /*! Makes line edit read-only or not. Shows/hides the open directory button.*/
-    void set_editable(bool l_editable);
-
-private:
-
-    /*! Check if directory is valid.*/
-    void update_readiness();
-
-public slots:
-    /*! Opens QFileDialog to select a directory.*/
-    void getExistingDirectory();
-    /*! Set directory item by editing QLineEdit. If directory is valid, sets instance as ready.*/
-    void set_directory(const SlvDirectory& _directory);
-
-private slots:
-
-    void directory_changed_slot(const QString& _directory_path);
-
-signals:
-
-    /*! Emitted when QLineEdit changes.*/
-    void directory_changed(const QString& _directory_path);
-
-};
-
-#define Tdata SlvDirectory
-
-/*! GlvWidgetData for type SlvDirectory.*/
-template <>
-class GlvWidgetData<Tdata> : public GlvOpenDirectory {
-
-public:
-	GlvWidgetData(Tdata _file = Tdata(), QWidget* _parent = 0);
-	~GlvWidgetData();
-
-	Tdata get_value() const {
-		return GlvOpenDirectory::get_directory();
-	}
-	void set_value(const Tdata& _value) {
-		return GlvOpenDirectory::set_directory(_value);
-	}
-
-};
-
-template <>
-struct GlvWidgetMakerConnect<Tdata> {
-	static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-		QObject::connect(_widget, SIGNAL(directory_changed(const QString&)), _widget_connector, SLOT(valueChanged_slot(const QString&)));
-	}
-};
-
-#undef Tdata
-
-#endif
 
 /*! std::enable_if for SlvParametrization. Use : std::enable_if<SlvIsParametrization<T>::value>
 * Alternative: std::enable_if<std::is_base_of<SlvParametrization_base, Tparametrization>::value>*/
 glvm_SlvIsType(SlvIsParametrization, Tparametrization)
-
-/*! Macro for method detection in a struct/class/type, for instance when using std::enable_if.
-* struct_name is the name of the structure to be used such as: std::enable_if<struct_name<T>::value>
-* method_name is the method struct_name is supposed to contain such as: struct_name::method_name.
-* method_name must be a public method.*/
-#define glvm_SlvHasMethod(struct_name, method_name) \
-template <typename T>\
-class struct_name {\
-    typedef char one;\
-    struct two { char x[2]; };\
-    template <typename C> static one test(decltype(&C::method_name));\
-    template <typename C> static two test(...);\
-public:\
-    enum { value = sizeof(test<T>(0)) == sizeof(char) };\
-};
-
-/*! Same as glvm_SlvHasMethod but can manage overloaded methods.*/
-#define glvm_SlvHasMethodSignature(struct_name, method_type, method_name, method_argument) \
-template <typename T>\
-class struct_name {\
-    typedef char one;\
-    struct two { char x[2]; };\
-    template <typename C> static one test(decltype(method_type (std::declval<C &>().method_name(method_argument)))*);\
-    template <typename C> static two test(...);\
-public:\
-    enum { value = sizeof(test<T>(0)) == sizeof(char) };\
-};
-
-template <typename T>
-struct SlvHasOstreamOperator {
-    template <typename V>
-    static auto test(void*) -> decltype(std::declval<std::ostream>() << std::declval<V>(), void());
-    template <typename>
-    static auto test(...) -> std::false_type;
-
-    static constexpr bool value = std::is_same<decltype(test<T>(nullptr)), void>::value;
-};
-
-template <typename T>
-struct SlvHasIstreamOperator {
-    template <typename V>
-    static auto test(void*) -> decltype(std::declval<std::istream>() >> std::declval<V&>(), void());
-    template <typename>
-    static auto test(...) -> std::false_type;
-
-    static constexpr bool value = std::is_same<decltype(test<T>(nullptr)), void>::value;
-};
-
-/*! Class to be inherited to provide file input stream.*/
-class SlvIFS {
-
-public:
-
-	SlvIFS();
-	virtual ~SlvIFS();
-
-	friend std::ifstream& operator>>(std::ifstream& _is, SlvIFS& _IFS);
-
-protected:
-
-	/*! Input file stream method to reimplement.*/
-	virtual void ifstream(std::ifstream& _ifs) = 0;
-
-};
-
-/*! Convenience class to be inherited to provide a direct method to read the instance from a text file.*/
-class SlvReadText : public SlvIFS {
-
-public:
-
-	SlvReadText();
-	virtual ~SlvReadText();
-
-	/*! Set the object by reading the TEXT file (Clear reading) at \p _file_path.
-	* Uses operator>>.*/
-	SlvStatus read_text(std::string _file_path);
-
-};
-
-/*! Class to be inherited to provide file output stream.*/
-class SlvOFS {
-
-public:
-
-	SlvOFS();
-	virtual ~SlvOFS();
-
-	friend std::ofstream& operator<<(std::ofstream& _os, const SlvOFS& _OFS);
-
-protected:
-
-	/*! Output file stream method to reimplement.*/
-	virtual void ofstream(std::ofstream& _ofs) const = 0;
-
-};
-
-/*! Convenience class to be inherited to provide a direct method to write the instance into a text file.*/
-class SlvWriteText : public SlvOFS {
-
-public:
-
-	SlvWriteText();
-	virtual ~SlvWriteText();
-
-	/*! Export the object by writing the TEXT file (Clear writing) at \p _file_path.
-	* Uses operator<<.*/
-	SlvStatus write_text(std::string _file_path, std::ios::openmode _position = std::ios::trunc) const;
-
-};
-
-/*! Convenience class to both read and write the instance into a text file.*/
-class SlvReadWriteText : virtual public SlvReadText, virtual public SlvWriteText {
-
-public:
-
-	SlvReadWriteText() {}
-	~SlvReadWriteText() {}
-
-};
-
-/*! Class providing basic name management with get/set accessors.*/
-class SlvName {
-
-protected:
-
-    std::string name;
-
-public:
-
-    SlvName(std::string _name);
-    ~SlvName();
-
-    const std::string& get_name() const;
-    void set_name(const std::string& _name);
-
-};
-
-/*! Convenience class to be inherited to provide a direct method to write the instance into a binary file.*/
-class SlvWriteBinary {
-
-public:
-
-	SlvWriteBinary();
-	virtual ~SlvWriteBinary();
-
-	/*! Export the object by writing the BINARY file at \p _file_path.*/
-	SlvStatus write_binary(std::string _file_path, std::ios::openmode _position = std::ios::trunc) const;
-
-	/*! Binary write method to implement.*/
-	virtual void writeB(std::ofstream& _output_file) const = 0;
-
-};
-
-/*! Convenience class to be inherited to provide a direct method to read the instance from a binary file.*/
-class SlvReadBinary {
-
-public:
-
-	SlvReadBinary();
-	virtual ~SlvReadBinary();
-
-	/*! Set the object by reading the BINARY file at \p _file_path.*/
-	SlvStatus read_binary(std::string _file_path);
-
-	/*! Binary read method to implement.*/
-	virtual bool readB(std::ifstream& _input_file) = 0;
-
-};
-
-/*! Convenience class to both read and write the instance into a binary file.*/
-class SlvReadWriteBinary : virtual public SlvReadBinary, virtual public SlvWriteBinary {
-
-public:
-
-	SlvReadWriteBinary() {}
-	~SlvReadWriteBinary() {}
-
-};
-
-/*! Convenience class to manage file writing by using automatically the name of the instance.
-* Tname_class must have the method std::string get_name().*/
-template <class Tname_class>
-class SlvWriteBinaryNamedT : virtual public SlvWriteBinary, public Tname_class {
-
-public:
-
-	SlvWriteBinaryNamedT(std::string _name = "") :Tname_class(_name) {}
-	~SlvWriteBinaryNamedT() {}
-
-	/*! Write the instance in a file named after the instance's name.
-	* \p _prefix_path can be set so that the path will be such as \p _prefix_path + get_name()*/
-	SlvStatus write_binary_auto(std::string _prefix_path = "", std::ios::openmode _position = std::ios::trunc) const;
-
-};
-
-template <class Tname_class>
-SlvStatus SlvWriteBinaryNamedT<Tname_class>::write_binary_auto(std::string _prefix, std::ios::openmode _position) const {
-
-	return SlvWriteBinary::write_binary(_prefix + Tname_class::get_name(), _position);
-
-}
-
-/*! Convenience class.*/
-typedef SlvWriteBinaryNamedT<SlvLblName> SlvWriteBinaryLblNamed;
-
-/*! Convenience class.*/
-typedef SlvWriteBinaryNamedT<SlvName> SlvWriteBinaryNamed;
-
-/*! Convenience class to manage file writing by using automatically the name of the instance.
-* Tname_class must have the method std::string get_name().*/
-template <class Tname_class>
-class SlvWriteTextNamedT : virtual public SlvWriteText, public Tname_class {
-
-public:
-
-	SlvWriteTextNamedT(std::string _name = "") :Tname_class(_name) {}
-	~SlvWriteTextNamedT() {}
-
-	/*! Write the instance in a file named after the instance's name.
-	* \p _prefix_path can be set so that the path will be such as \p _prefix_path + get_name()*/
-	void write_text_auto(std::string _prefix_path = "", std::ios::openmode _position = std::ios::trunc) const;
-
-};
-
-template <class Tname_class>
-void SlvWriteTextNamedT<Tname_class>::write_text_auto(std::string _prefix, std::ios::openmode _position) const {
-
-	SlvWriteText::write_text(_prefix + Tname_class::get_name(), _position);
-
-}
-
-/*! Convenience class.*/
-typedef SlvWriteTextNamedT<SlvLblName> SlvWriteTextLblNamed;
-
-/*! Convenience class.*/
-typedef SlvWriteTextNamedT<SlvName> SlvWriteTextNamed;
-
-/*! Class to measure execution time.
-* At instantiation/reset, a reference time is measured and added to stack of checked times.
-* Each time get_elasped_time, get_elasped_time_last, or check_display, method is called, a new checked time is added. Check sample012 for example.*/
-class SlvTimer : public SlvName {
-
-private:
-
-	std::vector<clock_t> check_times;
-
-public:
-
-	SlvTimer(std::string _name = "");
-	~SlvTimer();
-
-	/*! Reset timer by clearing all checked times and taking current time as new reference.*/
-	void reset();
-
-	/*! Parse elapsed time since instance reference into a string.*/
-	std::string get_string() const;
-
-	/*! Get elapsed time from reference into hours, minutes, seconds, milliseconds.
-	* Each time this method is called, a check time is added.*/
-	std::vector<int> get_elasped_time();
-	/*! Get elapsed time from last check into hours, minutes, seconds, milliseconds.
-	* Each time this method is called, a check time is added.*/
-	std::vector<int> get_elasped_time_last();
-
-	/*! Measure elapsed time and display it via std::cout. \p _message is an optional display message.
-	* Each time this method is called, a check time is added.*/
-	void check_display(std::string _message = "");
-
-private:
-
-	/*! Display time \p _time.*/
-	void time_display(clock_t _time) const;
-	/*! Parse \p _time into hours, minutes, seconds, milliseconds.*/
-	std::vector<int> get_time(clock_t _time) const;
-
-};
-
-/*! Class managing the progress signals of a loop.*/
-class SlvProgressionQt :
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	public QObject,
-#endif
-	public SlvLblName {
-
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	Q_OBJECT
-#endif
-
-private:
-
-	/*! Tracked index of progress.
-	It is important to set a safe index because it can be set to Niterations if cancel is triggered.
-	ie: Use a different index for data manipulation.*/
-	void* iterator_ptr;
-	enum IteratorType { Int, UnsignedInt, Size_t };
-	/*! Type of the iterator defined at start.*/
-	IteratorType iterator_type;
-
-	/*! Expected maximum number of iterations. Set by emit_start method.*/
-	unsigned int Niterations;
-
-	/*! Whether progression instance is used directly as an iterator
-	* true : instance is an iterator. See operator= method.
-	* false : instance may control an external iterator using a pointer.*/
-	bool l_iterating;
-	/*! Iteration value when l_iterating is true.*/
-	std::size_t iterator;
-
-	bool l_started;
-	/*! If Niterations was not provided, then there is no feedback on progress.
-	* This variable checks if progress has ended or not.*/
-	bool l_no_feedback_ended;
-
-	/*! Optional message.*/
-	glvm_GetSetVariable(std::string, message);
-
-	/*! Whether the progression has been canceled externally or not.*/
-	bool l_was_canceled;
-
-	/*! Whether this progress is being called multiple times.
-	* If true, default hiding policy on ending will avoid glitches.
-	* In this case, hiding must be managed using finish().*/
-	bool l_recurrent;
-
-public:
-
-	SlvProgressionQt(std::string _name = "", bool _l_recurrent = false);
-	SlvProgressionQt(const SlvProgressionQt& _progression);
-	~SlvProgressionQt();
-
-private:
-	/*! Reset progress status.*/
-	void clear_progress();
-
-public:
-	/*! Reset progress status.*/
-	void clear();
-
-	/*! Does nothing. Disable assigment to ensure progress variables are not mixed.*/
-	SlvProgressionQt& operator=(const SlvProgressionQt& _progression);
-
-	/*! Whether this progress is being called multiple times.
-	* If true, default hiding policy on ending will avoid glitches.
-	* In this case, hiding must be managed using finish().*/
-	void set_recurrent(bool _l_recurrent);
-	/*! Whether this progress is being called multiple times.
-	* If true, default hiding policy on ending will avoid glitches.
-	* In this case, hiding must be managed using finish().*/
-	bool is_recurrent() const;
-
-	/*! Whether the progression as reached its maximum or not: *iterator_ptr >= Niterations-1.
-	* Return true if the progression was not started yet.*/
-	bool is_over() const;
-	/*! Whether the progression is managing a iterator_ptr or not. Depends on start() strategy.*/
-	bool has_iterator_ptr() const;
-	/*! Whether progression instance is used as an iterator. See operator= method.*/
-	bool is_iterating() const;
-	/*! Whether control on progress is possible or not.*/
-	bool is_cancelable() const;
-
-	/*! Emit start signal. Progress without bar nor control on the loop (no cancel button).*/
-	void start();
-	/*! Emit start signal. Progress without control on the loop (no cancel button).
-	* Use explicit update(int _value) at the end of the loop to update progress.*/
-	void start(const unsigned int _Niterations);
-	/*! Emit start signal.
-	* Use update() at the end of the loop to update progress.
-	* \p _iterator_ptr : pointer to the iteration value. Takes control of value by setting it to \p _Niterations in case the progression is stopped.*/
-	template <class Titerator>
-	void start(Titerator* _iterator_ptr, const unsigned int _Niterations);
-private :
-	void start_pv(const unsigned int _Niterations);
-public :
-
-	/*! Emit progress by using _iterator_ptr pointer and Niterations number defined by emit_start.
-	* Return false if _iterator_ptr pointer or Niterations number is null.
-	* If _iterator_ptr reaches Niterations, then ended() is emitted.*/
-	bool update();
-	/*! Update progress by explicitly setting the progress value \p _value.
-	* To be used with start(const unsigned int _Niterations).
-	* Does not assign value to _iterator_ptr pointer.
-	* Return false if _iterator_ptr number is null.*/
-	bool update(int _value);
-	/*! Confirm manually the progress is over.
-	* To be used if started with start(), ie no progress bar nor cancel control.
-	* If the progress is already monitored by a _iterator_ptr or an iterator, is automatically called at end of loop. No need to call it explicitly.
-	* Apply iterator finish.
-	* Release iterator_ptr pointer (set to NULL).*/
-	void end();
-	/*! Implies that progress monitoring is completely over. Will remove Qt progression from GlvProgressMgr.
-	* Doing so means the progression will need to be added again to a Qt GlvProgressMgr.
-	* Apply iterator finish.
-	* Release _terator_ptr pointer (set to NULL).
-	* ie: Same as end() with removal from GlvProgressMgr.*/
-	void finish();
-
-	/*! Apply cancel to tracked iterator/iterator_ptr.
-	* Ends the loop.
-	* Does not emit signals. Use end() method instead.*/
-	void cancel();
-	/*! Whether the progression has been canceled externally or not.
-	* If so, it means the algorithm that was watched probably did not go through.*/
-	bool was_canceled() const;
-
-	/*! Cast to iterator.*/
-	operator std::size_t() const;
-	/*! Initialize iterator and start progress.*/
-	SlvProgressionQt& operator=(const std::size_t _iterator);
-
-	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
-	* Leaves < operator possible on iterator index, without impacting progression.
-	* On the other hand, bitwise operation is not possible of iterator index.
-	* Use init() or start() methods as an alternative to manage Niterations with classical int iterator index.*/
-	bool operator<<(std::size_t _Niterations);
-	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
-	bool operator<<(int _Niterations);
-	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
-	bool operator<<(unsigned int _Niterations);
-
-	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
-	* Leaves < operator possible on iterator index, without impacting progression.
-	* On the other hand, bitwise operation is not possible of iterator index.
-	* Use init() or start() methods as an alternative to manage Niterations with classical int iterator index.*/
-	bool operator<<=(std::size_t _Niterations);
-	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
-	bool operator<<=(int _Niterations);
-	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
-	bool operator<<=(unsigned int _Niterations);
-
-	/*! Increase iterator and update progress.*/
-	SlvProgressionQt& operator++();
-	/*! Increase iterator and update progress.*/
-	SlvProgressionQt operator++(int);
-
-private:
-
-	/*! Enforce finish by setting the iterator_ptr to finish value Niterations.
-	* The loop will end if the iterator is properly related to the iterator_ptr pointer.*/
-	void iterator_finish();
-
-	/*! iterator_ptr pointer is being checked at end of loop content.*/
-	static bool is_iterator_ptr_over(unsigned int _iterator_value, unsigned int _Niterations);
-	/*! Iterator is being checked at beginning of loop content.*/
-	static bool is_iterator_over(std::size_t _iterator, unsigned int _Niterations);
-
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-signals:
-
-	/*! Emitted when progress starts.*/
-	void started();
-	/*! Emit progress value in a range [0, 100] when progress is updated.*/
-	void updated(int _value);
-	/*! If an iterator or iterator_ptr is provided, is automatically emitted at end of loop.*/
-	void ended();
-	/*! Emitted when progress is completely over.*/
-	void finished();
-#endif
-
-};
-
-/*! Use Qt signals.*/
-
-/*! Convenience class to embed a SlvProgressionQt in a class.
-* Typical use: to be inherited by a class which contains a method to monitor.
-* The key class is actually SlvProgressionQt, but it is convenient to encapsulate it in SlvProgression in order to not add too many inherited methods in inheriting classes.
-* Also convenient to track the get_progression() method.*/
-class SlvProgression {
-
-private:
-
-	SlvProgressionQt progression;
-
-public:
-
-	SlvProgression(std::string _name = "", bool _l_recurrent = false);
-	SlvProgression(const SlvProgression& _progression);
-	~SlvProgression();
-
-	/*! To be used. Const qualifier make the instance compliant with inherited const method.
-	In other words, the progression ignores the const qualifier of the child class instance.*/
-	SlvProgressionQt* get_progression() const;
-
-protected:
-
-	/*! Assignment operator to avoid assigning SlvProgressionQt progression.*/
-	SlvProgression& operator=(const SlvProgression& _progression);
-
-};
-
-class SlvParametrization_base : virtual public SlvVirtualGetName, virtual public SlvIOS {
-
-protected:
-
-	/* Copy of the pointer of the parameters set in SlvParametrization**.
-	* Convenient to call virtual methods on all the parameters without neededing to known the parameter template type.*/
-	std::vector<const SlvParameter_base*> parameters;
-
-	/*! Whether param_init() method is called each time a parameter's value is modified.*/
-	bool l_param_init_auto;
-
-public:
-
-	/*! Separate static name of the class to parameters. ex: name@[param1,param2,param3].*/
-	glvm_staticVariable(const, char, separator, '@');
-
-protected:
-	SlvParametrization_base();
-public:
-	virtual ~SlvParametrization_base();
-
-	/*! Whether param_init() method is called each time a parameter's value is modified.
-	* Either by SlvParametrization**::operator=
-	* Or SlvParametrization**::set_***(value).
-	* Default is true.*/
-	bool is_param_init_auto() const;
-	/*! Set whether param_init() method is called each time a parameter's value is modified.
-	* Either by SlvParametrization**::operator=
-	* Or SlvParametrization**::set_***(value).
-	* Default is true.*/
-	void set_param_init_auto(bool _l_param_init_auto);
-
-	/*! Get string identification of the parametrization.*/
-	std::string get_id_str() const;
-	/*! Get a name of the instance plus string identification of the parametrization.*/
-	std::string get_full_name() const;
-
-	/*! Check parameters rules.*/
-	virtual SlvStatus check_parameters() const = 0;
-
-	/*! Check if the parametrization has rules or not.*/
-	bool has_rules() const;
-	/*! Returns false if the rules were not abided, meaning there was a modification of the parametrization.
-	* Returns true if rules are abided, meaning there was no modification of the parameterization.*/
-	virtual bool abide_rules() = 0;
-
-	/*! Process of parameters at construction.
-	* Usefull to call after a param_cast() assignment.
-	* When definition of param_init() is needed, must be reimplemented in the parametrization class inheriting from SlvParametrization.
-	* Ex: private parameter deriving from other ones.*/
-	virtual void param_init();
-
-	/*! Recursively find the parameters which name is \p _parameter_name.
-	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
-	* If false, they are excluded (but recursivity still applies).*/
-	std::vector<const SlvParameter_base*> find(std::string _parameter_name, bool _l_parametrizations) const;
-	/*! Recursively find the frist parameter which name is \p _parameter_name.
-	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
-	* If false, they are excluded (but recursivity still applies).
-	* Returns NULL if none found.*/
-	const SlvParameter_base* find_first(std::string _parameter_name, bool _l_parametrizations) const;
-
-	/*! Set parameter values using >> operator by providing parameter name and corresponding value as string.
-	* Returns :
-	* First of pair: the conflicts corresponding to multiple parameters with the same name. Ie: assignment ambiguity.
-	* Second of pair : parameter names that could not be found in the parametrization.*/
-	std::pair< std::map<std::string, int>, std::vector<std::string> > set_stream_values(const std::map<std::string, std::string>& _stream_values, bool _l_parametrizations);
-
-private:
-	/*! Get a vector (one element per parameter) of strings. Each string is the slv::string::to_id_str of the parameter value.
-	* The marker value is used to discriminate which parameters are being converted to string.
-	* Setting the marker value of a parameter is possible in the macro classParameter.*/
-	virtual std::vector<std::string> get_vector_id_str(unsigned int _marker = SlvParameter_base::default_marker_value()) const = 0;
-};
-
-/*! Convenience class to inherit both from SlvIFS and SlvOFS.*/
-class SlvIOFS : virtual public SlvIFS, virtual public SlvOFS {
-
-public:
-
-	SlvIOFS() {}
-	~SlvIOFS() {}
-
-};
 
 #if OPTION_USE_THIRDPARTY_JSON==1
 
@@ -8810,6 +7822,670 @@ namespace slv {
 }
 
 #endif
+
+class SlvParametrization_base : virtual public SlvVirtualGetName, virtual public SlvIOS {
+
+protected:
+
+	/* Copy of the pointer of the parameters set in SlvParametrization**.
+	* Convenient to call virtual methods on all the parameters without neededing to known the parameter template type.*/
+	std::vector<const SlvParameter_base*> parameters;
+
+	/*! Whether param_init() method is called each time a parameter's value is modified.*/
+	bool l_param_init_auto;
+
+public:
+
+	/*! Separate static name of the class to parameters. ex: name@[param1,param2,param3].*/
+	glvm_staticVariable(const, char, separator, '@');
+
+protected:
+	SlvParametrization_base();
+public:
+	virtual ~SlvParametrization_base();
+
+	/*! Whether param_init() method is called each time a parameter's value is modified.
+	* Either by SlvParametrization**::operator=
+	* Or SlvParametrization**::set_***(value).
+	* Default is true.*/
+	bool is_param_init_auto() const;
+	/*! Set whether param_init() method is called each time a parameter's value is modified.
+	* Either by SlvParametrization**::operator=
+	* Or SlvParametrization**::set_***(value).
+	* Default is true.*/
+	void set_param_init_auto(bool _l_param_init_auto);
+
+	/*! Get string identification of the parametrization.*/
+	std::string get_id_str() const;
+	/*! Get a name of the instance plus string identification of the parametrization.*/
+	std::string get_full_name() const;
+
+	/*! Check parameters rules.*/
+	virtual SlvStatus check_parameters() const = 0;
+
+	/*! Check if the parametrization has rules or not.*/
+	bool has_rules() const;
+	/*! Returns false if the rules were not abided, meaning there was a modification of the parametrization.
+	* Returns true if rules are abided, meaning there was no modification of the parameterization.*/
+	virtual bool abide_rules() = 0;
+
+	/*! Process of parameters at construction.
+	* Usefull to call after a param_cast() assignment.
+	* When definition of param_init() is needed, must be reimplemented in the parametrization class inheriting from SlvParametrization.
+	* Ex: private parameter deriving from other ones.*/
+	virtual void param_init();
+
+	/*! Recursively find the parameters which name is \p _parameter_name.
+	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
+	* If false, they are excluded (but recursivity still applies).*/
+	std::vector<const SlvParameter_base*> find(std::string _parameter_name, bool _l_parametrizations) const;
+	/*! Recursively find the frist parameter which name is \p _parameter_name.
+	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
+	* If false, they are excluded (but recursivity still applies).
+	* Returns NULL if none found.*/
+	const SlvParameter_base* find_first(std::string _parameter_name, bool _l_parametrizations) const;
+
+	/*! Set parameter values using >> operator by providing parameter name and corresponding value as string.
+	* Returns :
+	* First of pair: the conflicts corresponding to multiple parameters with the same name. Ie: assignment ambiguity.
+	* Second of pair : parameter names that could not be found in the parametrization.*/
+	std::pair< std::map<std::string, int>, std::vector<std::string> > set_stream_values(const std::map<std::string, std::string>& _stream_values, bool _l_parametrizations);
+
+private:
+	/*! Get a vector (one element per parameter) of strings. Each string is the slv::string::to_id_str of the parameter value.
+	* The marker value is used to discriminate which parameters are being converted to string.
+	* Setting the marker value of a parameter is possible in the macro classParameter.*/
+	virtual std::vector<std::string> get_vector_id_str(unsigned int _marker = SlvParameter_base::default_marker_value()) const = 0;
+};
+
+#define VECTOR_EXPLICIT_ALGORITHM 0 //Explicit reimplementation of algorithms
+
+namespace slv {
+
+    /*! Methods related to manipulation of std::vector which is by default std::vector. See OPTION_STD_VECTOR_DEBUG.*/
+    namespace vector {
+
+        /*! Remove from \p _elements the first value which equals \p _element.
+        * Return true if found and removed.*/
+        template <class T>
+        bool remove(const T& _element, std::vector<T>& _elements);
+        /*! Remove all \p _elements in \p element.*/
+        template <class T>
+        void remove(std::vector<T>& elements, const std::vector<T>& _elements);
+        /*! Add all \p _elements in \p elements.*/
+        template <class T>
+        void add(std::vector<const T*>& elements, const std::vector<T*>& _elements);
+        /*! Add all \p _elements in \p element.*/
+        template <class T>
+        void add(std::vector<const T>& elements, const std::vector<T>& _elements);
+        /*! Add all \p _elements in \p element.*/
+        template <class T>
+        void add(std::vector<T>& elements, const std::vector<T>& _elements);
+        /*! Add all \p _elements1 and \p _elements2 (concatenate) and return result.*/
+        template <class T>
+        std::vector<T> add(const std::vector<T>& _elements1, const std::vector<T>& _elements2);
+        /*! Add all \p _elements in \p elements (concatenate). Static cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void add_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
+        /*! Add all \p _elements in \p elements (concatenate). Static cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void add_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements);
+        /*! Add all \p _elements in \p elements (concatenate). Dynamic cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void add_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
+        /*! Converts \p _elements into \p elements by static cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void assign_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
+        /*! Converts \p _elements into \p elements by static cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void assign_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements);
+        /*! Converts \p _elements into \p elements by dynamic cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void assign_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
+        /*! Return the first index where \p _elements is equal to \p _element. Returns -1 if no match is found.*/
+        template <class T>
+        unsigned int getIndex(const T& _element, const std::vector<T>& _elements);
+        /*! Check if \p _elements contains a value equal to \p _element*/
+        template <class T>
+        bool find(const T& _element, const std::vector<T>& _elements);
+        /*! Check if \p _elements contains a value equal to \p _element*/
+        template <class T>
+        bool find(const T& _element, const std::vector<const T>& _elements);
+        /*! Check if \p _elements contains a dereferenced pointer equal to \p _element*/
+        template <class T>
+        bool find(const T& _element, const std::vector<T*>& _elements);
+        /*! Returns the position where \p _element should be inserted in \p _elements in descending order.*/
+        template <class T>
+        unsigned int sortIndex_descending(const T& _element, const std::vector<T>& _elements);
+        /*! Returns the position where \p _element should be inserted in \p _elements in ascending order.*/
+        template <class T>
+        unsigned int sortIndex_ascending(const T& _element, const std::vector<T>& _elements);
+
+        /*! Return true if for each element of \p _vector1, there is an equal element in \p _vector2. False otherwise.*/
+        template <class T>
+        bool equalUnordered(const std::vector<T>& _vector1, const std::vector<T>& _vector2);
+
+        /*! Return ascending sequence [\p _start, \p _start + \p _increment, \p _start + 2* \p _increment, ..] of size \p _size.*/
+        template <class T>
+        std::vector<T> make_sequence(const unsigned int _size, const T _start = 0, const T _increment = T(1));
+
+        /*! Sort \p _element in ascending order up to \p _range index. If \p _range is 0, sort all vector.*/
+        template <class T>
+        void sort_ascending(std::vector<T>& _elements, unsigned int _range = 0);
+        /*! Sort \p _element in ascending order up to \p _range index. If \p _range is 0, sort all vector.
+        * Provided \p _elements_arg has the same size as \p elements, rearrange \p _elements_arg in the same way as \p _elements.*/
+        template <class T, class Targ>
+        void sort_ascending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range = 0);
+        /*! Sort \p _element in descending order up to \p _range index. If \p _range is 0, sort all vector.*/
+        template <class T>
+        void sort_descending(std::vector<T>& _elements, unsigned int _range = 0);
+        /*! Sort \p _element in descending order up to \p _range index. If \p _range is 0, sort all vector.
+        * Provided \p _elements_arg has the same size as \p elements, rearrange \p _elements_arg in the same way as \p _elements.*/
+        template <class T, class Targ>
+        void sort_descending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range = 0);
+
+        /*! Returns the position where \p _element would be inserted in \p _elements in descending order.*/
+        template <class T>
+        unsigned int sortInsert_descending(const T& _element, std::vector<T>& _elements);
+        /*! Returns the position where \p _element would be inserted in \p _elements in ascending order.*/
+        template <class T>
+        unsigned int sortInsert_ascending(const T& _element, std::vector<T>& _elements);
+
+        /*! Return true if every element of \p _elements1 matches the element of \p _elements2 (same order).*/
+        template <class T>
+        bool is_equal(const std::vector<T>& _elements1, const std::vector<T>& _elements2);
+
+    }
+
+    /*! Parse \p _string to assign \p _vector.*/
+    template <class T>
+    void parse(const std::string& _string, std::vector<T>& _vector);
+}
+
+template <class T>
+bool slv::vector::remove(const T& _element, std::vector<T>& _elements) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element == _elements[el]);
+        el++;
+    }
+    if (l_found) {
+        el--;
+        _elements.erase(_elements.begin() + el);
+    }
+    return l_found;
+#else
+
+    typename std::vector<T>::iterator it = std::find(_elements.begin(), _elements.end(), _element);
+    if (it != _elements.end()) {
+        _elements.erase(it);
+        return true;
+    } else {
+        return false;
+    }
+#endif
+}
+
+template <class T>
+void slv::vector::remove(std::vector<T>& elements, const std::vector<T>& _elements) {
+
+    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
+        remove(*it, elements);
+    }
+
+}
+
+template <class T>
+void slv::vector::add(std::vector<const T*>& elements, const std::vector<T*>& _elements) {
+
+    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
+        elements.push_back(*it);
+    }
+}
+
+template <class T>
+void slv::vector::add(std::vector<const T>& elements, const std::vector<T>& _elements) {
+
+    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
+        elements.push_back(*it);
+    }
+
+}
+
+template <class T>
+void slv::vector::add(std::vector<T>& elements, const std::vector<T>& _elements) {
+    elements.insert(elements.end(), _elements.begin(), _elements.end());
+}
+
+template <class T>
+std::vector<T> slv::vector::add(const std::vector<T>& _elements1, const std::vector<T>& _elements2) {
+    std::vector<T> elements = _elements1;
+    slv::vector::add(elements, _elements2);
+    return elements;
+}
+
+template <class T, class Targ>
+void slv::vector::add_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
+
+    for (typename std::vector<const Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
+        elements.push_back(static_cast<const T*> (*it));
+    }
+}
+
+template <class T, class Targ>
+void slv::vector::add_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements) {
+
+    for (typename std::vector<Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
+        elements.push_back(static_cast<T*> (*it));
+    }
+}
+
+template <class T, class Targ>
+void slv::vector::add_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
+
+    for (typename std::vector<const Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
+        elements.push_back(dynamic_cast<const T*> (*it));
+    }
+}
+
+template <class T, class Targ>
+void slv::vector::assign_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
+
+    elements.resize(0);
+    add_static_cast(elements, _elements);
+}
+
+template <class T, class Targ>
+void slv::vector::assign_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements) {
+
+    elements.resize(0);
+    add_static_cast(elements, _elements);
+}
+
+template <class T, class Targ>
+void slv::vector::assign_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
+
+    elements.resize(0);
+    vectorAdd_dynamic_cast(elements, _elements);
+}
+
+template <class T>
+unsigned int slv::vector::getIndex(const T& _element, const std::vector<T>& _elements) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element == _elements[el]);
+        el++;
+    }
+    if (l_found) {
+        el--;
+        return el;
+    } else {
+        //std::cout << "WARNING - vectorGetIndex - there is no element " << _element << " in the vector" << std::endl;
+        return -1;
+    }
+#else
+    typename std::vector<T>::const_iterator it = std::find(_elements.begin(), _elements.end(), _element);
+    if (it != _elements.end()) {
+        return std::distance(_elements.begin(), it);
+    } else {
+        return -1;
+    }
+#endif
+}
+
+template <class T>
+bool slv::vector::find(const T& _element, const std::vector<T>& _elements) {
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element == _elements[el]);
+        el++;
+    }
+    return l_found;
+#else
+    return std::find(_elements.begin(), _elements.end(), _element) != _elements.end();
+#endif
+}
+
+template <class T>
+bool slv::vector::find(const T& _element, const std::vector<const T>& _elements) {
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element == _elements[el]);
+        el++;
+    }
+    return l_found;
+#else
+    return std::find(_elements.begin(), _elements.end(), _element) != _elements.end();
+#endif
+}
+
+template <class T>
+bool slv::vector::find(const T& _element, const std::vector<T*>& _elements) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element == *_elements[el]);
+        el++;
+    }
+    return l_found;
+#else
+
+    typename std::vector<T*>::const_iterator it = _elements.begin();
+    while (it != _elements.end() && **it != _element) {
+        ++it;
+    }
+
+    return it != _elements.end();
+#endif
+}
+
+template <class T>
+unsigned int slv::vector::sortIndex_descending(const T& _element, const std::vector<T>& _elements) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element > _elements[el]);
+        el++;
+    }
+    if (l_found) {
+        el--;
+    }
+    return el;
+#else
+
+    typename std::vector<T>::const_iterator it = _elements.begin();
+    bool l_found = false;
+    while (!l_found && it != _elements.end()) {
+        l_found = (_element > *it);
+        if (!l_found) ++it;
+    }
+
+    return std::distance(_elements.begin(), it);
+#endif
+}
+
+template <class T>
+unsigned int slv::vector::sortIndex_ascending(const T& _element, const std::vector<T>& _elements) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element < _elements[el]);
+        el++;
+    }
+    if (l_found) {
+        el--;
+    }
+    return el;
+#else
+
+    typename std::vector<T>::const_iterator it = _elements.begin();
+    bool l_found = false;
+    while (!l_found && it != _elements.end()) {
+        l_found = (_element < *it);
+        if (!l_found) ++it;
+    }
+
+    return std::distance(_elements.begin(), it);
+#endif
+}
+
+template <class T>
+unsigned int slv::vector::sortInsert_descending(const T& _element, std::vector<T>& _elements) {
+
+    unsigned int el = sortIndex_decrease(_element, _elements);
+    _elements.insert(_elements.begin() + el, _element);
+    return el;
+}
+
+template <class T>
+unsigned int slv::vector::sortInsert_ascending(const T& _element, std::vector<T>& _elements) {
+
+    unsigned int el = sortIndex_increase(_element, _elements);
+    _elements.insert(_elements.begin() + el, _element);
+    return el;
+}
+
+template <class T>
+bool slv::vector::equalUnordered(const std::vector<T>& _vector1, const std::vector<T>& _vector2) {
+
+    if (_vector1.size() != _vector2.size()) {
+        return false;
+    } else {
+        unsigned int i = 0;
+        unsigned int j;
+        std::vector<bool> vector2_already_match(_vector2.size(), false);
+        bool l_equal = true;
+        while (l_equal && i < _vector1.size()) {
+            j = 0;
+            while (j < _vector2.size() && (_vector1[i] != _vector2[j] || vector2_already_match[j])) {
+                j++;
+            }//stops : either if j out of range, either if matching is found (provided not already match)
+            if (j == _vector2.size()) {
+                l_equal = false;//no matching found
+            } else {
+                vector2_already_match[j] = true;
+                i++;
+            }
+        }
+        return l_equal;
+    }
+
+}
+
+template <class T>
+std::vector<T> slv::vector::make_sequence(const unsigned int _size, const T _start, const T _increment) {
+
+    std::vector<T> vector_sequence;
+    vector_sequence.push_back(_start);
+    for (unsigned int i = 1; i < _size; i++) {
+        vector_sequence.push_back(vector_sequence.back() + _increment);
+    }
+
+    return vector_sequence;
+}
+
+template <class T>
+void slv::vector::sort_ascending(std::vector<T>& _elements, unsigned int _range) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    if (_range == 0) {
+        _range = _elements.size();
+    }
+
+    unsigned int el, el2;
+    for (el = 1; el < _range; el++) {
+        el2 = el;
+        while (el2 > 0 && _elements[el2] < _elements[el2 - 1]) {
+            std::swap(_elements[el2 - 1], _elements[el2]);
+            el2--;
+        }
+    }
+#else
+    typename std::vector<T>::iterator it;
+    if (_range != 0) {
+        it = _elements.begin() + _range;
+    } else {
+        it = _elements.end();
+    }
+    std::sort(_elements.begin(), it);
+#endif
+}
+
+template <class T, class Targ>
+void slv::vector::sort_ascending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range) {
+
+    if (_elements.size() == _elements_arg.size()) {
+
+        if (_range == 0) {
+            _range = _elements.size();
+        }
+
+        unsigned int el, el2;
+        for (el = 1; el < _range; el++) {
+            el2 = el;
+            while (el2 > 0 && _elements[el2] < _elements[el2 - 1]) {
+                std::swap(_elements[el2 - 1], _elements[el2]);
+                std::swap(_elements_arg[el2 - 1], _elements_arg[el2]);
+                el2--;
+            }
+        }
+
+    } else {
+        slv::flag::ISSUE(slv::flag::InvalidArgument, "bad size");
+    }
+
+}
+
+template <class T>
+void slv::vector::sort_descending(std::vector<T>& _elements, unsigned int _range) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    if (_range == 0) {
+        _range = _elements.size();
+    }
+
+    unsigned int el, el2;
+    for (el = 1; el < _range; el++) {
+        el2 = el;
+        while (el2 > 0 && _elements[el2] > _elements[el2 - 1]) {
+            std::swap(_elements[el2 - 1], _elements[el2]);
+            el2--;
+        }
+    }
+#else
+
+    typename std::vector<T>::iterator it;
+    if (_range != 0) {
+        it = _elements.begin() + _range;
+    } else {
+        it = _elements.end();
+    }
+    std::sort(_elements.begin(), it, std::greater<T>());
+#endif
+
+}
+
+template <class T, class Targ>
+void slv::vector::sort_descending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range) {
+
+    if (_elements.size() == _elements_arg.size()) {
+
+        if (_range == 0) {
+            _range = _elements.size();
+        }
+
+        unsigned int el, el2;
+        for (el = 1; el < _range; el++) {
+            el2 = el;
+            while (el2 > 0 && _elements[el2] > _elements[el2 - 1]) {
+                std::swap(_elements[el2 - 1], _elements[el2]);
+                std::swap(_elements_arg[el2 - 1], _elements_arg[el2]);
+                el2--;
+            }
+        }
+
+    } else {
+        slv::flag::ISSUE(slv::flag::InvalidArgument, "bad size");
+    }
+
+}
+
+template <class T>
+bool slv::vector::is_equal(const std::vector<T>& _elements1, const std::vector<T>& _elements2) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    if (_elements1.size() == _elements2.size()) {
+        unsigned int i = 0;
+        bool l_ok = true;
+        while (l_ok && i < _elements1.size()) {
+            l_ok = (_elements1[i] == _elements2[i]);
+            i++;
+        }
+        return l_ok;
+    } else {
+        return false;
+    }
+#else
+    bool l_equal = true;
+    if (_elements1.size() == _elements2.size()) {
+
+        typename std::vector<T>::const_iterator it1 = _elements1.begin();
+        typename std::vector<T>::const_iterator it2 = _elements2.begin();
+
+        while (l_equal && it1 != _elements1.end()) {
+            l_equal = (*it1 == *it2);
+            ++it1;
+            ++it2;
+        }
+
+    } else {
+        l_equal = false;
+    }
+    return l_equal;
+#endif
+
+}
+
+#undef VECTOR_EXPLICIT_ALGORITHM
+
+template <class T>
+void slv::parse(const std::string& _string, std::vector<T>& _vector) {
+
+    _vector.clear();
+
+    T value;
+    if (_string[0] == '[') {
+
+        std::string string = _string;
+        std::string sub_string;
+        std::size_t pos;
+
+        string.erase(string.begin());
+        pos = string.find_first_of(',');
+        if (pos == std::string::npos) {
+            pos = string.find_first_of(']');
+        }
+        while (pos != std::string::npos) {
+
+            if (pos != 0) {
+                sub_string = string.substr(0, pos);
+
+                slv::parse(sub_string, value);
+                string.erase(0, pos + 1);
+
+                _vector.push_back(value);
+                pos = string.find_first_of(',');
+                if (pos == std::string::npos) {
+                    pos = string.find_first_of(']');
+                }
+            } else {
+                pos = std::string::npos;
+            }
+
+        }
+
+    } else {
+        slv::parse(_string, value);
+        _vector.push_back(value);
+    }
+
+}
 
 #define EXPAND(arg) arg
 #define glvm_pv_parametrization_constructor(\
@@ -10598,21 +10274,6 @@ struct SlvParameterSpecSerialization {
 template <>
 struct SlvParameterSpecSerialization<bool>;
 
-template <class Tparam>
-struct SlvParameterSpecIstream {
-    static void istream(Tparam& _parameter_value, std::istream& _is) {
-        _is >> _parameter_value;
-    }
-};
-
-/*! std::string specialization because _is >> _parameter_value does not manage space.*/
-template <>
-struct SlvParameterSpecIstream<std::string> {
-    static void istream(std::string& _parameter_value, std::istream& _is) {
-        slv::string::istream(_is, _parameter_value);
-    }
-};
-
 template <class Tparam, typename = void>
 struct SlvParameterSpec {
     static void assign(Tparam& _parameter_value1, const Tparam& _parameter_value2, bool _l_param_only) {
@@ -10625,10 +10286,13 @@ struct SlvParameterSpec {
         slv::rw::writeB(_parameter_value, _output_file);
     }
     static void istream(Tparam& _parameter_value, std::istream& _is) {
-        SlvParameterSpecIstream<Tparam>::istream(_parameter_value, _is);
+        _is >> _parameter_value;
     }
     static void ostream(const Tparam& _parameter_value, std::ostream& _os) {
         _os << _parameter_value;
+    }
+    static void parse(Tparam& _parameter_value, const std::string& _string) {
+        slv::parse(_string, _parameter_value);
     }
     static bool is_equal(const Tparam& _parameter_value1, const Tparam& _parameter_value2) {
         return _parameter_value1 == _parameter_value2;
@@ -10682,6 +10346,9 @@ struct SlvParameterSpec<Tparam, typename std::enable_if<SlvIsParametrization<Tpa
     }
     static void ostream(const Tparam& _parameter_value, std::ostream& _os) {
         _os << _parameter_value.param_cast();
+    }
+    static void parse(Tparam& _parameter_value, const std::string& _string) {
+        // No string parsing for parametrization
     }
     static bool is_equal(const Tparam& _parameter_value1, const Tparam& _parameter_value2) {
         return _parameter_value1.param_cast() == _parameter_value2.param_cast();
@@ -10863,7 +10530,7 @@ glvm_staticVariable_const_get(unsigned int, marker, marker_value)\
 typedef class_type Tparam;\
 private:\
 void set_stream_value(const std::string& _string, bool _l_param_only) {\
-class_type value_tmp(default_value()); std::istringstream iss(_string); SlvParameterSpec<class_type>::istream(value_tmp, iss);\
+class_type value_tmp(default_value()); SlvParameterSpec<class_type>::parse(value_tmp, _string);\
 this->set_value(value_tmp, _l_param_only);\
 }\
 std::string get_stream_value(bool _l_param_only) const {\
@@ -10939,7 +10606,7 @@ typedef class_type Tparam;\
 glvm_staticVariable_const_get(bool, has_rules, rules().size() > 1)\
 private:\
 void set_stream_value(const std::string& _string, bool _l_param_only) {\
-class_type value_tmp(default_value()); std::istringstream iss(_string); SlvParameterSpec<class_type>::istream(value_tmp, iss);\
+class_type value_tmp(default_value()); SlvParameterSpec<class_type>::parse(value_tmp, _string);\
 this->set_value(value_tmp, _l_param_only);\
 }\
 std::string get_stream_value(bool _l_param_only) const {\
@@ -19242,6 +18909,222 @@ SlvFileExtensions GlvParametrizationSaveLoad<Tparametrization>::allowed_extensio
 
 }
 
+#endif
+
+/*! Class managing the progress signals of a loop.*/
+class SlvProgressionQt :
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	public QObject,
+#endif
+	public SlvLblName {
+
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	Q_OBJECT
+#endif
+
+private:
+
+	/*! Tracked index of progress.
+	It is important to set a safe index because it can be set to Niterations if cancel is triggered.
+	ie: Use a different index for data manipulation.*/
+	void* iterator_ptr;
+	enum IteratorType { Int, UnsignedInt, Size_t };
+	/*! Type of the iterator defined at start.*/
+	IteratorType iterator_type;
+
+	/*! Expected maximum number of iterations. Set by emit_start method.*/
+	unsigned int Niterations;
+
+	/*! Whether progression instance is used directly as an iterator
+	* true : instance is an iterator. See operator= method.
+	* false : instance may control an external iterator using a pointer.*/
+	bool l_iterating;
+	/*! Iteration value when l_iterating is true.*/
+	std::size_t iterator;
+
+	bool l_started;
+	/*! If Niterations was not provided, then there is no feedback on progress.
+	* This variable checks if progress has ended or not.*/
+	bool l_no_feedback_ended;
+
+	/*! Optional message.*/
+	glvm_GetSetVariable(std::string, message);
+
+	/*! Whether the progression has been canceled externally or not.*/
+	bool l_was_canceled;
+
+	/*! Whether this progress is being called multiple times.
+	* If true, default hiding policy on ending will avoid glitches.
+	* In this case, hiding must be managed using finish().*/
+	bool l_recurrent;
+
+public:
+
+	SlvProgressionQt(std::string _name = "", bool _l_recurrent = false);
+	SlvProgressionQt(const SlvProgressionQt& _progression);
+	~SlvProgressionQt();
+
+private:
+	/*! Reset progress status.*/
+	void clear_progress();
+
+public:
+	/*! Reset progress status.*/
+	void clear();
+
+	/*! Does nothing. Disable assigment to ensure progress variables are not mixed.*/
+	SlvProgressionQt& operator=(const SlvProgressionQt& _progression);
+
+	/*! Whether this progress is being called multiple times.
+	* If true, default hiding policy on ending will avoid glitches.
+	* In this case, hiding must be managed using finish().*/
+	void set_recurrent(bool _l_recurrent);
+	/*! Whether this progress is being called multiple times.
+	* If true, default hiding policy on ending will avoid glitches.
+	* In this case, hiding must be managed using finish().*/
+	bool is_recurrent() const;
+
+	/*! Whether the progression as reached its maximum or not: *iterator_ptr >= Niterations-1.
+	* Return true if the progression was not started yet.*/
+	bool is_over() const;
+	/*! Whether the progression is managing a iterator_ptr or not. Depends on start() strategy.*/
+	bool has_iterator_ptr() const;
+	/*! Whether progression instance is used as an iterator. See operator= method.*/
+	bool is_iterating() const;
+	/*! Whether control on progress is possible or not.*/
+	bool is_cancelable() const;
+
+	/*! Emit start signal. Progress without bar nor control on the loop (no cancel button).*/
+	void start();
+	/*! Emit start signal. Progress without control on the loop (no cancel button).
+	* Use explicit update(int _value) at the end of the loop to update progress.*/
+	void start(const unsigned int _Niterations);
+	/*! Emit start signal.
+	* Use update() at the end of the loop to update progress.
+	* \p _iterator_ptr : pointer to the iteration value. Takes control of value by setting it to \p _Niterations in case the progression is stopped.*/
+	template <class Titerator>
+	void start(Titerator* _iterator_ptr, const unsigned int _Niterations);
+private :
+	void start_pv(const unsigned int _Niterations);
+public :
+
+	/*! Emit progress by using _iterator_ptr pointer and Niterations number defined by emit_start.
+	* Return false if _iterator_ptr pointer or Niterations number is null.
+	* If _iterator_ptr reaches Niterations, then ended() is emitted.*/
+	bool update();
+	/*! Update progress by explicitly setting the progress value \p _value.
+	* To be used with start(const unsigned int _Niterations).
+	* Does not assign value to _iterator_ptr pointer.
+	* Return false if _iterator_ptr number is null.*/
+	bool update(int _value);
+	/*! Confirm manually the progress is over.
+	* To be used if started with start(), ie no progress bar nor cancel control.
+	* If the progress is already monitored by a _iterator_ptr or an iterator, is automatically called at end of loop. No need to call it explicitly.
+	* Apply iterator finish.
+	* Release iterator_ptr pointer (set to NULL).*/
+	void end();
+	/*! Implies that progress monitoring is completely over. 
+	* If _l_remove is true, will remove Qt progression from GlvProgressMgr. Doing so means the progression will need to be added again to a Qt GlvProgressMgr.
+	* Apply iterator finish.
+	* Release _terator_ptr pointer (set to NULL).
+	* ie: Same as end() with removal from GlvProgressMgr if _l_remove is true.*/
+	void finish(bool _l_remove = true);
+
+	/*! Apply cancel to tracked iterator/iterator_ptr.
+	* Ends the loop.
+	* Does not emit signals. Use end() method instead.*/
+	void cancel();
+	/*! Whether the progression has been canceled externally or not.
+	* If so, it means the algorithm that was watched probably did not go through.*/
+	bool was_canceled() const;
+
+	/*! Cast to iterator.*/
+	operator std::size_t() const;
+	/*! Initialize iterator and start progress.*/
+	SlvProgressionQt& operator=(const std::size_t _iterator);
+
+	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
+	* Leaves < operator possible on iterator index, without impacting progression.
+	* On the other hand, bitwise operation is not possible of iterator index.
+	* Use init() or start() methods as an alternative to manage Niterations with classical int iterator index.*/
+	bool operator<<(std::size_t _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<(int _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<(unsigned int _Niterations);
+
+	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
+	* Leaves < operator possible on iterator index, without impacting progression.
+	* On the other hand, bitwise operation is not possible of iterator index.
+	* Use init() or start() methods as an alternative to manage Niterations with classical int iterator index.*/
+	bool operator<<=(std::size_t _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<=(int _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<=(unsigned int _Niterations);
+
+	/*! Increase iterator and update progress.*/
+	SlvProgressionQt& operator++();
+	/*! Increase iterator and update progress.*/
+	SlvProgressionQt operator++(int);
+
+private:
+
+	/*! Enforce finish by setting the iterator_ptr to finish value Niterations.
+	* The loop will end if the iterator is properly related to the iterator_ptr pointer.*/
+	void iterator_finish();
+
+	/*! iterator_ptr pointer is being checked at end of loop content.*/
+	static bool is_iterator_ptr_over(unsigned int _iterator_value, unsigned int _Niterations);
+	/*! Iterator is being checked at beginning of loop content.*/
+	static bool is_iterator_over(std::size_t _iterator, unsigned int _Niterations);
+
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+signals:
+
+	/*! Emitted when progress starts.*/
+	void started();
+	/*! Emit progress value in a range [0, 100] when progress is updated.*/
+	void updated(int _value);
+	/*! If an iterator or iterator_ptr is provided, is automatically emitted at end of loop.*/
+	void ended();
+	/*! Emitted when progress is completely over. If _l_remove is true, the progression will be removed of the progression manager (if managed by one).*/
+	void finished(bool _l_remove);
+#endif
+
+};
+
+/*! Use Qt signals.*/
+
+/*! Convenience class to embed a SlvProgressionQt in a class.
+* Typical use: to be inherited by a class which contains a method to monitor.
+* The key class is actually SlvProgressionQt, but it is convenient to encapsulate it in SlvProgression in order to not add too many inherited methods in inheriting classes.
+* Also convenient to track the get_progression() method.*/
+class SlvProgression {
+
+private:
+
+	SlvProgressionQt progression;
+
+public:
+
+	SlvProgression(std::string _name = "", bool _l_recurrent = false);
+	SlvProgression(const SlvProgression& _progression);
+	~SlvProgression();
+
+	/*! To be used. Const qualifier make the instance compliant with inherited const method.
+	In other words, the progression ignores the const qualifier of the child class instance.*/
+	SlvProgressionQt* get_progression() const;
+
+protected:
+
+	/*! Assignment operator to avoid assigning SlvProgressionQt progression.*/
+	SlvProgression& operator=(const SlvProgression& _progression);
+
+};
+
+#ifndef GLOVE_DISABLE_QT
+
 class GlvProgression;
 class SlvProgressionQt;
 class QVBoxLayout;
@@ -19408,27 +19291,22 @@ Transform a program into a GUI application. To be used at the very beginning of 
 */
 
 /*! Transform a program into a GUI application by setting -glove as CLI argument. To be used at the very beginning of the main.
-* Provide two additional variables:
+* Provide four additional variables:
 * - bool is_glove : whether -glove cli argument was used or not.
-* - Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one.*/
+* - Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one.
+* - bool is_glove_recurrent : whether glove app is being relaunched recurrently or not.
+* - GLOVE_APP_RECURRENT_TYPE glove_recurrent_var : variable kept along all recurrent runs.*/
 #define GLOVE_APP_PARAM(Tparametrization) \
-glvm_pv_GLOVE_APP(Tparametrization, false)
+glvm_pv_GLOVE_APP(Tparametrization, GLOVE_APP_AUTO)
 
+/*! Same as GLOVE_APP_PARAM, but with no input parametrization.*/
 #define GLOVE_APP \
-glvm_pv_GLOVE_APP(GLOVE_APP_default_parametrization, false)
-
-/*! Same as GLOVE_APP macro, but forces use of glove (ie: -glove is set by default).
-* Transform a program into a GUI application. To be used at the very beginning of the main.
-* Provide two additional variables:
-* - bool is_glove : whether -glove cli argument was used or not.
-* - Tparametrization glove_parametrization : the parametrization configured in the gui. If is_glove is false, then this parametrization is the default one.*/
-#define GLOVE_APP_PARAM_AUTO(Tparametrization) \
-glvm_pv_GLOVE_APP(Tparametrization, true)
-
-#define GLOVE_APP_AUTO \
-glvm_pv_GLOVE_APP(GLOVE_APP_default_parametrization, true)
+glvm_pv_GLOVE_APP(GLOVE_APP_default_parametrization, GLOVE_APP_AUTO)
 
 glvm_parametrization(GLOVE_APP_default_parametrization, "default");
+
+/*! Optional: Forces use of glove (ie: -glove is set by default).*/
+#define GLOVE_APP_AUTO false
 
 /*! Optional: Disable program execution in a separate thread. Progressions and status display can not be managed in this mode, only input parametrization can.
 * Can be convenient if one wants to execute the program in the closest conditions as the initial program is.
@@ -19437,14 +19315,22 @@ glvm_parametrization(GLOVE_APP_default_parametrization, "default");
 * To be set just before calling GLOVE_APP.*/
 #define GLOVE_APP_THREAD_MODE true
 
+/*! Optional: Set application in recurrent mode. The program will be launched again upon acceptance.
+* Applies only if GLOVE_APP_THREAD_MODE is set to true.*/
+#define GLOVE_APP_RECURRENT_MODE false
+#define GLOVE_APP_RECURRENT_TYPE int
+/*! Usef only if GLOVE_APP_RECURRENT_MODE is left false.*/
+static GLOVE_APP_RECURRENT_TYPE glove_recurrent_var;
+
+//#define Trecurrent_tmp RecurrentStruct
 #define glvm_pv_GLOVE_APP(Tparametrization, _l_auto_glove) \
-return GlvApp::main<Tparametrization>(argc, argv, _l_auto_glove, GLOVE_APP_THREAD_MODE);\
+return GlvApp::main<Tparametrization>(argc, argv, _l_auto_glove, GLOVE_APP_THREAD_MODE, GLOVE_APP_RECURRENT_MODE, glove_recurrent_var);\
 }\
 template <>\
-int glv_cli_main(int argc, char* argv[], bool is_glove, const Tparametrization& glove_parametrization) {
+int glv_cli_main(int argc, char* argv[], bool is_glove, const Tparametrization& glove_parametrization, bool is_glove_recurrent, GLOVE_APP_RECURRENT_TYPE& glove_recurrent_var) {
 
-template <class Tparametrization>
-int glv_cli_main(int argc, char* argv[], bool _l_gloved, const Tparametrization& _parametrization);//forward declare for gcc
+template <class Tparametrization, class Trecurrent>
+int glv_cli_main(int argc, char* argv[], bool _l_gloved, const Tparametrization& _parametrization, bool _l_recurrent, Trecurrent & _recurrent_var);//forward declare for gcc
 
 #define GLOVE_APP_MSVC_NO_CONSOLE \
 comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
@@ -19469,10 +19355,24 @@ class SlvProgressionQt;
 
 class GLOVE_APP_SHARED_API GlvApp {
 	
+private :
+
+	class RecurrentWrapper;
+	template <class Tparametrization, class Trecurrent>
+	class RecurrentWrapperT;
+
+	struct Interface {
+		QFuture<int> future;
+		QFutureWatcher<int> future_watcher;
+		RecurrentWrapper* recurrent_wrapper = NULL;
+	};
+
 public:
 
-	template <class Tparametrization>
-	static int main(int _argc, char* _argv[], bool _l_auto_glove = false, bool _l_threaded = true);
+	template <class Tparametrization, class Trecurrent>
+	static int main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_threaded, bool _l_recurrent, Trecurrent& _recurrent);
+	template <class Tparametrization, class Trecurrent>
+	static int main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface& _interface, bool _l_recurrent, Trecurrent& _recurrent);
 
 private:
 
@@ -19487,7 +19387,9 @@ private:
 	/*! Progressions managed by GLOVE_APP_CLI.*/
 	glvm_staticVariable_def(, SlvPoolFactory<SlvProgressionQt COMMA slv::lbl::Name>, progressions);
 	glvm_staticVariable(, SlvStatus, status, {});
+	glvm_staticVariable(, GlvProgressMgr*, progress_mgr, NULL);
 	glvm_staticVariable(, GlvStatusMgr*, status_mgr, NULL);
+	glvm_staticVariable(, Interface, interface, );
 
 public :
 
@@ -19499,115 +19401,193 @@ public :
 
 };
 
-template <class Tparametrization>
-int GlvApp::main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_threaded) {
+class GlvApp::RecurrentWrapper : public QObject {
+
+	Q_OBJECT
+
+protected:
+
+	RecurrentWrapper() {}
+	~RecurrentWrapper() {}
+
+public slots:
+	virtual void relaunch() = 0;
+
+};
+
+template <class Tparametrization, class Trecurrent>
+class GlvApp::RecurrentWrapperT : public GlvApp::RecurrentWrapper {
+
+private:
+
+	int argc;
+	char** argv;
+	Trecurrent* recurrent_var;
+	Interface* interface = NULL;
+
+public:
+
+	RecurrentWrapperT() {}
+
+	void set(int _argc, char** _argv, Trecurrent* _recurrent_var) {
+		argc = _argc;
+		argv = _argv;
+		recurrent_var = _recurrent_var;
+	}
+
+	void set_interface(Interface* _interface) {
+		interface = _interface;
+	}
+
+	void relaunch() {
+		bool l_threaded = true;
+		bool l_recurrent = true;
+		GlvApp::main_recurrent<Tparametrization, Trecurrent>(argc, argv, l_threaded, *interface, l_recurrent, *recurrent_var);
+	}
+
+};
+
+template <class Tparametrization, class Trecurrent>
+int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface& _interface, bool _l_recurrent, Trecurrent& _recurrent_var) {
+
+	std::string autosave_file_name = SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true);
+#if OPTION_USE_THIRDPARTY_JSON==1
+	autosave_file_name += ".json";
+#endif
+
+	if (progress_mgr()) {
+		progress_mgr()->hide();
+	}
+
+	GlvParametrizationDialog<Tparametrization> dialog;
+	GlvParametrizationSaveLoad<Tparametrization>* save_load_widget = new GlvParametrizationSaveLoad<Tparametrization>(dialog.get_parametrization_widget());
+
+	SlvCLI::Arguments arguments(_argc, _argv);
+
+	if (!arguments.get_glove_argument().empty()) {
+
+		save_load_widget->load(arguments.get_glove_argument());
+
+	}
+
+	Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
+	SlvStatus status;
+
+	if (!arguments.is_empty()) {
+
+		status = SlvCLI::parse(parametrization, arguments);
+
+		glv::flag::showQMessageBox(QObject::tr("Arguments conflict"), status, true);
+
+		dialog.set_parametrization(parametrization);
+
+	} else if (SlvFile(autosave_file_name).exists() && arguments.get_glove_argument().empty()) {
+
+		save_load_widget->load(autosave_file_name);
+
+	}
+
+	int result;
+	if (Tparametrization::Nparameters() > 0) {
+		result = dialog.exec();
+	} else {
+		result = QDialog::Accepted;
+	}
+
+	if (result == QDialog::Accepted) {
+
+		save_load_widget->save(autosave_file_name);
+
+		SlvDirectory directory(ParamOutput<Tparametrization>::get_path(dialog.get_parametrization()));
+		if (directory.exists()) {
+			save_load_widget->save(SlvFile(directory, autosave_file_name).get_path());
+		}
+
+		std::vector< std::pair<std::string, std::string> > parameter_arguments = dialog.get_parametrization().get_string_serialization_bool().first;
+		for (SlvCLI::Arguments::Tparameters::const_iterator it = arguments.get_parameter_arguments().begin(); it != arguments.get_parameter_arguments().end(); ++it) {
+			parameter_arguments.push_back({ it->first, it->second[0] });
+		}
+
+		std::vector<std::string> solo_arguments = dialog.get_parametrization().get_string_serialization_bool().second;
+		slv::vector::add(solo_arguments, arguments.get_solo_arguments());
+
+		std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(parameter_arguments, solo_arguments);
+		cli_arguments.second[0] = _argv[0];
+
+		if (_l_threaded) {
+
+			if (_l_recurrent) {
+				dynamic_cast<RecurrentWrapperT<Tparametrization, Trecurrent>*>(_interface.recurrent_wrapper)->set(cli_arguments.first, cli_arguments.second, &_recurrent_var);
+			}
+
+			_interface.future = QtConcurrent::run(&glv_cli_main<Tparametrization, Trecurrent>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization(), _l_recurrent, std::ref(_recurrent_var));
+			_interface.future_watcher.setFuture(_interface.future);
+
+			if (progress_mgr()) {
+				progress_mgr()->show();
+			}
+
+			return 0;
+
+		} else {
+			status_mgr() = NULL;
+			return glv_cli_main(cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization(), _l_recurrent, _recurrent_var);
+		}
+
+	} else {
+		QCoreApplication::quit();
+		return 1;
+	}
+
+}
+
+template <class Tparametrization, class Trecurrent>
+int GlvApp::main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_threaded, bool _l_recurrent, Trecurrent& _recurrent_var) {
 
 	if (SlvCLI::has_glove(_argc, _argv) || _l_auto_glove) {
 
 		QApplication q_app(_argc, _argv);
-
-		std::string autosave_file_name = SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true);
-#if OPTION_USE_THIRDPARTY_JSON==1
-		autosave_file_name += ".json";
-#endif
-
-		GlvParametrizationDialog<Tparametrization> dialog;
-		GlvParametrizationSaveLoad<Tparametrization>* save_load_widget = new GlvParametrizationSaveLoad<Tparametrization>(dialog.get_parametrization_widget());
-
-		SlvCLI::Arguments arguments(_argc, _argv);
-
-		if (!arguments.get_glove_argument().empty()) {
-
-			save_load_widget->load(arguments.get_glove_argument());
-
+		if (_l_recurrent) {
+			q_app.setQuitOnLastWindowClosed(false);
 		}
 
-		Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
-		SlvStatus status;
+		if (_l_threaded) {
 
-		if (!arguments.is_empty()) {
+			status_mgr() = new GlvStatusMgr;
+			status_mgr()->add(&GlvApp::status());
 
-			status = SlvCLI::parse(parametrization, arguments);
-
-			glv::flag::showQMessageBox(QObject::tr("Arguments conflict"), status, true);
-
-			dialog.set_parametrization(parametrization);
-
-		} else if (SlvFile(autosave_file_name).exists() && arguments.get_glove_argument().empty()) {
-
-			save_load_widget->load(autosave_file_name);
-
-		}
-
-		int result;
-		if (Tparametrization::Nparameters() > 0) {
-			result = dialog.exec();
-		} else {
-			result = QDialog::Accepted;
-		}
-
-		if (result == QDialog::Accepted) {
-
-			save_load_widget->save(autosave_file_name);
-			
-			SlvDirectory directory(ParamOutput<Tparametrization>::get_path(dialog.get_parametrization()));
-			if (directory.exists()) {
-				save_load_widget->save(SlvFile(directory, autosave_file_name).get_path());
-			}
-
-			std::vector< std::pair<std::string, std::string> > parameter_arguments = dialog.get_parametrization().get_string_serialization_bool().first;
-			for (SlvCLI::Arguments::Tparameters::const_iterator it = arguments.get_parameter_arguments().begin(); it != arguments.get_parameter_arguments().end(); ++it) {
-				parameter_arguments.push_back({ it->first, it->second[0] });
-			}
-
-			std::vector<std::string> solo_arguments = dialog.get_parametrization().get_string_serialization_bool().second;
-			slv::vector::add(solo_arguments, arguments.get_solo_arguments());
-
-			std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(parameter_arguments, solo_arguments);
-			cli_arguments.second[0] = _argv[0];
-
-#ifdef GLOVE_DEBUG
-			if (!_l_threaded && !GlvApp::progressions().empty()) {
-
-				glv::flag::showQMessageBox(QObject::tr("Thread issue"), SlvStatus(SlvStatus::statusType::critical, "Can not manage progressions if thread mode is not active."), true);
-				return 0;
-
-			} else {
-#endif
-
-				if (_l_threaded) {
-
-					status_mgr() = new GlvStatusMgr;
-					status_mgr()->add(&GlvApp::status());
-
-					GlvProgressMgr progress_mgr;
-					for (int i = 0; i < progressions().psize(); i++) {
-						bool l_hide_when_over = !progressions()[i]->is_recurrent();
-						progress_mgr.add_progression(progressions()[i], l_hide_when_over);
-					}
-					progress_mgr.show();
-
-					QFuture<int> future = QtConcurrent::run(&glv_cli_main<Tparametrization>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization());
-					QFutureWatcher<int> future_watcher;
-					QObject::connect(&future_watcher, SIGNAL(finished()), &q_app, SLOT(closeAllWindows()));
-					future_watcher.setFuture(future);
-
-					return q_app.exec();
-				} else {
-					status_mgr() = NULL;
-					return glv_cli_main(cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization());
+			if (!progressions().empty()) {
+				progress_mgr() = new GlvProgressMgr;
+				for (int i = 0; i < progressions().psize(); i++) {
+					bool l_hide_when_over = !progressions()[i]->is_recurrent();
+					progress_mgr()->add_progression(progressions()[i], l_hide_when_over);
 				}
-
-#ifdef GLOVE_DEBUG
 			}
-#endif
+
+			if (!_l_recurrent) {
+				QObject::connect(&interface().future_watcher, &QFutureWatcher<int>::finished, &q_app, &QCoreApplication::quit, Qt::QueuedConnection);
+			} else {
+				RecurrentWrapperT<Tparametrization, Trecurrent>* recurrent_wrapper = new RecurrentWrapperT<Tparametrization, Trecurrent>;
+				recurrent_wrapper->set_interface(&interface());
+				interface().recurrent_wrapper = recurrent_wrapper;
+				QObject::connect(&interface().future_watcher, SIGNAL(finished()), interface().recurrent_wrapper, SLOT(relaunch()));
+			}
+
+		}
+
+		int exit = main_recurrent<Tparametrization>(_argc, _argv, _l_threaded, interface(), _l_recurrent, _recurrent_var);
+
+		if (!exit && _l_threaded) {
+
+			return q_app.exec();
 
 		} else {
-			return 0;
+
+			return exit;
 		}
 
 	} else {
-		return glv_cli_main(_argc, _argv, false, Tparametrization());
+		return glv_cli_main(_argc, _argv, false, Tparametrization(), false, _recurrent_var);
 	}
 
 }
@@ -20806,6 +20786,121 @@ bool SlvSortAscending<Tdata, Trange>::check_range(const Tdata& _data) const {
     return _data - this->datas.front() <= this->get_range();
 }
 
+/*! Enable if not of specified type in an other file. For instance SlvParameterRuleT_spec_ParameterArithmetic.h*/
+#define Tenable typename std::enable_if<\
+(!slv::ts::is_arithmetic<Tparam>::value || \
+std::is_same<Tparam, bool>::value)\
+>::type
+
+/*! Rule that a parameter SlvParameter is supposed to abide.
+* Same as SlvParameterRuleT_spec_Arithmetic, but instead of using static values for rule, uses a dynamic value in a SlvParameter. See dynamic_rules in SlvParameter.*/
+template <class Tparam>
+class SlvParameterRuleT<SlvParameter<Tparam>, Tenable> {
+
+public:
+	enum RuleType { valid, exception };
+
+private:
+	RuleType rule_type;
+	const SlvParameter<Tparam>* rule_parameter;
+
+public:
+	SlvParameterRuleT();
+	SlvParameterRuleT(RuleType _rule_type, const SlvParameter<Tparam>* _rule_parameter);
+	~SlvParameterRuleT();
+
+	/*! Get rule type of this parameter. Only one per rule instance.*/
+	const RuleType& get_rule_type() const;
+	/*! Return value the parameter this rule is associated to.*/
+	const Tparam& get_rule_value() const;
+
+	/*! Get string description of the rule.*/
+	std::string get_rule_description() const;
+
+	/*! Whether \p _parameter abides the rule or not.*/
+	SlvStatus is_abided(const SlvParameter<Tparam>* _parameter) const;
+	/*! Enforce rule to \p _parameter. Return true if the parameters was abiding the rule. Return false if the parameter was changed.*/
+	bool abide(SlvParameter<Tparam>* _parameter) const;
+};
+
+template <class Tparam>
+SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::SlvParameterRuleT() :SlvParameterRuleT(valid, 0) {
+
+}
+
+template <class Tparam>
+SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::SlvParameterRuleT(RuleType _rule_type, const SlvParameter<Tparam>* _rule_parameter) {
+
+	rule_type = _rule_type;
+	rule_parameter = _rule_parameter;
+}
+
+template <class Tparam>
+SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::~SlvParameterRuleT() {
+
+}
+
+template <class Tparam>
+const typename SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::RuleType& SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_type() const {
+
+	return rule_type;
+}
+
+template <class Tparam>
+const Tparam& SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_value() const {
+	return rule_parameter->get_value();
+}
+
+template <class Tparam>
+std::string SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::get_rule_description() const {
+
+	return std::string();
+
+}
+
+template <class Tparam>
+SlvStatus SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::is_abided(const SlvParameter<Tparam>* _parameter) const {
+
+	return SlvStatus();
+}
+
+template <class Tparam>
+bool SlvParameterRuleT<SlvParameter<Tparam>, Tenable>::abide(SlvParameter<Tparam>* _parameter) const {
+	return true;
+}
+
+#undef Tenable
+
+class SlvParametrization_base;
+
+/*! Rule that a parameter SlvParameter is supposed to abide. Specialization for template type which is a SlvParametrization.*/
+template <class Tparam>
+class SlvParameterRuleT<Tparam, typename std::enable_if<std::is_base_of<SlvParametrization_base, Tparam>::value>::type> {
+
+public:
+    SlvParameterRuleT() {}
+    ~SlvParameterRuleT() {}
+
+    /*! Whether \p _parameter abides the rule or not.*/
+    SlvStatus is_abided(const SlvParameter<Tparam>* _parameter) const {
+        return _parameter->get_value().check_parameters();
+    }
+    /*! Enforce rule to \p _parameter. Return true if the parameters was abiding the rule. Return false if the parameter was changed.*/
+    bool abide(SlvParameter<Tparam>* _parameter) const {
+        //return true;
+        Tparam parametrization = _parameter->get_value();
+        bool l_abide = parametrization.abide_rules();
+        _parameter->set_value(parametrization);
+        return l_abide;
+    }
+
+    /*! Get string description of the rule.*/
+    std::string get_rule_description() const {
+        return std::string();
+    }
+
+};
+
 template <class T>
 class SlvSize2d : public SlvIOS {
 
@@ -20997,6 +21092,75 @@ struct GlvWidgetMakerConnect<Tdata> {
 #undef Tdata
 
 #endif
+
+/*! Convenience class to manage file writing by using automatically the name of the instance.
+* Tname_class must have the method std::string get_name().*/
+template <class Tname_class>
+class SlvWriteTextNamedT : virtual public SlvWriteText, public Tname_class {
+
+public:
+
+	SlvWriteTextNamedT(std::string _name = "") :Tname_class(_name) {}
+	~SlvWriteTextNamedT() {}
+
+	/*! Write the instance in a file named after the instance's name.
+	* \p _prefix_path can be set so that the path will be such as \p _prefix_path + get_name()*/
+	void write_text_auto(std::string _prefix_path = "", std::ios::openmode _position = std::ios::trunc) const;
+
+};
+
+template <class Tname_class>
+void SlvWriteTextNamedT<Tname_class>::write_text_auto(std::string _prefix, std::ios::openmode _position) const {
+
+	SlvWriteText::write_text(_prefix + Tname_class::get_name(), _position);
+
+}
+
+/*! Convenience class.*/
+typedef SlvWriteTextNamedT<SlvLblName> SlvWriteTextLblNamed;
+
+/*! Convenience class.*/
+typedef SlvWriteTextNamedT<SlvName> SlvWriteTextNamed;
+
+/*! Class to measure execution time.
+* At instantiation/reset, a reference time is measured and added to stack of checked times.
+* Each time get_elasped_time, get_elasped_time_last, or check_display, method is called, a new checked time is added. Check sample012 for example.*/
+class SlvTimer : public SlvName {
+
+private:
+
+	std::vector<clock_t> check_times;
+
+public:
+
+	SlvTimer(std::string _name = "");
+	~SlvTimer();
+
+	/*! Reset timer by clearing all checked times and taking current time as new reference.*/
+	void reset();
+
+	/*! Parse elapsed time since instance reference into a string.*/
+	std::string get_string() const;
+
+	/*! Get elapsed time from reference into hours, minutes, seconds, milliseconds.
+	* Each time this method is called, a check time is added.*/
+	std::vector<int> get_elasped_time();
+	/*! Get elapsed time from last check into hours, minutes, seconds, milliseconds.
+	* Each time this method is called, a check time is added.*/
+	std::vector<int> get_elasped_time_last();
+
+	/*! Measure elapsed time and display it via std::cout. \p _message is an optional display message.
+	* Each time this method is called, a check time is added.*/
+	void check_display(std::string _message = "");
+
+private:
+
+	/*! Display time \p _time.*/
+	void time_display(clock_t _time) const;
+	/*! Parse \p _time into hours, minutes, seconds, milliseconds.*/
+	std::vector<int> get_time(clock_t _time) const;
+
+};
 
 /*! Get name of template type. Specialization. Name std::vector< std::vector<> >.*/
 template <class T>
@@ -21332,8 +21496,8 @@ private slots:
     void start();
     /*! Auto hide if enabled.*/
     void end();
-    /*! Remove progression from GlvProgressMgr.*/
-    void final();
+    /*! Remove or hide progression from GlvProgressMgr.*/
+    void final(bool _l_remove);
 
 };
 
@@ -22448,38 +22612,6 @@ inline void slv::rw::writeB(const std::vector<bool>& _vector, std::ofstream& _ou
     }
 
     slv::rw::writeB(char_vector, _output_file);
-
-}
-
-inline SlvLblIdentifier::SlvLblIdentifier(slv::lbl::Identifier _Id) :SlvLabeling<slv::lbl::Identifier>(_Id) {
-
-}
-
-inline SlvLblIdentifier::~SlvLblIdentifier() {
-
-}
-
-inline const slv::lbl::Identifier& SlvLblIdentifier::get_Id() const {
-	return get_label();
-}
-
-inline SlvLblName::SlvLblName(std::string _name) :SlvLabeling<std::string>(_name) {
-
-}
-
-inline SlvLblName::~SlvLblName() {
-
-}
-
-inline const std::string& SlvLblName::get_name() const {
-
-	return get_label();
-
-}
-
-inline void SlvLblName::ostream(std::ostream& _os) const {
-
-	_os << get_name();
 
 }
 
@@ -23621,7 +23753,8 @@ inline void SlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 	for (int i = 1; i < _argc; i++) {
 		bool l_parameter = false;
 		if (_argv[i][0] == '-') {
-			if (i < _argc - 1 && _argv[i + 1][0] != '-') {
+			if (i < _argc - 1 && (_argv[i + 1][0] != '-' || (_argv[i + 1][0] == '-' && std::isdigit(_argv[i + 1][1])))) {
+
 				if (std::strcmp(_argv[i], "-glove")) {
 					parameter_arguments[_argv[i]].push_back(_argv[i + 1]);
 				} else {
@@ -23716,19 +23849,279 @@ inline std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair
 
 }
 
-inline SlvParameter_base::SlvParameter_base(SlvParametrization_base* _parametrization) : parametrization(_parametrization) {
+inline SlvLblIdentifier::SlvLblIdentifier(slv::lbl::Identifier _Id) :SlvLabeling<slv::lbl::Identifier>(_Id) {
 
 }
 
-inline SlvParameter_base::~SlvParameter_base() {
+inline SlvLblIdentifier::~SlvLblIdentifier() {
 
 }
 
-inline bool SlvParameter_base::is_param_init_auto() const {
+inline const slv::lbl::Identifier& SlvLblIdentifier::get_Id() const {
+	return get_label();
+}
 
-	return parametrization->is_param_init_auto();
+inline SlvLblName::SlvLblName(std::string _name) :SlvLabeling<std::string>(_name) {
 
 }
+
+inline SlvLblName::~SlvLblName() {
+
+}
+
+inline const std::string& SlvLblName::get_name() const {
+
+	return get_label();
+
+}
+
+inline void SlvLblName::ostream(std::ostream& _os) const {
+
+	_os << get_name();
+
+}
+
+inline SlvWriteBinary::SlvWriteBinary() {
+
+}
+
+inline SlvWriteBinary::~SlvWriteBinary() {
+
+}
+
+inline SlvStatus SlvWriteBinary::write_binary(std::string _file_path, std::ios::openmode _position) const {
+
+    SlvStatus status;
+    status = SlvFileMgr::write_binary(*this, _file_path, _position);
+
+    return status;
+}
+
+inline SlvReadBinary::SlvReadBinary() {
+
+}
+
+inline SlvReadBinary::~SlvReadBinary() {
+
+}
+
+inline SlvStatus SlvReadBinary::read_binary(std::string _file_path) {
+
+    SlvStatus status;
+    status = SlvFileMgr::read_binary(*this, _file_path);
+
+    return status;
+}
+
+inline SlvName::SlvName(std::string _name) :name(_name) {
+
+}
+
+inline SlvName::~SlvName() {
+
+}
+
+inline const std::string& SlvName::get_name() const {
+	return name;
+}
+
+inline void SlvName::set_name(const std::string& _name) {
+	name = _name;
+}
+
+inline SlvOFS::SlvOFS() {
+
+}
+
+inline SlvOFS::~SlvOFS() {
+
+}
+
+inline std::ofstream& operator<<(std::ofstream& _ofs, const SlvOFS& _OFS) {
+
+	_OFS.ofstream(_ofs);
+	return _ofs;
+
+}
+
+inline SlvWriteText::SlvWriteText() {
+
+}
+
+inline SlvWriteText::~SlvWriteText() {
+
+}
+
+inline SlvStatus SlvWriteText::write_text(std::string _file_path, std::ios::openmode _position) const {
+
+    SlvStatus status;
+    status = SlvFileMgr::write_text(*this, _file_path, _position);
+
+    return status;
+}
+
+inline SlvIFS::SlvIFS() {
+
+}
+
+inline SlvIFS::~SlvIFS() {
+
+}
+
+inline std::ifstream& operator>>(std::ifstream& _ifs, SlvIFS& _IFS) {
+
+	_IFS.ifstream(_ifs);
+	return _ifs;
+
+}
+
+inline SlvReadText::SlvReadText() {
+
+}
+
+inline SlvReadText::~SlvReadText() {
+
+}
+
+inline SlvStatus SlvReadText::read_text(std::string _file_path) {
+
+    SlvStatus status;
+    status = SlvFileMgr::read_text(*this, _file_path);
+
+    return status;
+}
+
+#ifndef GLOVE_DISABLE_QT
+
+inline GlvVectorWidget_base::GlvVectorWidget_base(QWidget* _parent) : QWidget(_parent) {
+
+    QString info;
+
+    buttons_widget = new QWidget;
+    QVBoxLayout* buttons_layout = new QVBoxLayout;
+    buttons_widget->setLayout(buttons_layout);
+    buttons_widget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+
+    QWidget* pushpop_widget = new QWidget;
+    QHBoxLayout* pushpop_layout = new QHBoxLayout;
+    pushpop_widget->setLayout(pushpop_layout);
+    button_push = new QPushButton(tr("Push"));
+    info = QString(tr("Add a new element at the end of the vector"));
+    button_push->setWhatsThis(info);
+    button_push->setToolTip(info);
+    pushpop_layout->addWidget(button_push);
+    button_pop = new QPushButton(tr("Pop"));
+    button_pop->setEnabled(false);
+    info = QString(tr("Remove the element at the end of the vector"));
+    button_pop->setWhatsThis(info);
+    button_pop->setToolTip(info);
+    pushpop_layout->addWidget(button_pop);
+    buttons_layout->addWidget(pushpop_widget);
+
+    QWidget* insert_widget = new QWidget;
+    QHBoxLayout* insert_layout = new QHBoxLayout;
+    insert_widget->setLayout(insert_layout);
+    button_insert = new QPushButton(tr("Insert"));
+    info = QString(tr("Insert an element at the specified index"));
+    button_insert->setWhatsThis(info);
+    button_insert->setToolTip(info);
+    insert_layout->addWidget(button_insert);
+    index_spinbox = new QSpinBox;
+    info = QString(tr("Index where to insert an element"));
+    index_spinbox->setWhatsThis(info);
+    index_spinbox->setToolTip(info);
+    insert_layout->addWidget(index_spinbox);
+    buttons_layout->addWidget(insert_widget);
+    buttons_layout->setContentsMargins(0, 9, 0, 0);
+
+    pushpop_layout->setContentsMargins(0, 0, 0, 0);
+    insert_layout->setContentsMargins(0, 0, 0, 0);
+
+    index_spinbox->setMinimum(0);
+
+    widget_scroll = new QWidget;
+    layout_items = new QVBoxLayout;
+
+    widget_scroll->setLayout(layout_items);
+    connect(button_push, SIGNAL(clicked()), this, SLOT(pushValue()));
+    connect(button_pop, SIGNAL(clicked()), this, SLOT(popValue()));
+    connect(button_insert, SIGNAL(clicked()), this, SLOT(insertValue()));
+
+    QWidget* widget_vector = new QWidget;
+    QScrollArea* scroll_area = glv::widget::make_scrollable(widget_scroll, widget_vector);
+    scroll_area->setFrameShape(QFrame::Panel);
+    widget_vector->layout()->setContentsMargins(0, 0, 0, 0);
+
+    QHBoxLayout* layout = new QHBoxLayout;
+    layout->addWidget(widget_vector);
+    layout->addWidget(buttons_widget, 0, Qt::AlignTop);
+    setLayout(layout);
+
+    layout->setContentsMargins(0, 0, 0, 0);
+}
+
+inline GlvVectorWidget_base::~GlvVectorWidget_base() {
+
+}
+
+inline void GlvVectorWidget_base::set_editable(bool l_editable) {
+    QWidget::setEnabled(l_editable);
+}
+
+inline void GlvVectorWidget_base::insertValue() {
+
+    insertValue(index_spinbox->value());
+
+}
+
+inline GlvVectorWidgetItem_base::GlvVectorWidgetItem_base() {
+
+	layout = new QHBoxLayout;
+	setLayout(layout);
+	layout->setContentsMargins(0, 0, 0, 0);
+
+}
+
+inline GlvVectorWidgetItem_base::~GlvVectorWidgetItem_base() {
+
+}
+
+inline void GlvVectorWidgetItem_base::show_remove_button(bool _l_show) {
+
+	if (_l_show) {
+		remove_button->show();
+	} else {
+		remove_button->hide();
+	}
+
+}
+
+template <>
+inline QString glv::toQString<std::string>(const std::string& _value) {
+	return QString(_value.c_str());
+}
+template <>
+inline QString glv::toQString<double>(const double& _value) {
+	return QString(slv::string::value_to_string(_value).c_str());
+}
+template <>
+inline QString glv::toQString<float>(const float& _value) {
+	return QString(slv::string::value_to_string(_value).c_str());
+}
+template <>
+inline QString glv::toQString<int>(const int& _value) {
+	return QString(slv::string::number_to_string_auto(_value).c_str());
+}
+template <>
+inline QString glv::toQString<unsigned int>(const unsigned int& _value) {
+	return QString(slv::string::number_to_string_auto(_value).c_str());
+}
+template <>
+inline QString glv::toQString<unsigned long>(const unsigned long& _value) {
+	return QString(slv::string::number_to_string_auto(_value).c_str());
+}
+
+#endif
 
 inline SlvStatus SlvParameterRuleValidation<SlvFile>::is_valid(const SlvParameter<SlvFile>* _parameter) {
 	if (!_parameter->get_value().get_path().empty()) {//if file is 'empty' then invalid status is being ignored. Assumption: the file was net at all.
@@ -24054,134 +24447,6 @@ inline GlvWidgetData<Tdata>::~GlvWidgetData() {
 
 #undef Tdata
 
-inline GlvVectorWidget_base::GlvVectorWidget_base(QWidget* _parent) : QWidget(_parent) {
-
-    QString info;
-
-    buttons_widget = new QWidget;
-    QVBoxLayout* buttons_layout = new QVBoxLayout;
-    buttons_widget->setLayout(buttons_layout);
-    buttons_widget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-
-    QWidget* pushpop_widget = new QWidget;
-    QHBoxLayout* pushpop_layout = new QHBoxLayout;
-    pushpop_widget->setLayout(pushpop_layout);
-    button_push = new QPushButton(tr("Push"));
-    info = QString(tr("Add a new element at the end of the vector"));
-    button_push->setWhatsThis(info);
-    button_push->setToolTip(info);
-    pushpop_layout->addWidget(button_push);
-    button_pop = new QPushButton(tr("Pop"));
-    button_pop->setEnabled(false);
-    info = QString(tr("Remove the element at the end of the vector"));
-    button_pop->setWhatsThis(info);
-    button_pop->setToolTip(info);
-    pushpop_layout->addWidget(button_pop);
-    buttons_layout->addWidget(pushpop_widget);
-
-    QWidget* insert_widget = new QWidget;
-    QHBoxLayout* insert_layout = new QHBoxLayout;
-    insert_widget->setLayout(insert_layout);
-    button_insert = new QPushButton(tr("Insert"));
-    info = QString(tr("Insert an element at the specified index"));
-    button_insert->setWhatsThis(info);
-    button_insert->setToolTip(info);
-    insert_layout->addWidget(button_insert);
-    index_spinbox = new QSpinBox;
-    info = QString(tr("Index where to insert an element"));
-    index_spinbox->setWhatsThis(info);
-    index_spinbox->setToolTip(info);
-    insert_layout->addWidget(index_spinbox);
-    buttons_layout->addWidget(insert_widget);
-    buttons_layout->setContentsMargins(0, 9, 0, 0);
-
-    pushpop_layout->setContentsMargins(0, 0, 0, 0);
-    insert_layout->setContentsMargins(0, 0, 0, 0);
-
-    index_spinbox->setMinimum(0);
-
-    widget_scroll = new QWidget;
-    layout_items = new QVBoxLayout;
-
-    widget_scroll->setLayout(layout_items);
-    connect(button_push, SIGNAL(clicked()), this, SLOT(pushValue()));
-    connect(button_pop, SIGNAL(clicked()), this, SLOT(popValue()));
-    connect(button_insert, SIGNAL(clicked()), this, SLOT(insertValue()));
-
-    QWidget* widget_vector = new QWidget;
-    QScrollArea* scroll_area = glv::widget::make_scrollable(widget_scroll, widget_vector);
-    scroll_area->setFrameShape(QFrame::Panel);
-    widget_vector->layout()->setContentsMargins(0, 0, 0, 0);
-
-    QHBoxLayout* layout = new QHBoxLayout;
-    layout->addWidget(widget_vector);
-    layout->addWidget(buttons_widget, 0, Qt::AlignTop);
-    setLayout(layout);
-
-    layout->setContentsMargins(0, 0, 0, 0);
-}
-
-inline GlvVectorWidget_base::~GlvVectorWidget_base() {
-
-}
-
-inline void GlvVectorWidget_base::set_editable(bool l_editable) {
-    QWidget::setEnabled(l_editable);
-}
-
-inline void GlvVectorWidget_base::insertValue() {
-
-    insertValue(index_spinbox->value());
-
-}
-
-inline GlvVectorWidgetItem_base::GlvVectorWidgetItem_base() {
-
-	layout = new QHBoxLayout;
-	setLayout(layout);
-	layout->setContentsMargins(0, 0, 0, 0);
-
-}
-
-inline GlvVectorWidgetItem_base::~GlvVectorWidgetItem_base() {
-
-}
-
-inline void GlvVectorWidgetItem_base::show_remove_button(bool _l_show) {
-
-	if (_l_show) {
-		remove_button->show();
-	} else {
-		remove_button->hide();
-	}
-
-}
-
-template <>
-inline QString glv::toQString<std::string>(const std::string& _value) {
-	return QString(_value.c_str());
-}
-template <>
-inline QString glv::toQString<double>(const double& _value) {
-	return QString(slv::string::value_to_string(_value).c_str());
-}
-template <>
-inline QString glv::toQString<float>(const float& _value) {
-	return QString(slv::string::value_to_string(_value).c_str());
-}
-template <>
-inline QString glv::toQString<int>(const int& _value) {
-	return QString(slv::string::number_to_string_auto(_value).c_str());
-}
-template <>
-inline QString glv::toQString<unsigned int>(const unsigned int& _value) {
-	return QString(slv::string::number_to_string_auto(_value).c_str());
-}
-template <>
-inline QString glv::toQString<unsigned long>(const unsigned long& _value) {
-	return QString(slv::string::number_to_string_auto(_value).c_str());
-}
-
 inline GlvMapWidget_base::GlvMapWidget_base(QWidget* _parent) : QWidget(_parent) {
 
     QString info;
@@ -24381,610 +24646,18 @@ inline GlvWidgetData<Tdata>::~GlvWidgetData() {
 
 #endif
 
-inline SlvIFS::SlvIFS() {
+inline SlvParameter_base::SlvParameter_base(SlvParametrization_base* _parametrization) : parametrization(_parametrization) {
 
 }
 
-inline SlvIFS::~SlvIFS() {
+inline SlvParameter_base::~SlvParameter_base() {
 
 }
 
-inline std::ifstream& operator>>(std::ifstream& _ifs, SlvIFS& _IFS) {
+inline bool SlvParameter_base::is_param_init_auto() const {
 
-	_IFS.ifstream(_ifs);
-	return _ifs;
+	return parametrization->is_param_init_auto();
 
-}
-
-inline SlvReadText::SlvReadText() {
-
-}
-
-inline SlvReadText::~SlvReadText() {
-
-}
-
-inline SlvStatus SlvReadText::read_text(std::string _file_path) {
-
-    SlvStatus status;
-    status = SlvFileMgr::read_text(*this, _file_path);
-
-    return status;
-}
-
-inline SlvOFS::SlvOFS() {
-
-}
-
-inline SlvOFS::~SlvOFS() {
-
-}
-
-inline std::ofstream& operator<<(std::ofstream& _ofs, const SlvOFS& _OFS) {
-
-	_OFS.ofstream(_ofs);
-	return _ofs;
-
-}
-
-inline SlvWriteText::SlvWriteText() {
-
-}
-
-inline SlvWriteText::~SlvWriteText() {
-
-}
-
-inline SlvStatus SlvWriteText::write_text(std::string _file_path, std::ios::openmode _position) const {
-
-    SlvStatus status;
-    status = SlvFileMgr::write_text(*this, _file_path, _position);
-
-    return status;
-}
-
-inline SlvName::SlvName(std::string _name) :name(_name) {
-
-}
-
-inline SlvName::~SlvName() {
-
-}
-
-inline const std::string& SlvName::get_name() const {
-	return name;
-}
-
-inline void SlvName::set_name(const std::string& _name) {
-	name = _name;
-}
-
-inline SlvWriteBinary::SlvWriteBinary() {
-
-}
-
-inline SlvWriteBinary::~SlvWriteBinary() {
-
-}
-
-inline SlvStatus SlvWriteBinary::write_binary(std::string _file_path, std::ios::openmode _position) const {
-
-    SlvStatus status;
-    status = SlvFileMgr::write_binary(*this, _file_path, _position);
-
-    return status;
-}
-
-inline SlvReadBinary::SlvReadBinary() {
-
-}
-
-inline SlvReadBinary::~SlvReadBinary() {
-
-}
-
-inline SlvStatus SlvReadBinary::read_binary(std::string _file_path) {
-
-    SlvStatus status;
-    status = SlvFileMgr::read_binary(*this, _file_path);
-
-    return status;
-}
-
-//#include "slv_string.h"
-
-inline SlvTimer::SlvTimer(std::string _name) :SlvName(_name) {
-
-    reset();
-}
-
-inline SlvTimer::~SlvTimer() {
-
-}
-
-inline void SlvTimer::reset() {
-
-    check_times.clear();
-    check_times.push_back(clock());//start time
-}
-
-inline void SlvTimer::check_display(std::string _message) {
-
-    check_times.push_back(clock());
-
-    std::cout << "(SlvTimer " << name << ", " << _message << ")" << std::endl;
-    std::cout << "last check: ";
-    time_display(check_times.back() - check_times[check_times.size() - 2]);
-    std::cout << " ago " << std::endl;
-    std::cout << "from start: ";
-    time_display(check_times.back() - check_times.front());
-    std::cout << std::endl;
-
-}
-
-inline std::string SlvTimer::get_string() const {
-
-    std::string time;
-    std::vector<int> time_vector = get_time(clock() - check_times[0]);
-    if (time_vector[0] > 0) {
-        time = slv::string::to_string(time_vector[0]) + " h ";
-    }
-    if (time_vector[1] > 0 || time_vector[0] > 0) {
-        time += slv::string::to_string(time_vector[1]) + " min ";
-    }
-    if (time_vector[2] > 0 || time_vector[1] > 0 || time_vector[0] > 0) {
-        time += slv::string::to_string(time_vector[2]) + " s ";
-    }
-    if (time_vector[3] > 0 || time_vector[2] > 0 || time_vector[1] > 0 || time_vector[0] > 0) {
-        time += slv::string::to_string(time_vector[3]) + " ms ";
-    }
-
-    return time;
-}
-
-inline std::vector<int> SlvTimer::get_elasped_time() {
-
-    check_times.push_back(clock());
-
-    return get_time(check_times.back() - check_times[0]);
-
-}
-
-inline std::vector<int> SlvTimer::get_elasped_time_last() {
-
-    check_times.push_back(clock());
-
-    return get_time(check_times.back() - check_times.end()[-2]);
-
-}
-
-inline void SlvTimer::time_display(clock_t _time) const {
-
-    std::vector<int> time_vector = get_time(_time);
-    std::cout << time_vector[0] << " h " << time_vector[1] << " min " << time_vector[2] << " s " << time_vector[3] << " ms";
-
-}
-
-inline std::vector<int> SlvTimer::get_time(clock_t _time) const {
-
-    std::vector<int> time_vector;
-
-    double time = double(_time) / CLOCKS_PER_SEC;
-
-    long int time_int = (long int)time;
-    int n_milliseconds = int((time - double(time_int)) * 1000);
-
-    int n_hours, n_minutes, n_seconds;
-
-    n_hours = (time_int - time_int % 3600) / 3600;
-    time_vector.push_back(n_hours);
-    time_int -= n_hours * 3600;
-    n_minutes = (time_int - time_int % 60) / 60;
-    time_vector.push_back(n_minutes);
-    time_int -= n_minutes * 60;
-    n_seconds = (time_int - time_int % 1) / 1;
-    time_vector.push_back(n_seconds);
-
-    time_vector.push_back(n_milliseconds);
-
-    return time_vector;
-}
-
-#define get_iterator_ptr_value \
-iterator_type == IteratorType::Int ? *static_cast<int*>(iterator_ptr) : (\
-iterator_type == IteratorType::UnsignedInt ? *static_cast<unsigned int*>(iterator_ptr) : (\
-iterator_type == IteratorType::Size_t ? *static_cast<std::size_t*>(iterator_ptr) : (\
-0)))
-#define assign_iterator_ptr_value(value) \
-iterator_type == IteratorType::Int ? *static_cast<int*>(iterator_ptr) = value : (\
-iterator_type == IteratorType::UnsignedInt ? *static_cast<unsigned int*>(iterator_ptr) = value : (\
-iterator_type == IteratorType::Size_t ? *static_cast<std::size_t*>(iterator_ptr) = value : (\
-0)))
-
-inline SlvProgressionQt::SlvProgressionQt(std::string _name, bool _l_recurrent) :SlvLblName(_name), l_recurrent(_l_recurrent) {
-
-	clear();
-}
-
-inline SlvProgressionQt::SlvProgressionQt(const SlvProgressionQt& _progression) : SlvProgressionQt(_progression.get_name(), _progression.is_recurrent()) {
-
-}
-
-inline SlvProgressionQt::~SlvProgressionQt() {
-
-	iterator_finish();
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit finished();
-#endif
-
-}
-
-inline void SlvProgressionQt::clear() {
-
-	clear_progress();
-	message.clear();
-
-}
-
-inline void SlvProgressionQt::clear_progress() {
-
-	iterator_ptr = NULL;
-	l_iterating = false;
-	l_was_canceled = false;
-
-	iterator = 0;
-	Niterations = 0;
-	l_started = false;
-	l_no_feedback_ended = false;
-
-}
-
-inline SlvProgressionQt& SlvProgressionQt::operator=(const SlvProgressionQt& _progression) {
-
-	return *this;
-
-}
-
-inline void SlvProgressionQt::set_recurrent(bool _l_recurrent) {
-
-	l_recurrent = _l_recurrent;
-
-}
-
-inline bool SlvProgressionQt::is_recurrent() const {
-
-	return l_recurrent;
-
-}
-
-inline bool SlvProgressionQt::is_over() const {
-
-	if (l_started) {
-		if (iterator_ptr) {
-			return is_iterator_ptr_over((unsigned int)(get_iterator_ptr_value), Niterations);
-		} else if (l_iterating) {
-			return is_iterator_over(iterator, Niterations);
-		} else {
-			return l_no_feedback_ended;
-		}
-	} else {
-		return true;
-	}
-
-}
-
-inline bool SlvProgressionQt::has_iterator_ptr() const {
-
-	return iterator_ptr;
-
-}
-
-inline bool SlvProgressionQt::is_iterating() const {
-
-	return l_iterating;
-
-}
-
-inline bool SlvProgressionQt::is_cancelable() const {
-
-	return Niterations;
-
-}
-
-inline bool SlvProgressionQt::is_iterator_ptr_over(unsigned int _iterator_value, unsigned int _Niterations) {
-
-	return _iterator_value >= _Niterations - 1;
-
-}
-
-inline bool SlvProgressionQt::is_iterator_over(std::size_t _iterator, unsigned int _Niterations) {
-
-	return _iterator >= _Niterations;
-
-}
-
-inline void SlvProgressionQt::start() {
-
-	clear_progress();
-	l_started = true;
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit started();
-#endif
-
-}
-
-inline void SlvProgressionQt::start(const unsigned int _Niterations) {
-
-	clear_progress();
-
-	start_pv(_Niterations);
-
-}
-
-template <>
-inline void SlvProgressionQt::start(int* _iterator_ptr, const unsigned int _Niterations) {
-
-	iterator_type = IteratorType::Int;
-
-	clear_progress();
-
-	iterator_ptr = _iterator_ptr;
-	
-	start_pv(_Niterations);
-
-}
-
-template <>
-inline void SlvProgressionQt::start(unsigned int* _iterator_ptr, const unsigned int _Niterations) {
-
-	iterator_type = IteratorType::UnsignedInt;
-
-	clear_progress();
-
-	iterator_ptr = _iterator_ptr;
-	
-	start_pv(_Niterations);
-
-}
-
-template <>
-inline void SlvProgressionQt::start(std::size_t* _iterator_ptr, const unsigned int _Niterations) {
-
-	iterator_type = IteratorType::Size_t;
-
-	clear_progress();
-
-	iterator_ptr = _iterator_ptr;
-	
-	start_pv(_Niterations);
-
-}
-
-inline void SlvProgressionQt::start_pv(const unsigned int _Niterations) {
-
-	l_started = true;
-	Niterations = _Niterations;
-
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit started();
-#endif
-
-}
-
-inline bool SlvProgressionQt::update() {
-
-	if (Niterations) {
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-		int value = -1;
-		if (iterator_ptr) {
-			value = int(100 * (get_iterator_ptr_value + 1) / Niterations);
-		} else if (l_iterating) {
-			value = int(100 * (iterator) / Niterations);
-		}
-		if (value >= 0) {
-			emit updated(value);
-			if (is_over()) {
-				end();
-			}
-			return true;
-		} else {
-			return false;
-		}
-#endif
-	} else {
-		return false;
-	}
-
-}
-
-inline bool SlvProgressionQt::update(int _value) {
-
-	if (Niterations) {
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-		int value = 100 * (_value + 1) / Niterations;
-		if (value >= 0) {
-			emit updated(value);
-			if (is_iterator_ptr_over(_value, Niterations)) {
-				end();
-			}
-			return true;
-		} else {
-			return false;
-		}
-#endif
-	} else {
-		return false;
-	}
-
-}
-
-inline void SlvProgressionQt::end() {
-
-	l_started = false;
-
-	iterator_finish();
-	if (!is_cancelable()) {
-		l_no_feedback_ended = true;
-	}
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit ended();
-#endif
-
-	iterator_ptr = NULL;
-	l_iterating = false;
-	Niterations = 0;
-
-}
-
-inline void SlvProgressionQt::finish() {
-
-	iterator_finish();
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit finished();
-#endif
-
-	clear();
-
-}
-
-inline void SlvProgressionQt::cancel() {
-
-	iterator_finish();
-	l_was_canceled = true;
-
-}
-
-inline bool SlvProgressionQt::was_canceled() const {
-
-	return l_was_canceled;
-
-}
-
-inline void SlvProgressionQt::iterator_finish() {
-
-	/*! Triggers end of loop. If finished is called when the iterator has not reach Niterations yet, then it sets l_stopped = true. Means the progression has been stopped before then end.*/
-	if (iterator_ptr) {
-		if (get_iterator_ptr_value != Niterations) {
-			assign_iterator_ptr_value(Niterations);
-		}
-	} else if (l_iterating) {
-		if (iterator != Niterations) {
-			iterator = Niterations;
-		}
-	}
-
-}
-
-inline SlvProgressionQt::operator std::size_t() const {
-
-	return iterator;
-
-}
-
-inline SlvProgressionQt& SlvProgressionQt::operator=(const std::size_t _iterator) {
-
-	clear_progress();
-
-	l_started = true;
-
-	iterator = _iterator;
-	l_iterating = true;
-
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit started();
-#endif
-	return *this;
-}
-
-inline bool SlvProgressionQt::operator<<(std::size_t _Niterations) {
-
-	if (l_iterating) {
-		Niterations = (unsigned int)_Niterations;
-		return iterator < _Niterations;
-	} else {
-		return false;
-	}
-
-}
-
-inline bool SlvProgressionQt::operator<<(int _Niterations) {
-
-	return *this << std::size_t(_Niterations);
-
-}
-
-inline bool SlvProgressionQt::operator<<(unsigned int _Niterations) {
-
-	return *this << std::size_t(_Niterations);
-
-}
-
-inline bool SlvProgressionQt::operator<<=(std::size_t _Niterations) {
-
-	if (l_iterating) {
-		Niterations = (unsigned int)(_Niterations - 1);
-		return iterator <= _Niterations;
-	} else {
-		return false;
-	}
-
-}
-
-inline bool SlvProgressionQt::operator<<=(int _Niterations) {
-
-	return *this <<= std::size_t(_Niterations);
-
-}
-
-inline bool SlvProgressionQt::operator<<=(unsigned int _Niterations) {
-
-	return *this <<= std::size_t(_Niterations);
-
-}
-
-inline SlvProgressionQt& SlvProgressionQt::operator++() {
-
-	if (l_iterating) {
-		++iterator;
-		update();
-	}
-	return *this;
-}
-
-inline SlvProgressionQt SlvProgressionQt::operator++(int) {
-
-	if (l_iterating) {
-		iterator++;
-		update();
-	}
-	SlvProgressionQt progression = *this;
-	return progression;
-}
-
-inline SlvProgression::SlvProgression(std::string _name, bool _l_recurrent): progression(_name) {
-
-	progression.set_recurrent(_l_recurrent);
-
-}
-
-inline SlvProgression::SlvProgression(const SlvProgression& _progression) {
-
-	*this = _progression;
-}
-
-inline SlvProgression::~SlvProgression() {
-
-}
-
-inline SlvProgressionQt* SlvProgression::get_progression() const {
-
-	return const_cast<SlvProgressionQt*>(&progression);
-
-}
-
-inline SlvProgression& SlvProgression::operator=(const SlvProgression& _progression) {
-
-	return *this;
 }
 
 inline SlvParametrization_base::SlvParametrization_base() {
@@ -26368,6 +26041,407 @@ inline void glv::flag::INFO(std::string warning_message, QWidget* _parent) {
 
 }
 
+#endif
+
+#define get_iterator_ptr_value \
+iterator_type == IteratorType::Int ? *static_cast<int*>(iterator_ptr) : (\
+iterator_type == IteratorType::UnsignedInt ? *static_cast<unsigned int*>(iterator_ptr) : (\
+iterator_type == IteratorType::Size_t ? *static_cast<std::size_t*>(iterator_ptr) : (\
+0)))
+#define assign_iterator_ptr_value(value) \
+iterator_type == IteratorType::Int ? *static_cast<int*>(iterator_ptr) = value : (\
+iterator_type == IteratorType::UnsignedInt ? *static_cast<unsigned int*>(iterator_ptr) = value : (\
+iterator_type == IteratorType::Size_t ? *static_cast<std::size_t*>(iterator_ptr) = value : (\
+0)))
+
+inline SlvProgressionQt::SlvProgressionQt(std::string _name, bool _l_recurrent) :SlvLblName(_name), l_recurrent(_l_recurrent) {
+
+	clear();
+}
+
+inline SlvProgressionQt::SlvProgressionQt(const SlvProgressionQt& _progression) : SlvProgressionQt(_progression.get_name(), _progression.is_recurrent()) {
+
+}
+
+inline SlvProgressionQt::~SlvProgressionQt() {
+
+	iterator_finish();
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit finished(true);
+#endif
+
+}
+
+inline void SlvProgressionQt::clear() {
+
+	clear_progress();
+	message.clear();
+
+}
+
+inline void SlvProgressionQt::clear_progress() {
+
+	iterator_ptr = NULL;
+	l_iterating = false;
+	l_was_canceled = false;
+
+	iterator = 0;
+	Niterations = 0;
+	l_started = false;
+	l_no_feedback_ended = false;
+
+}
+
+inline SlvProgressionQt& SlvProgressionQt::operator=(const SlvProgressionQt& _progression) {
+
+	return *this;
+
+}
+
+inline void SlvProgressionQt::set_recurrent(bool _l_recurrent) {
+
+	l_recurrent = _l_recurrent;
+
+}
+
+inline bool SlvProgressionQt::is_recurrent() const {
+
+	return l_recurrent;
+
+}
+
+inline bool SlvProgressionQt::is_over() const {
+
+	if (l_started) {
+		if (iterator_ptr) {
+			return is_iterator_ptr_over((unsigned int)(get_iterator_ptr_value), Niterations);
+		} else if (l_iterating) {
+			return is_iterator_over(iterator, Niterations);
+		} else {
+			return l_no_feedback_ended;
+		}
+	} else {
+		return true;
+	}
+
+}
+
+inline bool SlvProgressionQt::has_iterator_ptr() const {
+
+	return iterator_ptr;
+
+}
+
+inline bool SlvProgressionQt::is_iterating() const {
+
+	return l_iterating;
+
+}
+
+inline bool SlvProgressionQt::is_cancelable() const {
+
+	return Niterations;
+
+}
+
+inline bool SlvProgressionQt::is_iterator_ptr_over(unsigned int _iterator_value, unsigned int _Niterations) {
+
+	return _iterator_value >= _Niterations - 1;
+
+}
+
+inline bool SlvProgressionQt::is_iterator_over(std::size_t _iterator, unsigned int _Niterations) {
+
+	return _iterator >= _Niterations;
+
+}
+
+inline void SlvProgressionQt::start() {
+
+	clear_progress();
+	l_started = true;
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit started();
+#endif
+
+}
+
+inline void SlvProgressionQt::start(const unsigned int _Niterations) {
+
+	clear_progress();
+
+	start_pv(_Niterations);
+
+}
+
+template <>
+inline void SlvProgressionQt::start(int* _iterator_ptr, const unsigned int _Niterations) {
+
+	iterator_type = IteratorType::Int;
+
+	clear_progress();
+
+	iterator_ptr = _iterator_ptr;
+	
+	start_pv(_Niterations);
+
+}
+
+template <>
+inline void SlvProgressionQt::start(unsigned int* _iterator_ptr, const unsigned int _Niterations) {
+
+	iterator_type = IteratorType::UnsignedInt;
+
+	clear_progress();
+
+	iterator_ptr = _iterator_ptr;
+	
+	start_pv(_Niterations);
+
+}
+
+template <>
+inline void SlvProgressionQt::start(std::size_t* _iterator_ptr, const unsigned int _Niterations) {
+
+	iterator_type = IteratorType::Size_t;
+
+	clear_progress();
+
+	iterator_ptr = _iterator_ptr;
+	
+	start_pv(_Niterations);
+
+}
+
+inline void SlvProgressionQt::start_pv(const unsigned int _Niterations) {
+
+	l_started = true;
+	Niterations = _Niterations;
+
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit started();
+#endif
+
+}
+
+inline bool SlvProgressionQt::update() {
+
+	if (Niterations) {
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+		int value = -1;
+		if (iterator_ptr) {
+			value = int(100 * (get_iterator_ptr_value + 1) / Niterations);
+		} else if (l_iterating) {
+			value = int(100 * (iterator) / Niterations);
+		}
+		if (value >= 0) {
+			emit updated(value);
+			if (is_over()) {
+				end();
+			}
+			return true;
+		} else {
+			return false;
+		}
+#endif
+	} else {
+		return false;
+	}
+
+}
+
+inline bool SlvProgressionQt::update(int _value) {
+
+	if (Niterations) {
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+		int value = 100 * (_value + 1) / Niterations;
+		if (value >= 0) {
+			emit updated(value);
+			if (is_iterator_ptr_over(_value, Niterations)) {
+				end();
+			}
+			return true;
+		} else {
+			return false;
+		}
+#endif
+	} else {
+		return false;
+	}
+
+}
+
+inline void SlvProgressionQt::end() {
+
+	l_started = false;
+
+	iterator_finish();
+	if (!is_cancelable()) {
+		l_no_feedback_ended = true;
+	}
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit ended();
+#endif
+
+	iterator_ptr = NULL;
+	l_iterating = false;
+	Niterations = 0;
+
+}
+
+inline void SlvProgressionQt::finish(bool _l_remove) {
+
+	iterator_finish();
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit finished(_l_remove);
+#endif
+
+	clear();
+
+}
+
+inline void SlvProgressionQt::cancel() {
+
+	iterator_finish();
+	l_was_canceled = true;
+
+}
+
+inline bool SlvProgressionQt::was_canceled() const {
+
+	return l_was_canceled;
+
+}
+
+inline void SlvProgressionQt::iterator_finish() {
+
+	/*! Triggers end of loop. If finished is called when the iterator has not reach Niterations yet, then it sets l_stopped = true. Means the progression has been stopped before then end.*/
+	if (iterator_ptr) {
+		if (get_iterator_ptr_value != Niterations) {
+			assign_iterator_ptr_value(Niterations);
+		}
+	} else if (l_iterating) {
+		if (iterator != Niterations) {
+			iterator = Niterations;
+		}
+	}
+
+}
+
+inline SlvProgressionQt::operator std::size_t() const {
+
+	return iterator;
+
+}
+
+inline SlvProgressionQt& SlvProgressionQt::operator=(const std::size_t _iterator) {
+
+	clear_progress();
+
+	l_started = true;
+
+	iterator = _iterator;
+	l_iterating = true;
+
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit started();
+#endif
+	return *this;
+}
+
+inline bool SlvProgressionQt::operator<<(std::size_t _Niterations) {
+
+	if (l_iterating) {
+		Niterations = (unsigned int)_Niterations;
+		return iterator < _Niterations;
+	} else {
+		return false;
+	}
+
+}
+
+inline bool SlvProgressionQt::operator<<(int _Niterations) {
+
+	return *this << std::size_t(_Niterations);
+
+}
+
+inline bool SlvProgressionQt::operator<<(unsigned int _Niterations) {
+
+	return *this << std::size_t(_Niterations);
+
+}
+
+inline bool SlvProgressionQt::operator<<=(std::size_t _Niterations) {
+
+	if (l_iterating) {
+		Niterations = (unsigned int)(_Niterations - 1);
+		return iterator <= _Niterations;
+	} else {
+		return false;
+	}
+
+}
+
+inline bool SlvProgressionQt::operator<<=(int _Niterations) {
+
+	return *this <<= std::size_t(_Niterations);
+
+}
+
+inline bool SlvProgressionQt::operator<<=(unsigned int _Niterations) {
+
+	return *this <<= std::size_t(_Niterations);
+
+}
+
+inline SlvProgressionQt& SlvProgressionQt::operator++() {
+
+	if (l_iterating) {
+		++iterator;
+		update();
+	}
+	return *this;
+}
+
+inline SlvProgressionQt SlvProgressionQt::operator++(int) {
+
+	if (l_iterating) {
+		iterator++;
+		update();
+	}
+	SlvProgressionQt progression = *this;
+	return progression;
+}
+
+inline SlvProgression::SlvProgression(std::string _name, bool _l_recurrent): progression(_name) {
+
+	progression.set_recurrent(_l_recurrent);
+
+}
+
+inline SlvProgression::SlvProgression(const SlvProgression& _progression) {
+
+	*this = _progression;
+}
+
+inline SlvProgression::~SlvProgression() {
+
+}
+
+inline SlvProgressionQt* SlvProgression::get_progression() const {
+
+	return const_cast<SlvProgressionQt*>(&progression);
+
+}
+
+inline SlvProgression& SlvProgression::operator=(const SlvProgression& _progression) {
+
+	return *this;
+}
+
+#ifndef GLOVE_DISABLE_QT
+
 inline GlvProgressMgr::GlvProgressMgr(QWidget* _parent) :QWidget(_parent) {
 
     m_layout = new QVBoxLayout;
@@ -26768,6 +26842,105 @@ inline const SlvParametrization_base* GlvParamListDialog_base::get_parametrizati
 
 #endif
 
+//#include "slv_string.h"
+
+inline SlvTimer::SlvTimer(std::string _name) :SlvName(_name) {
+
+    reset();
+}
+
+inline SlvTimer::~SlvTimer() {
+
+}
+
+inline void SlvTimer::reset() {
+
+    check_times.clear();
+    check_times.push_back(clock());//start time
+}
+
+inline void SlvTimer::check_display(std::string _message) {
+
+    check_times.push_back(clock());
+
+    std::cout << "(SlvTimer " << name << ", " << _message << ")" << std::endl;
+    std::cout << "last check: ";
+    time_display(check_times.back() - check_times[check_times.size() - 2]);
+    std::cout << " ago " << std::endl;
+    std::cout << "from start: ";
+    time_display(check_times.back() - check_times.front());
+    std::cout << std::endl;
+
+}
+
+inline std::string SlvTimer::get_string() const {
+
+    std::string time;
+    std::vector<int> time_vector = get_time(clock() - check_times[0]);
+    if (time_vector[0] > 0) {
+        time = slv::string::to_string(time_vector[0]) + " h ";
+    }
+    if (time_vector[1] > 0 || time_vector[0] > 0) {
+        time += slv::string::to_string(time_vector[1]) + " min ";
+    }
+    if (time_vector[2] > 0 || time_vector[1] > 0 || time_vector[0] > 0) {
+        time += slv::string::to_string(time_vector[2]) + " s ";
+    }
+    if (time_vector[3] > 0 || time_vector[2] > 0 || time_vector[1] > 0 || time_vector[0] > 0) {
+        time += slv::string::to_string(time_vector[3]) + " ms ";
+    }
+
+    return time;
+}
+
+inline std::vector<int> SlvTimer::get_elasped_time() {
+
+    check_times.push_back(clock());
+
+    return get_time(check_times.back() - check_times[0]);
+
+}
+
+inline std::vector<int> SlvTimer::get_elasped_time_last() {
+
+    check_times.push_back(clock());
+
+    return get_time(check_times.back() - check_times.end()[-2]);
+
+}
+
+inline void SlvTimer::time_display(clock_t _time) const {
+
+    std::vector<int> time_vector = get_time(_time);
+    std::cout << time_vector[0] << " h " << time_vector[1] << " min " << time_vector[2] << " s " << time_vector[3] << " ms";
+
+}
+
+inline std::vector<int> SlvTimer::get_time(clock_t _time) const {
+
+    std::vector<int> time_vector;
+
+    double time = double(_time) / CLOCKS_PER_SEC;
+
+    long int time_int = (long int)time;
+    int n_milliseconds = int((time - double(time_int)) * 1000);
+
+    int n_hours, n_minutes, n_seconds;
+
+    n_hours = (time_int - time_int % 3600) / 3600;
+    time_vector.push_back(n_hours);
+    time_int -= n_hours * 3600;
+    n_minutes = (time_int - time_int % 60) / 60;
+    time_vector.push_back(n_minutes);
+    time_int -= n_minutes * 60;
+    n_seconds = (time_int - time_int % 1) / 1;
+    time_vector.push_back(n_seconds);
+
+    time_vector.push_back(n_milliseconds);
+
+    return time_vector;
+}
+
 #if __cplusplus > 201402L
 
 template <>
@@ -26963,7 +27136,7 @@ inline void GlvProgression::set_progression(SlvProgressionQt* _progression) {
         // thread safe. In case executed slot doesn't have time to go through.
         connect(progression, SIGNAL(updated(int)), this, SLOT(setValue(int)), Qt::BlockingQueuedConnection);
         connect(progression, SIGNAL(ended()), this, SLOT(end()));
-        connect(progression, SIGNAL(finished()), this, SLOT(final()));
+        connect(progression, SIGNAL(finished(bool)), this, SLOT(final(bool)));
 #endif
 
     }
@@ -27029,9 +27202,13 @@ inline void GlvProgression::end() {
 
 }
 
-inline void GlvProgression::final() {
+inline void GlvProgression::final(bool _l_remove) {
 
-    progress_mgr->remove_progression(this);
+    if (_l_remove) {
+        progress_mgr->remove_progression(this);
+    } else {
+        hide();
+    }
 
 }
 

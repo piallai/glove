@@ -71,7 +71,7 @@ void GlvProgression::set_progression(SlvProgressionQt* _progression) {
         // thread safe. In case executed slot doesn't have time to go through.
         connect(progression, SIGNAL(updated(int)), this, SLOT(setValue(int)), Qt::BlockingQueuedConnection);
         connect(progression, SIGNAL(ended()), this, SLOT(end()));
-        connect(progression, SIGNAL(finished()), this, SLOT(final()));
+        connect(progression, SIGNAL(finished(bool)), this, SLOT(final(bool)));
 #endif
 
     }
@@ -137,9 +137,13 @@ void GlvProgression::end() {
 
 }
 
-void GlvProgression::final() {
+void GlvProgression::final(bool _l_remove) {
 
-    progress_mgr->remove_progression(this);
+    if (_l_remove) {
+        progress_mgr->remove_progression(this);
+    } else {
+        hide();
+    }
 
 }
 

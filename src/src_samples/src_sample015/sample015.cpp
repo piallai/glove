@@ -65,7 +65,6 @@ int main(int argc, char* argv[]) {
 	if (is_glove) {
 		std::cout << glove_parametrization << std::endl;
 	}
-	
 
 	return 0;
 }

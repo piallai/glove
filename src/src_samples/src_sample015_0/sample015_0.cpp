@@ -41,6 +41,10 @@ glvm_parametrization(ParametersCLI, "CLI parameters",
 // If using MSVC, do not display the console:
 #pragma GLOVE_APP_MSVC_NO_CONSOLE
 
+struct RecurrentStruct {
+	int total_loops;
+};
+
 // Program supposed to manage 3 command line arguments
 // -N1 : Number of iterations for loop 1
 // -N2 : Number of iterations for loop 2
@@ -58,11 +62,15 @@ int main(int argc, char* argv[]) {
 	// Default is : true
 //#define GLOVE_APP_THREAD_MODE false 
 
-	GLOVE_APP_PARAM_AUTO(ParametersCLI);// "-glove" is set by default
-	// ***** Alternatives:
-	//GLOVE_APP_PARAM(ParametersCLI);//  "-glove" must be set to enable Glove application. A parametrization widget is used.
-	//GLOVE_APP_AUTO;// "-glove" is set by default No parametrization widget is used.
-	//GLOVE_APP;// "-glove" must be set to enable Glove application. No parametrization widget is used. 
+#define GLOVE_APP_AUTO true // "-glove" is set by default upon launching
+#define GLOVE_APP_RECURRENT_MODE true
+#define GLOVE_APP_RECURRENT_TYPE RecurrentStruct
+	RecurrentStruct glove_recurrent_var;
+	glove_recurrent_var.total_loops = 0;
+
+	GLOVE_APP_PARAM(ParametersCLI);
+	// ***** Alternative:
+	//GLOVE_APP;// No parametrization widget is used. 
 
 	// Additionally, the configured parametrization is available in the variable glv_parametrization if -glove cli argument was used
 	if (is_glove) {
@@ -117,6 +125,7 @@ int main(int argc, char* argv[]) {
 						// Simulates computation
 						std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
+						glove_recurrent_var.total_loops++;
 					}
 
 				}
@@ -127,6 +136,8 @@ int main(int argc, char* argv[]) {
 			}
 
 		}
+
+		GlvApp::show(SlvStatus(SlvStatus::statusType::information, "Total loops: " + std::to_string(glove_recurrent_var.total_loops)), true);
 
 		return 0;
 
