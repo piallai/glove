@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -34,8 +34,6 @@ class GlvMapWidget : public GlvMapWidget_base {
 private:
 
     std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*> widgets;
-
-    GlvWidget<Tkey>* insert_key_widget;
 
     Tcompare compare_function;
 
@@ -86,9 +84,15 @@ GlvMapWidget<Tkey, Tvalue, Tcompare>::GlvMapWidget(_Tdata_ _map, QWidget* _paren
 
     /*! Widget of the key for insert.*/
     insert_key_widget = new GlvWidget<Tkey>();
+    QString info = QString(tr("Key"));
+    insert_key_widget->setWhatsThis(info);
+    insert_key_widget->setToolTip(info);
+    insert_key_widget->setSizePolicy(QSizePolicy::Policy::Fixed, QSizePolicy::Policy::Preferred);
     this->insert_layout->addWidget(insert_key_widget);
     l_editable_key = false;
     set_value(_map);
+
+    edit_set_checked(false);
 
 }
 
@@ -124,6 +128,12 @@ void GlvMapWidget<Tkey, Tvalue, Tcompare>::set_value(const _Tdata_& _map) {
 
     }
 
+    if (_map.empty()) {// If no map item exists, then the map is indicated as fully displayed for reading convenience
+        set_checked(true);
+    } else if (!QWidget::isVisible()) {// If a value is set before the widget is visible, and the map widget is checkable, then the default display hides the map items
+        set_checked(false);
+    }
+
 }
 
 template <class Tkey, class Tvalue, class Tcompare>
@@ -151,7 +161,7 @@ void GlvMapWidget<Tkey, Tvalue, Tcompare>::set_key_editable(bool _l_editable) {
 template <class Tkey, class Tvalue, class Tcompare>
 void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue() {
 
-    Tkey key = insert_key_widget->get_value();
+    Tkey key = static_cast<GlvWidget<Tkey>*>(insert_key_widget)->get_value();
 
     insertValue(key, Tvalue());
 
@@ -232,6 +242,10 @@ typename std::vector<GlvMapWidgetItem<Tkey, Tvalue, Tcompare>*>::const_iterator 
         }
     } else {
         it = widgets.end();
+    }
+
+    if (widgets.empty()) {
+        set_checked(true);// If no map item exists, then the map is indicated as fully displayed for reading convenience
     }
 
     return it;

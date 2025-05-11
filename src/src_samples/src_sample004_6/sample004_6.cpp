@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -40,8 +40,9 @@ typedef std::deque< std::list< std::vector< std::array<Tdata, Narray> > > >  Tab
 #define OPTIONAL_SAVE_LOAD_EXAMPLE
 #if !defined(OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER) && defined(OPTIONAL_SAVE_LOAD_EXAMPLE)
 #include "GlvWidgetSaveLoad.h"
+#if OPTION_WIDGET_DATA_CONTAINER_TABLE==1
 #include "GlvWidgetData_spec_std_container_container.h"
-#include "GlvWidgetData_spec_std_array.h"
+#endif
 #include "filestream/spec/slv_rw_spec_std_array.h"
 #include "misc/spec/SlvDataName_spec_std_array.h"
 #include "filestream/spec/slv_rw_spec_std_list.h"
@@ -84,9 +85,13 @@ int main(int argc, char* argv[]) {
 	GlvWidgetSaveLoad<Table>* save_load_widget = new GlvWidgetSaveLoad<Table>(&widget);
 	widget.show();*/
 
+	// If OPTION_WIDGET_DATA_CONTAINER_TABLE is disabled, there is no type mapping available (list and deque spec are missing)
+	// The purpose of this example is to show tables anyway, so even if list and deque were available here, it would not produce tables. It would vector widget, of list widgets, of deque widgets
+#if OPTION_WIDGET_DATA_CONTAINER_TABLE==1
 	GlvWidget<Table::value_type> widget(table[0]);
 	GlvWidgetSaveLoad<Table::value_type>* save_load_widget = new GlvWidgetSaveLoad<Table::value_type>(&widget);
 	widget.show();
+#endif
 
 	std::cout << table << std::endl;// test ostream
 	std::cout << Table_reciprocal() << std::endl;// test ostream

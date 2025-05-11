@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,48 +20,57 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QSpinBox>
-#include "glv_widget.h"//for make_scrollable
 #include <QScrollArea>
+#include <QGroupBox>
 
 GlvMapWidget_base::GlvMapWidget_base(QWidget* _parent) : QWidget(_parent) {
 
     QString info;
 
-    QWidget* buttons_widget = new QWidget;
+    buttons_widget = new QGroupBox(tr("Size"));
+    buttons_widget->setFlat(true);
+    buttons_widget->setCheckable(true);
+    connect(buttons_widget, SIGNAL(toggled(bool)), this, SLOT(show_map_edit(bool)));
     QVBoxLayout* buttons_layout = new QVBoxLayout;
     buttons_widget->setLayout(buttons_layout);
-    buttons_widget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    buttons_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    QWidget* insert_widget = new QWidget;
+    insert_widget = new QWidget;
     insert_layout = new QHBoxLayout;
     insert_widget->setLayout(insert_layout);
-    button_insert = new QPushButton(tr("Insert"));
+    button_insert = new QPushButton(tr("<"));
+    button_insert->setFixedWidth(30);
     info = QString(tr("Insert an element at the specified key"));
     button_insert->setWhatsThis(info);
     button_insert->setToolTip(info);
+    connect(button_insert, SIGNAL(clicked()), this, SLOT(insertValue()));
     insert_layout->addWidget(button_insert);
     buttons_layout->addWidget(insert_widget);
-    buttons_layout->setContentsMargins(0, 9, 0, 0);
+    buttons_layout->setContentsMargins(0, 3, 0, 0);
 
     insert_layout->setContentsMargins(0, 0, 0, 0);
 
-    widget_scroll = new QWidget;
+    widget_items = new QWidget;
     layout_items = new QVBoxLayout;
+    layout_items->setContentsMargins(6, 3, 6, 3);// vertical margin makes checking/unchecking the group box have the same size if content is empty
+    widget_items->setLayout(layout_items);
 
-    widget_scroll->setLayout(layout_items);
-    connect(button_insert, SIGNAL(clicked()), this, SLOT(insertValue()));
-
-    QWidget* widget_vector = new QWidget;
-    QScrollArea* scroll_area = glv::widget::make_scrollable(widget_scroll, widget_vector);
-    scroll_area->setFrameShape(QFrame::Panel);
-    widget_vector->layout()->setContentsMargins(0, 0, 0, 0);
+    map_widget = new QGroupBox;
+    QVBoxLayout* layout_group = new QVBoxLayout;
+    layout_group->setContentsMargins(0, 0, 0, 0);
+    layout_group->addWidget(widget_items);
+    map_widget->setLayout(layout_group);
 
     QHBoxLayout* layout = new QHBoxLayout;
-    layout->addWidget(widget_vector);
+    layout->addWidget(map_widget);
     layout->addWidget(buttons_widget, 0, Qt::AlignTop);
     setLayout(layout);
 
     layout->setContentsMargins(0, 0, 0, 0);
+
+    set_checkable(false);
+    connect(map_widget, SIGNAL(toggled(bool)), this, SLOT(show_map_items(bool)));
+    buttons_widget->setChecked(false);
 
 }
 
@@ -69,6 +78,49 @@ GlvMapWidget_base::~GlvMapWidget_base() {
 
 }
 
-void GlvMapWidget_base::set_editable(bool l_editable) {
-    QWidget::setEnabled(l_editable);
+void GlvMapWidget_base::set_editable(bool _l_editable) {
+    QWidget::setEnabled(_l_editable);
+}
+
+void GlvMapWidget_base::set_checkable(bool _l_checkable) {
+    map_widget->setCheckable(_l_checkable);
+    QString title;
+    if (_l_checkable) {
+        title = tr("map");
+    }
+    map_widget->setTitle(title);
+}
+
+void GlvMapWidget_base::set_checked(bool _l_checked) {
+
+    map_widget->setChecked(_l_checked);
+
+}
+
+void GlvMapWidget_base::set_items_top_aligment(bool _l_top) {
+
+    if (_l_top) {
+        layout_items->setAlignment(Qt::AlignTop);
+    } else {
+        layout_items->setAlignment(Qt::AlignVCenter);
+    }
+
+}
+
+void GlvMapWidget_base::edit_set_checked(bool _l_checked) {
+
+    buttons_widget->setChecked(_l_checked);
+
+}
+
+void GlvMapWidget_base::show_map_items(bool _l_show) {
+
+    widget_items->setVisible(_l_show);
+
+}
+
+void GlvMapWidget_base::show_map_edit(bool _l_show) {
+
+    insert_widget->setVisible(_l_show);
+
 }

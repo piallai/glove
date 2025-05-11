@@ -95,6 +95,15 @@ endif()
 	${GLOVE_INCLUDE_DIR}/glove
 	${GLOVE_INCLUDE_DIR}/glove_add
 	${GLOVE_INCLUDE_DIR}/thirdParty)
+	
+	function(glove_link PROJECT_NAME)
+		foreach(lib ${GLOVE_LIBRARIES})
+			target_link_libraries(${PROJECT_NAME} optimized ${lib})
+		endforeach()
+		foreach(lib ${GLOVE_LIBRARIES_DEBUG})
+			target_link_libraries(${PROJECT_NAME} debug ${lib})
+		endforeach()
+	endfunction()
 endif()
 
 mark_as_advanced(GLOVE_INCLUDE_DIR GLOVE_LIBRARY)

@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,9 @@ glvm_staticVariable_impl(const, int, GlvParametersWidget_base, layout_margin, QA
 class GlvParametersWidget_base::ScrollArea : public QScrollArea {
 public:
 	bool eventFilter(QObject* object, QEvent* event) {
-		if (object == widget() && event->type() == QEvent::Resize) {
+		// Depending on content, sizeHint may change without resize event to be called. Ex: one expanding widget next to fixed size one wich may have different size (checkable for instance)
+		// QEvent::Resize is not called as often as QEvent::Paint and is theoretically more suitable, but it may miss these cases.
+		if (object == widget() && event->type() == QEvent::Paint) {
 
 			int min_width = widget()->sizeHint().width();
 			int max_width = QGuiApplication::primaryScreen()->geometry().width() - 100;
@@ -44,7 +46,7 @@ public:
 			}
 			QScrollArea::setMinimumWidth(min_width);
 		}
-		return false;
+		return QWidget::eventFilter(object, event);
 	}
 	bool is_expanded_vertically() const {
 		return widget()->size().height() > QScrollArea::size().height();
@@ -61,7 +63,7 @@ GlvParametersWidget_base::GlvParametersWidget_base() {
 	parameters_widget->installEventFilter(this);
 	vertical_layout = new QVBoxLayout;
 	parameters_widget->setLayout(vertical_layout);
-	parameters_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);//here
+	parameters_widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
 
 	l_scrollable = false;
 	scroll_area = NULL;
@@ -154,12 +156,10 @@ void GlvParametersWidget_base::set_checkable_collapse(bool _l_checkable) {
 		QGroupBox::setCheckable(true);
 		connect(this, SIGNAL(toggled(bool)), this, SLOT(show_parameters(bool)));
 		setChecked(false);
-		this->setToolTip(tr("Show/hide nested parameters"));
 	} else {
 		setChecked(true);
 		disconnect(this, SIGNAL(toggled(bool)));
 		QGroupBox::setCheckable(false);
-		this->setToolTip(tr(""));
 	}
 	
 

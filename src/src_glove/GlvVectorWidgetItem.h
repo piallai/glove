@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -67,12 +67,17 @@ template <class T>
 GlvVectorWidgetItem<T>::GlvVectorWidgetItem(const T& _value, const unsigned int _index, GlvVectorWidget<T>* _parent) {
 
     widget = new GlvWidget<T>(_value);
+    widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     index = _index;
     parent = _parent;
 
     label_index = new QLabel;
     update_label_index();
-    remove_button = new QPushButton(tr("Remove"));
+    remove_button = new QPushButton(tr("x"));
+    remove_button->setFixedWidth(30);
+    QString info = QString(tr("Erase the element"));
+    remove_button->setWhatsThis(info);
+    remove_button->setToolTip(info);
     layout->addWidget(label_index);
     layout->addWidget(widget);
     layout->addWidget(remove_button);

@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -58,6 +58,9 @@ namespace slv {
         /*! Get first part of \p _string (substring) up to \p _stop.*/
         template <class T>
         std::string extract_str_up_to(const std::string& _string, const T _stop);
+
+        /*! Find first character abiding the opening/closing of brackets.*/
+        std::size_t find_first_of(const std::string& _string, char _char, const std::vector<char> _opening = { '(', '[', '{', '<' }, const std::vector<char> _closing = { ')', ']', '}', '>' });
 
         /*! Used by read_datas_line.*/
         template <class T>

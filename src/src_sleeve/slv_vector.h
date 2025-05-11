@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
 namespace slv {
 
-    /*! Methods related to manipulation of std::vector which is by default std::vector. See OPTION_STD_VECTOR_DEBUG.*/
+    /*! Methods related to manipulation of std::vector.*/
     namespace vector {
 
         /*! Remove from \p _elements the first value which equals \p _element.
@@ -118,14 +118,10 @@ namespace slv {
 
     }
 
-    /*! Parse \p _string to assign \p _vector.*/
-    template <class T>
-    void parse(const std::string& _string, std::vector<T>& _vector);
 }
 
 #include "slv_flag.h"
 #include <algorithm>//find
-#include "slv_parse.h"
 
 template <class T>
 bool slv::vector::remove(const T& _element, std::vector<T>& _elements) {
@@ -570,46 +566,3 @@ bool slv::vector::is_equal(const std::vector<T>& _elements1, const std::vector<T
 }
 
 #undef VECTOR_EXPLICIT_ALGORITHM
-
-template <class T>
-void slv::parse(const std::string& _string, std::vector<T>& _vector) {
-
-    _vector.clear();
-
-    T value;
-    if (_string[0] == '[') {
-
-        std::string string = _string;
-        std::string sub_string;
-        std::size_t pos;
-
-        string.erase(string.begin());
-        pos = string.find_first_of(',');
-        if (pos == std::string::npos) {
-            pos = string.find_first_of(']');
-        }
-        while (pos != std::string::npos) {
-
-            if (pos != 0) {
-                sub_string = string.substr(0, pos);
-
-                slv::parse(sub_string, value);
-                string.erase(0, pos + 1);
-
-                _vector.push_back(value);
-                pos = string.find_first_of(',');
-                if (pos == std::string::npos) {
-                    pos = string.find_first_of(']');
-                }
-            } else {
-                pos = std::string::npos;
-            }
-
-        }
-
-    } else {
-        slv::parse(_string, value);
-        _vector.push_back(value);
-    }
-
-}

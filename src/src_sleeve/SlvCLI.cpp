@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,29 @@ bool SlvCLI::has_glove(int _argc, char* _argv[]) {
 	}
 
 	return l_found;
+}
+
+int SlvCLI::find_json_file(int _argc, char* _argv[]) {
+
+	static const std::string json_ext = ".json";
+	bool l_found = false;
+	int i;
+	for (i = 1; i < _argc && !l_found; i++) {
+
+		size_t len = strlen(_argv[i]);
+		if (len >= json_ext.size()) {
+			char* str = (char*)_argv[i] + (len - json_ext.size());
+			l_found = !std::strcmp(str, json_ext.c_str());
+		}
+
+	}
+
+	if (l_found) {
+		return i - 1;
+	} else {
+		return -1;
+	}
+
 }
 
 bool SlvCLI::Arguments::is_empty() const {

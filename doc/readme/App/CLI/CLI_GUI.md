@@ -153,6 +153,16 @@ For the first command, the parameters contained in *CLI_parameters.json* are bei
 
 For the second command, the default autosaved *CLI_parameters.json* is being ignored since a parameter argument is provided.
 
+###### Without GUI
+
+If the <code>-glove</code> cli argument is not provided, it is also possible to use a parameters file as input the same way.
+However, autosaved parameters are not being loaded by default.
+Example:
+```cpp
+./main
+```
+will not load *CLI_parameters.json*, unlike <code>./main -glove</code> which will.
+
 #### Parameter as output path
 
 A parameter can used to set an additional path where to save the parametrization file. In the example above, one can define:

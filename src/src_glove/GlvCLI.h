@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -123,7 +123,6 @@ glvm_parametrization(GLOVE_APP_default_parametrization, "default");
 static GLOVE_APP_RECURRENT_TYPE glove_recurrent_var;
 
 
-//#define Trecurrent_tmp RecurrentStruct
 #define glvm_pv_GLOVE_APP(Tparametrization, _l_auto_glove) \
 return GlvApp::main<Tparametrization>(argc, argv, _l_auto_glove, GLOVE_APP_THREAD_MODE, GLOVE_APP_RECURRENT_MODE, glove_recurrent_var);\
 }\
@@ -286,7 +285,7 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 
 	if (!arguments.get_glove_argument().empty()) {
 
-		save_load_widget->load(arguments.get_glove_argument());
+		save_load_widget->load(arguments.get_glove_argument());// Load parametrization file
 
 	}
 
@@ -341,7 +340,11 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 				dynamic_cast<RecurrentWrapperT<Tparametrization, Trecurrent>*>(_interface.recurrent_wrapper)->set(cli_arguments.first, cli_arguments.second, &_recurrent_var);
 			}
 
+#if QT_VERSION_MAJOR < 6
+			_interface.future = QtConcurrent::run(std::bind(&glv_cli_main<Tparametrization, Trecurrent>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization(), _l_recurrent, std::ref(_recurrent_var)));
+#else
 			_interface.future = QtConcurrent::run(&glv_cli_main<Tparametrization, Trecurrent>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization(), _l_recurrent, std::ref(_recurrent_var));
+#endif
 			_interface.future_watcher.setFuture(_interface.future);
 
 			if (progress_mgr()) {
@@ -362,6 +365,10 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 
 
 }
+
+#if OPTION_USE_THIRDPARTY_JSON==1
+#include "json.hpp"
+#endif
 
 template <class Tparametrization, class Trecurrent>
 int GlvApp::main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_threaded, bool _l_recurrent, Trecurrent& _recurrent_var) {
@@ -409,7 +416,43 @@ int GlvApp::main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_threaded,
 		}
 
 	} else {
-		return glv_cli_main(_argc, _argv, false, Tparametrization(), false, _recurrent_var);
+
+		Tparametrization parametrization;
+
+#if OPTION_USE_THIRDPARTY_JSON==1
+		if (SlvCLI::find_json_file(_argc, _argv)) {
+
+			std::ifstream file_stream_input;
+			std::string file_name = _argv[SlvCLI::find_json_file(_argc, _argv)];
+
+			SlvStatus status = SlvFileMgr::open_file(file_stream_input, file_name);
+
+			if (status) {
+
+				nlohmann::json json_value;
+				file_stream_input >> json_value;
+				if (!json_value.empty()) {
+					parametrization.readJson(json_value);
+				}
+
+			}
+
+		}
+#endif
+
+		SlvCLI::Arguments arguments(_argc, _argv);
+
+		if (!arguments.is_empty()) {
+
+			SlvStatus status = SlvCLI::parse(parametrization, arguments);
+			if (!status) {
+				std::cout << status << std::endl;
+			}
+
+		}
+
+		return glv_cli_main(_argc, _argv, false, parametrization, false, _recurrent_var);
+
 	}
 
 }

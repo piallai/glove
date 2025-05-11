@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,30 +19,6 @@
 #include <QScrollArea>
 #include <QHBoxLayout>
 #include "slv_flag.h"
-
-QScrollArea* glv::widget::make_scrollable(QWidget* _widget_scroll, QWidget* _widget_over, int _left_m, int _top_m, int _right_m, int _bottom_m) {
-
-	QScrollArea* scroll_area = new QScrollArea;
-	scroll_area->setWidgetResizable(true);
-	QBoxLayout* layout = new QHBoxLayout;
-	layout->setContentsMargins(_left_m, _top_m, _right_m, _bottom_m);
-
-	scroll_area->setWidget(_widget_scroll);
-	layout->addWidget(scroll_area);
-
-	_widget_over->setLayout(layout);
-
-	return scroll_area;
-}
-
-QScrollArea* glv::widget::make_scrollable(QLayout* _layout_scroll, QWidget* _widget_over) {
-
-	QWidget* widget_scroll = new QWidget;
-	widget_scroll->setLayout(_layout_scroll);
-
-	return make_scrollable(widget_scroll, _widget_over);
-
-}
 
 void glv::widget::clear(QWidget* _widget) {
 

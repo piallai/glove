@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 #include "slv_string.h"
 #include "slv_flag.h"
 #include <cmath>//log10
+#include <algorithm>
 
 const std::string& slv::string::str_void() {
     static std::string* str_void = new std::string("");
@@ -109,4 +110,43 @@ std::string slv::string::format_va_list(const char* _format, std::va_list _args)
 
     return string;
 
+}
+
+std::size_t slv::string::find_first_of(const std::string& _string, char _char, const std::vector<char> _opening, const std::vector<char> _closing) {
+
+    std::size_t result = std::string::npos;
+
+    if (_opening.size() == _closing.size()) {
+
+        std::vector<int> count(_opening.size(), 0);
+        const std::vector<int> count_null(_opening.size(), 0);
+
+        bool l_found = false;
+        std::string::const_iterator it = _string.begin();
+        while (!l_found && it != _string.end()) {
+
+            std::vector<char>::const_iterator it_opening = std::find(_opening.begin(), _opening.end(), *it);
+            if (it_opening != _opening.end()) {
+                count[std::distance(_opening.begin(), it_opening)]++;
+            }
+            std::vector<char>::const_iterator it_closing = std::find(_closing.begin(), _closing.end(), *it);
+            if (it_closing != _closing.end()) {
+                count[std::distance(_closing.begin(), it_closing)]--;
+            }
+
+            if (count == count_null) {
+                l_found = (*it == _char);
+            }
+
+            ++it;
+        }
+
+        if (l_found) {
+            --it;
+            result = std::distance(_string.begin(), it);
+        }
+
+    }
+    
+    return result;
 }

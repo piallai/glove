@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ private:
 
 #include "filestream/slv_rw.h"
 #include "misc/SlvDataName.h"
-#include "slv_parse.h"
+#include "misc/slv_parse.h"
 
 template <class Tparam>
 struct SlvParameterSpecSerialization {

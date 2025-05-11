@@ -1,6 +1,6 @@
 # 
 # This file is part of the Glove distribution (https://github.com/piallai/glove).
-# Copyright (C) 2024 Pierre Allain.
+# Copyright (C) 2024 - 2025 Pierre Allain.
 # 
 # This program is free software: you can redistribute it and/or modify  
 # it under the terms of the GNU General Public License as published by  
@@ -31,6 +31,12 @@ if (OPTION_USE_BOOST)
 set(OPTION_USE_BOOST_VALUE 1)
 else()
 set(OPTION_USE_BOOST_VALUE 0)
+endif()
+
+if (OPTION_WIDGET_DATA_CONTAINER_TABLE)
+set(OPTION_WIDGET_DATA_CONTAINER_TABLE_VALUE 1)
+else()
+set(OPTION_WIDGET_DATA_CONTAINER_TABLE_VALUE 0)
 endif()
 
 if (OPTION_STD_BREAK_THROW_EXCEPTION)

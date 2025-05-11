@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -51,6 +51,8 @@ public:
     void popValue();
     /*! New value at index \p i.*/
     void insertValue(const unsigned int i);
+    /*! Resize vector at size \p i.*/
+    void resizeVector(const unsigned int i);
     /*! Get widget of index \p i.*/
     GlvWidget<T>* operator[] (const unsigned int i);
 
@@ -81,6 +83,10 @@ GlvVectorWidget<T>::~GlvVectorWidget() {
 template <class T>
 void GlvVectorWidget<T>::set_value(const _Tdata_& _vector) {
 
+    if (_vector.size() > Nelements_max) {
+        set_Nelements_max((int)_vector.size());
+    }
+
     int N = (int)std::min(widgets.size(), _vector.size());
 
     for (int i = 0; i < N; i++) {
@@ -97,6 +103,14 @@ void GlvVectorWidget<T>::set_value(const _Tdata_& _vector) {
             delete widgets[i];
         }
         widgets.resize(_vector.size());
+        resize_spinbox->setValue((int)widgets.size());
+        
+    }
+
+    if (_vector.empty()) {// If no vector item exists, then the vector is indicated as fully displayed for reading convenience
+        set_checked(true);
+    } else if (!QWidget::isVisible()) {// If a value is set before the widget is visible, and the vector widget is checkable, then the default display hides the vector items
+        set_checked(false);
     }
 
 }
@@ -115,29 +129,69 @@ _Tdata_ GlvVectorWidget<T>::get_value() const {
 template <class T>
 void GlvVectorWidget<T>::pushValue(T _value) {
 
-    GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(_value, (int)widgets.size(), this);
-    widgets.push_back(widget);
-    layout_items->insertWidget((int)widgets.size() - 1, widget);
-    connect(widget, SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
-    button_pop->setEnabled(true);
+    if (widgets.size() < Nelements_max) {
 
+        GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(_value, (int)widgets.size(), this);
+        widgets.push_back(widget);
+        layout_items->insertWidget((int)widgets.size() - 1, widget);
+        connect(widget, SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
+        button_pop->setEnabled(true);
+
+        if (widgets.size() == Nelements_max) {
+            button_push->setEnabled(false);
+            button_insert->setEnabled(false);
+        }
+
+        resize_spinbox->setValue((int)widgets.size());
+    }
 }
 
 template <class T>
 void GlvVectorWidget<T>::insertValue(const unsigned int i) {
 
-    unsigned int j = i;
-    if (j >= (unsigned int)widgets.size()) {
-        j = (unsigned int)widgets.size() - 1;
-    }
-    GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(T(), j, this);
-    layout_items->insertWidget(j, widget);
-    widgets.insert(widgets.begin() + j, widget);
-    connect(widget->get_widget(), SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
-    button_pop->setEnabled(true);
+    if (widgets.size() < Nelements_max) {
 
-    for (unsigned int k = j + 1; k < widgets.size(); k++) {
-        widgets[k]->increment_index();
+        unsigned int j = i;
+        if (j >= (unsigned int)widgets.size()) {
+            j = (unsigned int)widgets.size() - 1;
+        }
+        GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(T(), j, this);
+        layout_items->insertWidget(j, widget);
+        widgets.insert(widgets.begin() + j, widget);
+        connect(widget->get_widget(), SIGNAL(valueChanged()), this, SLOT(valueChanged_slot()));
+        button_pop->setEnabled(true);
+
+        for (unsigned int k = j + 1; k < widgets.size(); k++) {
+            widgets[k]->increment_index();
+        }
+
+        if (widgets.size() == Nelements_max) {
+            button_push->setEnabled(false);
+            button_insert->setEnabled(false);
+            resize_spinbox->setValue((int)widgets.size());
+        }
+
+    }
+
+}
+
+template <class T>
+void GlvVectorWidget<T>::resizeVector(const unsigned int i) {
+
+    if (i != widgets.size()) {
+
+        _Tdata_ vector_ = get_value();
+        vector_.resize(std::min(i, Nelements_max));
+        set_value(vector_);
+
+        bool l_max = (widgets.size() == Nelements_max);
+        button_push->setEnabled(!l_max);
+        button_insert->setEnabled(!l_max);
+        resize_spinbox->setValue((int)widgets.size());
+    }
+
+    if (widgets.empty()) {
+        set_checked(true);// If no vector item exists, then the vector is indicated as fully displayed for reading convenience
     }
 
 }
@@ -159,6 +213,14 @@ void GlvVectorWidget<T>::popValue() {
 
     if (!widgets.empty()) {
         removeWidget((int)widgets.size() - 1);
+
+        if (widgets.size() < Nelements_max) {
+            button_push->setEnabled(true);
+            button_insert->setEnabled(true);
+        }
+
+        resize_spinbox->setValue((int)widgets.size());
+
     }
 
 }
@@ -189,6 +251,7 @@ void GlvVectorWidget<T>::removeWidget(const unsigned int i) {
 
     if (widgets.empty()) {
         button_pop->setEnabled(false);
+        set_checked(true);// If no vector item exists, then the vector is indicated as fully displayed for reading convenience
     }
 
 }

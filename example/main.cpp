@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 */
 
 #ifdef OPTION_SINGLE_HEADER
+#define GLOVE_WIDGET_DATA_CONTAINER_TABLE
 #include "glove.h"
 #else
 #include "param/SlvParametrization5.h"
@@ -89,7 +90,11 @@ public:
 
 #include "GlvWidgetData_spec_SlvFile.h"
 #include "GlvWidgetData_spec_AT.h"
+#if OPTION_WIDGET_DATA_CONTAINER_TABLE==1
 #include "GlvWidgetData_spec_std_container_container.h"
+#else
+#include "GlvWidgetData_spec_std_vector.h" // If OPTION_WIDGET_DATA_CONTAINER_TABLE is disabled, the kernel is configurable as vectors of vector
+#endif
 #include "GlvWidgetData_spec_SlvEnum.h"
 
 #include <QPainter>

@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,10 @@ namespace glv {
 	namespace widget {
 		/*! \p _widget_scroll: widget containing elements to be scrolled. \p _widget_over : final widget.
 		* Can provid margin for intermediate layout.*/
-		QScrollArea* make_scrollable(QWidget* _widget_scroll, QWidget* _widget_over, int _left_m = 2, int _top_m = 2, int _right_m = 2, int _bottom_m = 2);
-		QScrollArea* make_scrollable(QLayout* _layout_scroll, QWidget* _widget_over);
+		template <class Tscroll_area = QScrollArea>
+		Tscroll_area* make_scrollable(QWidget* _widget_scroll, QWidget* _widget_over, int _left_m = 2, int _top_m = 2, int _right_m = 2, int _bottom_m = 2);
+		template <class Tscroll_area = QScrollArea>
+		Tscroll_area* make_scrollable(QLayout* _layout_scroll, QWidget* _widget_over);
 
 		/*! Clear the layout of \p _widget.*/
 		void clear(QWidget* _widget);
@@ -46,6 +48,7 @@ namespace glv {
 };
 
 #include <QMessageBox>
+#include <QBoxLayout>
 
 template <class Tcast, class Targ>
 Tcast glv::widget::dynamic_cast_message_box(Targ* _arg, QWidget* _parent) {
@@ -55,4 +58,30 @@ Tcast glv::widget::dynamic_cast_message_box(Targ* _arg, QWidget* _parent) {
 		QMessageBox::critical(_parent, QMessageBox::tr(""), QMessageBox::tr("dynamic_cast error from type ") + typeid(Targ*).name() + QMessageBox::tr(" to ") + typeid(Tcast).name());
 	}
 	return result;
+}
+
+template <class Tscroll_area>
+Tscroll_area* glv::widget::make_scrollable(QWidget* _widget_scroll, QWidget* _widget_over, int _left_m, int _top_m, int _right_m, int _bottom_m) {
+
+	Tscroll_area* scroll_area = new Tscroll_area;
+	scroll_area->setWidgetResizable(true);
+	QBoxLayout* layout = new QHBoxLayout;
+	layout->setContentsMargins(_left_m, _top_m, _right_m, _bottom_m);
+
+	scroll_area->setWidget(_widget_scroll);
+	layout->addWidget(scroll_area);
+
+	_widget_over->setLayout(layout);
+
+	return scroll_area;
+}
+
+template <class Tscroll_area>
+Tscroll_area* glv::widget::make_scrollable(QLayout* _layout_scroll, QWidget* _widget_over) {
+
+	QWidget* widget_scroll = new QWidget;
+	widget_scroll->setLayout(_layout_scroll);
+
+	return make_scrollable<Tscroll_area>(widget_scroll, _widget_over);
+
 }

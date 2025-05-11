@@ -1,6 +1,6 @@
 ﻿# 
 # This file is part of the Glove distribution (https://github.com/piallai/glove).
-# Copyright (C) 2024 Pierre Allain.
+# Copyright (C) 2024 - 2025 Pierre Allain.
 # 
 # This program is free software: you can redistribute it and/or modify  
 # it under the terms of the GNU General Public License as published by  
@@ -62,12 +62,5 @@ ADD_EXECUTABLE(${PROJECT_NAME} ${PROJECT_SOURCES})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets)
 
 if(NOT OPTION_SINGLE_HEADER)
-if (GLOVE_FOUND)
-foreach(lib ${GLOVE_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} optimized ${lib})
-endforeach()
-foreach(lib ${GLOVE_LIBRARIES_DEBUG})
-target_link_libraries(${PROJECT_NAME} debug ${lib})
-endforeach()
-endif()
+	glove_link(${PROJECT_NAME})
 endif()

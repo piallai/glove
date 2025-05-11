@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,6 @@
 GlvParametrizationDialog_base::GlvParametrizationDialog_base(bool _l_dialog, bool _l_deny_invalid_parameters, QWidget* _parent) :QDialog(_parent, Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint) {
 
     if (_parent) this->setModal(true);
-    //setWindowFlags(Qt::Dialog);
-    //setWindowModality(Qt::ApplicationModal);
 
     l_dialog = _l_dialog;
     l_deny_invalid_parameters =_l_deny_invalid_parameters;
@@ -127,14 +125,18 @@ void GlvParametrizationDialog_base::check_parameters_slot() {
 
 void GlvParametrizationDialog_base::resizeEvent(QResizeEvent* _event) {
 
-    if (parameters_widget_base->is_fully_visible() && !parameters_widget_base->has_height_decreased()) {
+    if (parameters_widget_base->is_fully_visible()) {
+        // !parameters_widget_base->has_height_decreased() : What makes max height to be saved after collapsing a widget
+        // maximumHeight() == QWIDGETSIZE_MAX : if no max height is defined yet, ignores the first condition. Useful in case a widghet collpase occured before first max height to be set
+        if (!parameters_widget_base->has_height_decreased() || maximumHeight() == QWIDGETSIZE_MAX) {
 
-        int height = parameters_widget_base->size().height();
-        height += button_box->size().height();
-        height += this->layout()->contentsMargins().top() + this->layout()->contentsMargins().bottom();
-        height += m_layout->spacing();
-        setMaximumHeight(height);
+            int height = parameters_widget_base->size().height();
+            height += button_box->size().height();
+            height += this->layout()->contentsMargins().top() + this->layout()->contentsMargins().bottom();
+            height += m_layout->spacing();
+            setMaximumHeight(height);
 
+        }
     }
 }
 

@@ -24,8 +24,8 @@
 ## What it does
 
 - Design parametrization widgets in the blink of an eye
-
-	- Handles typed parameters, with straightforward GUI
+  
+  - Handles typed parameters, with straightforward GUI
 
 - Easy handling of data containers using GUI tables
 
@@ -271,6 +271,8 @@ To enable the json management, the macro `GLOVE_ENABLE_JSON` must be defined.
 
 To enable the management of boost containers, the macro <code>GLOVE_ENABLE_BOOST</code> must be defined.
 
+To enable table view for widget data of type double containers, the macro <code>GLOVE_WIDGET_DATA_CONTAINER_TABLE</code> must be defined.
+
 To enable use of glove application [GlvApp](/doc/readme/App/GlvApp.md) across shared libraries, <code>GLOVE_APP_SHARED</code> and <code>GLOVE_APP_SHARED_EXPORT</code> must be defined.
 The latter to be defined in the shared library.
 
@@ -278,6 +280,7 @@ The latter to be defined in the shared library.
 #define GLOVE_DISABLE_QT // Option to disable Qt management
 #define GLOVE_ENABLE_JSON // Option to enable Json management
 #define GLOVE_ENABLE_BOOST // Option to enable boost containers management
+#define GLOVE_WIDGET_DATA_CONTAINER_TABLE // Option to auto assign double containers as tables for data widgets
 #define GLOVE_APP_SHARED // Option to use GlvApp in a shared library
 #define GLOVE_APP_SHARED_EXPORT // If GLOVE_APP_SHARED is set, to define in the shared library
 #include "glove.h"
@@ -380,13 +383,10 @@ In CMake's <code>INCLUDE_DIRECTORIES</code>, add <code>${GLOVE_INCLUDE_DIRS}</co
 
 ###### Link
 
+Let <code>myproject</code> be the executable project name. Glove libraries can be linked using:
+
 ```cmake
-foreach(lib ${GLOVE_LIBRARIES})
-    target_link_libraries(${PROJECT_NAME} optimized ${lib})
-endforeach()
-foreach(lib ${GLOVE_LIBRARIES_DEBUG})
-    target_link_libraries(${PROJECT_NAME} debug ${lib})
-endforeach()
+glove_link(myproject)
 ```
 
 # License

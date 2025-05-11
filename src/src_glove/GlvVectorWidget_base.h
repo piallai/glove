@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 class QVBoxLayout;
 class QPushButton;
 class QSpinBox;
+class QGroupBox;
 
 class GlvVectorWidget_base : public QWidget {
 
@@ -28,23 +29,40 @@ class GlvVectorWidget_base : public QWidget {
 
 private:
 
-    QWidget* widget_scroll;
-    QPushButton* button_push;
-    QPushButton* button_insert;
-    QSpinBox* index_spinbox;
+    QWidget* widget_items;
+    
+    QPushButton* button_resize;
+    QWidget* pushpop_widget;
+    QWidget* insert_widget;
+    QWidget* resize_widget;
+    QSpinBox* insert_spinbox;
+    QGroupBox* vector_group_box;
 
 protected:
 
-    QWidget* buttons_widget;
+    unsigned int Nelements_max;
+
+    QGroupBox* buttons_group_box;
     QVBoxLayout* layout_items;
+    QPushButton* button_push;
     QPushButton* button_pop;
+    QPushButton* button_insert;
+    QSpinBox* resize_spinbox;
 
     GlvVectorWidget_base(QWidget* _parent = 0);
     virtual ~GlvVectorWidget_base();
 
 public:
 
-    void set_editable(bool l_editable);
+    void set_editable(bool _l_editable);
+    /*! Possibility to hide vector elements or not using checkable button.*/
+    void set_checkable(bool _l_checkable);
+    /*! Show/hide vector elements by collapsing the group box.*/
+    void set_checked(bool _l_checked);
+    /*! Define the maximum number of elements for the vector. Default is 999.*/
+    void set_Nelements_max(const unsigned int _N);
+    /*! Align vector items to top. Default is false.*/
+    void set_items_top_aligment(bool _l_top);
 
 protected slots:
 
@@ -56,9 +74,13 @@ private slots:
     virtual void popValue() = 0;
     void insertValue();
     virtual void insertValue(const unsigned int i) = 0;
+    void resizeVector();
+    virtual void resizeVector(const unsigned int i) = 0;
+
+    void show_vector_items(bool _l_show);
+    void show_vector_edit(bool _l_show);
 
 signals:
     /*! Emitted when the value of the \p i -th widget is modified.*/
     void valueChanged(int _index);
 };
-

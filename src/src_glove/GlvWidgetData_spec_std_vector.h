@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,15 @@
 
 #include "GlvWidgetData.h"
 #include "GlvVectorWidget.h"
-
+#include "GloveOptions.h"
+#if OPTION_WIDGET_DATA_CONTAINER_TABLE==1
+// Do not enable if value_type is a container. GlvWidgetData_spec_std_container_container.h is used instead
 #include "SlvIsContainer.h"
 #include "SlvIsMap.h"
-// Do not enable if value_type is a container. GlvWidgetData_spec_std_container_container.h is used instead
 #define Tenable typename std::enable_if<!SlvIsContainer<T>::value || SlvIsMap<T>::value || std::is_same<T, std::string>::value>::type
+#else
+#define Tenable typename std::enable_if<true>::type
+#endif
 
 #define Tdata std::vector<T>
 /*! GlvWidgetData specialization for template type: std::vector.*/
@@ -31,7 +35,15 @@ template <class T>
 class GlvWidgetData<Tdata, Tenable> : public GlvVectorWidget<T> {
 
 public:
-    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvVectorWidget<T>(_vector, _parent) {}
+    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvVectorWidget<T>(_vector, _parent) {
+        this->set_checkable(true);
+        if (!_vector.empty()) {
+            this->set_checked(false);
+        } else {
+            // If empty, leave checked so that it's easier to see that the vector widget is empty
+        }
+        this->set_items_top_aligment(true);
+    }
     ~GlvWidgetData() {}
 
 };

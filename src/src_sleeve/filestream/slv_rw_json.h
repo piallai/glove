@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -261,6 +261,21 @@ namespace slv {
     }
 }
 
+#include "SlvIsParametrization.h"
+
+/*! Specialization for SlvParametrization. Required for example for: std::vector<Tparametrization>*/
+namespace nlohmann {
+    template <typename Tdat>
+    struct adl_serializer<Tdat, typename std::enable_if<SlvIsParametrization<Tdat>::value>::type> {
+        static void to_json(json& _json, const Tdat& _value) {
+            slv::rw::json::writeJson(_value, _json);
+        }
+
+        static void from_json(const json& _json, Tdat& _value) {
+            slv::rw::json::readJson(_value, _json);
+        }
+    };
+}
 
 namespace slv {
     namespace rw {

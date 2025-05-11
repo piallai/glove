@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,9 @@ struct SlvCLI {
 
 	/*! Returns true if \p _argv contains "-glove".*/
 	static bool has_glove(int _argc, char* _argv[]);
+
+	/*! Returns index of the argument being a json file. Found by file extension.*/
+	static int find_json_file(int _argc, char* _argv[]);
 
 	/*! Create argc/argv based on provided arguments.*/
 	static std::pair<int, char**> get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments);

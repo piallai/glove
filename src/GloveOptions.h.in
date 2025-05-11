@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,4 +24,5 @@
 #endif
 #define OPTION_USE_THIRDPARTY_JSON @OPTION_USE_THIRDPARTY_JSON_VALUE@
 #define OPTION_USE_BOOST @OPTION_USE_BOOST_VALUE@
+#define OPTION_WIDGET_DATA_CONTAINER_TABLE @OPTION_WIDGET_DATA_CONTAINER_TABLE_VALUE@
 #define OPTION_STD_BREAK_THROW_EXCEPTION @OPTION_STD_BREAK_THROW_EXCEPTION_VALUE@

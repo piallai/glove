@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 Pierre Allain.
+* Copyright (C) 2024 - 2025 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,3 +21,5 @@
 #include <map>
 template <class Tkey, class T>
 std::ostream& operator<<(std::ostream& _os, const std::map<Tkey, T>& _map);
+template <class Tkey, class T>
+std::istream& operator>>(std::istream& _is, const std::map<Tkey, T>& _map);
