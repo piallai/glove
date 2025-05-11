@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.5</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.6</span>
    </div>
   </td>
  </tr>
@@ -78,7 +78,7 @@ $(function() {
 <div class="contents">
 <a href="glv__widget_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/*</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment">* This file is part of the Glove distribution (https://github.com/piallai/glove).</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">* Copyright (C) 2024 Pierre Allain.</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">* Copyright (C) 2024 - 2025 Pierre Allain.</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment">*</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment">* This program is free software: you can redistribute it and/or modify</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment">* it under the terms of the GNU General Public License as published by</span></div>
@@ -101,34 +101,63 @@ $(function() {
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceglv.html">glv</a> {</div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="namespaceglv_1_1widget.html">   27</a></span>    <span class="keyword">namespace </span>widget {</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>        QScrollArea* <a class="code hl_function" href="namespaceglv_1_1widget.html#a0ed9e299edcb1a17e905603c4c81ce73">make_scrollable</a>(QWidget* _widget_scroll, QWidget* _widget_over, <span class="keywordtype">int</span> _left_m = 2, <span class="keywordtype">int</span> _top_m = 2, <span class="keywordtype">int</span> _right_m = 2, <span class="keywordtype">int</span> _bottom_m = 2);</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>        QScrollArea* <a class="code hl_function" href="namespaceglv_1_1widget.html#a0ed9e299edcb1a17e905603c4c81ce73">make_scrollable</a>(QLayout* _layout_scroll, QWidget* _widget_over);</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespaceglv_1_1widget.html#adf1846cf801f6cee50188e82a1e935e1">clear</a>(QWidget* _widget);</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespaceglv_1_1widget.html#adf1846cf801f6cee50188e82a1e935e1">clear</a>(QLayout* _layout, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> _start_index = 0, <span class="keywordtype">bool</span> _l_recursive = <span class="keyword">false</span>);</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespaceglv_1_1widget.html#aa4a0a4e7ebb3c7892e1be9a10c5d450e">remove_widget</a>(QLayout* _layout, QWidget* _widget, <span class="keywordtype">bool</span> _l_delete = <span class="keyword">true</span>);</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespaceglv_1_1widget.html#aa4a0a4e7ebb3c7892e1be9a10c5d450e">remove_widget</a>(QLayout* _layout, <span class="keywordtype">int</span> _index, <span class="keywordtype">bool</span> _l_delete = <span class="keyword">true</span>);</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>        <span class="keyword">template</span> &lt;<span class="keyword">class</span> Tcast, <span class="keyword">class</span> Targ&gt;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>        Tcast <a class="code hl_function" href="namespaceglv_1_1widget.html#a422a621c7959d1253d77d27d900ed0fc">dynamic_cast_message_box</a>(Targ* _arg, QWidget* _parent = 0);</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    }</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>};</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#include &lt;QMessageBox&gt;</span></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>        <span class="keyword">template</span> &lt;<span class="keyword">class</span> Tscroll_area = QScrollArea&gt;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>        Tscroll_area* <a class="code hl_function" href="namespaceglv_1_1widget.html#ad225d5dc80ac218b113b57115aca32fd">make_scrollable</a>(QWidget* _widget_scroll, QWidget* _widget_over, <span class="keywordtype">int</span> _left_m = 2, <span class="keywordtype">int</span> _top_m = 2, <span class="keywordtype">int</span> _right_m = 2, <span class="keywordtype">int</span> _bottom_m = 2);</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>        <span class="keyword">template</span> &lt;<span class="keyword">class</span> Tscroll_area = QScrollArea&gt;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>        Tscroll_area* <a class="code hl_function" href="namespaceglv_1_1widget.html#ad225d5dc80ac218b113b57115aca32fd">make_scrollable</a>(QLayout* _layout_scroll, QWidget* _widget_over);</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespaceglv_1_1widget.html#adf1846cf801f6cee50188e82a1e935e1">clear</a>(QWidget* _widget);</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespaceglv_1_1widget.html#adf1846cf801f6cee50188e82a1e935e1">clear</a>(QLayout* _layout, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> _start_index = 0, <span class="keywordtype">bool</span> _l_recursive = <span class="keyword">false</span>);</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespaceglv_1_1widget.html#aa4a0a4e7ebb3c7892e1be9a10c5d450e">remove_widget</a>(QLayout* _layout, QWidget* _widget, <span class="keywordtype">bool</span> _l_delete = <span class="keyword">true</span>);</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespaceglv_1_1widget.html#aa4a0a4e7ebb3c7892e1be9a10c5d450e">remove_widget</a>(QLayout* _layout, <span class="keywordtype">int</span> _index, <span class="keywordtype">bool</span> _l_delete = <span class="keyword">true</span>);</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>        <span class="keyword">template</span> &lt;<span class="keyword">class</span> Tcast, <span class="keyword">class</span> Targ&gt;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        Tcast <a class="code hl_function" href="namespaceglv_1_1widget.html#a422a621c7959d1253d77d27d900ed0fc">dynamic_cast_message_box</a>(Targ* _arg, QWidget* _parent = 0);</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    }</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>};</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tcast, <span class="keyword">class</span> Targ&gt;</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="namespaceglv_1_1widget.html#a422a621c7959d1253d77d27d900ed0fc">   51</a></span>Tcast <a class="code hl_function" href="namespaceglv_1_1widget.html#a422a621c7959d1253d77d27d900ed0fc">glv::widget::dynamic_cast_message_box</a>(Targ* _arg, QWidget* _parent) {</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#include &lt;QMessageBox&gt;</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="preprocessor">#include &lt;QBoxLayout&gt;</span></div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    Tcast result = <span class="keyword">dynamic_cast&lt;</span>Tcast<span class="keyword">&gt;</span>(_arg);</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="keywordflow">if</span> (!result) {</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>        QMessageBox::critical(_parent, QMessageBox::tr(<span class="stringliteral">&quot;&quot;</span>), QMessageBox::tr(<span class="stringliteral">&quot;dynamic_cast error from type &quot;</span>) + <span class="keyword">typeid</span>(Targ*).name() + QMessageBox::tr(<span class="stringliteral">&quot; to &quot;</span>) + <span class="keyword">typeid</span>(Tcast).name());</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    }</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordflow">return</span> result;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>}</div>
-<div class="ttc" id="anamespaceglv_1_1widget_html_a0ed9e299edcb1a17e905603c4c81ce73"><div class="ttname"><a href="namespaceglv_1_1widget.html#a0ed9e299edcb1a17e905603c4c81ce73">glv::widget::make_scrollable</a></div><div class="ttdeci">QScrollArea * make_scrollable(QWidget *_widget_scroll, QWidget *_widget_over, int _left_m=2, int _top_m=2, int _right_m=2, int _bottom_m=2)</div><div class="ttdef"><b>Definition:</b> glv_widget.cpp:23</div></div>
-<div class="ttc" id="anamespaceglv_1_1widget_html_a422a621c7959d1253d77d27d900ed0fc"><div class="ttname"><a href="namespaceglv_1_1widget.html#a422a621c7959d1253d77d27d900ed0fc">glv::widget::dynamic_cast_message_box</a></div><div class="ttdeci">Tcast dynamic_cast_message_box(Targ *_arg, QWidget *_parent=0)</div><div class="ttdef"><b>Definition:</b> glv_widget.h:51</div></div>
-<div class="ttc" id="anamespaceglv_1_1widget_html_aa4a0a4e7ebb3c7892e1be9a10c5d450e"><div class="ttname"><a href="namespaceglv_1_1widget.html#aa4a0a4e7ebb3c7892e1be9a10c5d450e">glv::widget::remove_widget</a></div><div class="ttdeci">void remove_widget(QLayout *_layout, QWidget *_widget, bool _l_delete=true)</div><div class="ttdef"><b>Definition:</b> glv_widget.cpp:75</div></div>
-<div class="ttc" id="anamespaceglv_1_1widget_html_adf1846cf801f6cee50188e82a1e935e1"><div class="ttname"><a href="namespaceglv_1_1widget.html#adf1846cf801f6cee50188e82a1e935e1">glv::widget::clear</a></div><div class="ttdeci">void clear(QWidget *_widget)</div><div class="ttdef"><b>Definition:</b> glv_widget.cpp:47</div></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tcast, <span class="keyword">class</span> Targ&gt;</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="namespaceglv_1_1widget.html#a422a621c7959d1253d77d27d900ed0fc">   54</a></span>Tcast <a class="code hl_function" href="namespaceglv_1_1widget.html#a422a621c7959d1253d77d27d900ed0fc">glv::widget::dynamic_cast_message_box</a>(Targ* _arg, QWidget* _parent) {</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    Tcast result = <span class="keyword">dynamic_cast&lt;</span>Tcast<span class="keyword">&gt;</span>(_arg);</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordflow">if</span> (!result) {</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>        QMessageBox::critical(_parent, QMessageBox::tr(<span class="stringliteral">&quot;&quot;</span>), QMessageBox::tr(<span class="stringliteral">&quot;dynamic_cast error from type &quot;</span>) + <span class="keyword">typeid</span>(Targ*).name() + QMessageBox::tr(<span class="stringliteral">&quot; to &quot;</span>) + <span class="keyword">typeid</span>(Tcast).name());</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    }</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordflow">return</span> result;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>}</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tscroll_area&gt;</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno"><a class="line" href="namespaceglv_1_1widget.html#ad225d5dc80ac218b113b57115aca32fd">   64</a></span>Tscroll_area* <a class="code hl_function" href="namespaceglv_1_1widget.html#ad225d5dc80ac218b113b57115aca32fd">glv::widget::make_scrollable</a>(QWidget* _widget_scroll, QWidget* _widget_over, <span class="keywordtype">int</span> _left_m, <span class="keywordtype">int</span> _top_m, <span class="keywordtype">int</span> _right_m, <span class="keywordtype">int</span> _bottom_m) {</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    Tscroll_area* scroll_area = <span class="keyword">new</span> Tscroll_area;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    scroll_area-&gt;setWidgetResizable(<span class="keyword">true</span>);</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    QBoxLayout* layout = <span class="keyword">new</span> QHBoxLayout;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    layout-&gt;setContentsMargins(_left_m, _top_m, _right_m, _bottom_m);</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    scroll_area-&gt;setWidget(_widget_scroll);</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    layout-&gt;addWidget(scroll_area);</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    _widget_over-&gt;setLayout(layout);</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="keywordflow">return</span> scroll_area;</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>}</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tscroll_area&gt;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno"><a class="line" href="namespaceglv_1_1widget.html#a1f4663aad095e0673dc3536ed39508de">   80</a></span>Tscroll_area* <a class="code hl_function" href="namespaceglv_1_1widget.html#ad225d5dc80ac218b113b57115aca32fd">glv::widget::make_scrollable</a>(QLayout* _layout_scroll, QWidget* _widget_over) {</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    QWidget* widget_scroll = <span class="keyword">new</span> QWidget;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    widget_scroll-&gt;setLayout(_layout_scroll);</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordflow">return</span> make_scrollable&lt;Tscroll_area&gt;(widget_scroll, _widget_over);</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span> </div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>}</div>
+<div class="ttc" id="anamespaceglv_1_1widget_html_a422a621c7959d1253d77d27d900ed0fc"><div class="ttname"><a href="namespaceglv_1_1widget.html#a422a621c7959d1253d77d27d900ed0fc">glv::widget::dynamic_cast_message_box</a></div><div class="ttdeci">Tcast dynamic_cast_message_box(Targ *_arg, QWidget *_parent=0)</div><div class="ttdef"><b>Definition:</b> glv_widget.h:54</div></div>
+<div class="ttc" id="anamespaceglv_1_1widget_html_aa4a0a4e7ebb3c7892e1be9a10c5d450e"><div class="ttname"><a href="namespaceglv_1_1widget.html#aa4a0a4e7ebb3c7892e1be9a10c5d450e">glv::widget::remove_widget</a></div><div class="ttdeci">void remove_widget(QLayout *_layout, QWidget *_widget, bool _l_delete=true)</div><div class="ttdef"><b>Definition:</b> glv_widget.cpp:51</div></div>
+<div class="ttc" id="anamespaceglv_1_1widget_html_ad225d5dc80ac218b113b57115aca32fd"><div class="ttname"><a href="namespaceglv_1_1widget.html#ad225d5dc80ac218b113b57115aca32fd">glv::widget::make_scrollable</a></div><div class="ttdeci">Tscroll_area * make_scrollable(QWidget *_widget_scroll, QWidget *_widget_over, int _left_m=2, int _top_m=2, int _right_m=2, int _bottom_m=2)</div><div class="ttdef"><b>Definition:</b> glv_widget.h:64</div></div>
+<div class="ttc" id="anamespaceglv_1_1widget_html_adf1846cf801f6cee50188e82a1e935e1"><div class="ttname"><a href="namespaceglv_1_1widget.html#adf1846cf801f6cee50188e82a1e935e1">glv::widget::clear</a></div><div class="ttdeci">void clear(QWidget *_widget)</div><div class="ttdef"><b>Definition:</b> glv_widget.cpp:23</div></div>
 <div class="ttc" id="anamespaceglv_html"><div class="ttname"><a href="namespaceglv.html">glv</a></div><div class="ttdef"><b>Definition:</b> glv_flag.h:24</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

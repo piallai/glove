@@ -21,5 +21,6 @@ var searchData=
   ['resize_5fcols_18',['resize_cols',['../namespaceglv.html#a9f738086981e5f6f13172611b106c527',1,'glv']]],
   ['resize_5ffit_19',['resize_fit',['../class_glv_table_view__base.html#a993e4f4f106bc971344f32bfbdc34dd4',1,'GlvTableView_base::resize_fit()'],['../class_glv_tree_view__base.html#af0c2ac7c0fc1be114cb3807ea223490b',1,'GlvTreeView_base::resize_fit(bool l_emit)'],['../class_glv_tree_view__base.html#a6bb88718a7c24b611c527d7bd59d12fb',1,'GlvTreeView_base::resize_fit(const QModelIndex &amp;_index)']]],
   ['resize_5frows_20',['resize_rows',['../namespaceglv.html#a896369c4ff01da9ad1d881b2b96fe4ec',1,'glv']]],
-  ['resizeevent_21',['resizeEvent',['../class_glv_widget__base.html#a4e0703901182df7f55045ebf1cb16208',1,'GlvWidget_base::resizeEvent()'],['../class_glv_parametrization_dialog__base.html#ab0674ec7ca385295d672b2e635a0afcd',1,'GlvParametrizationDialog_base::resizeEvent()']]]
+  ['resizeevent_21',['resizeEvent',['../class_glv_parametrization_dialog__base.html#ab0674ec7ca385295d672b2e635a0afcd',1,'GlvParametrizationDialog_base::resizeEvent()'],['../class_glv_widget__base.html#a4e0703901182df7f55045ebf1cb16208',1,'GlvWidget_base::resizeEvent()']]],
+  ['resizevector_22',['resizeVector',['../class_glv_vector_widget.html#a5c6237ac256398358dfe5677887d79be',1,'GlvVectorWidget']]]
 ];

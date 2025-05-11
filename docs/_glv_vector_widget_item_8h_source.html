@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.5</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.6</span>
    </div>
   </td>
  </tr>
@@ -78,7 +78,7 @@ $(function() {
 <div class="contents">
 <a href="_glv_vector_widget_item_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/*</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment">* This file is part of the Glove distribution (https://github.com/piallai/glove).</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">* Copyright (C) 2024 Pierre Allain.</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">* Copyright (C) 2024 - 2025 Pierre Allain.</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment">*</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment">* This program is free software: you can redistribute it and/or modify</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment">* it under the terms of the GNU General Public License as published by</span></div>
@@ -138,73 +138,78 @@ $(function() {
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::GlvVectorWidgetItem</a>(<span class="keyword">const</span> T&amp; _value, <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> _index, <a class="code hl_class" href="class_glv_vector_widget.html">GlvVectorWidget&lt;T&gt;</a>* _parent) {</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    widget = <span class="keyword">new</span> <a class="code hl_class" href="class_glv_widget.html">GlvWidget&lt;T&gt;</a>(_value);</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    index = _index;</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    parent = _parent;</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    label_index = <span class="keyword">new</span> QLabel;</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    update_label_index();</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    remove_button = <span class="keyword">new</span> QPushButton(tr(<span class="stringliteral">&quot;Remove&quot;</span>));</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    layout-&gt;addWidget(label_index);</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    layout-&gt;addWidget(widget);</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    layout-&gt;addWidget(remove_button);</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    connect(remove_button, SIGNAL(clicked()), <span class="keyword">this</span>, SLOT(remove()));</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    connect(widget, SIGNAL(<a class="code hl_signal" href="class_glv_vector_widget__base.html#a767fa5f4d44cf329a6d77f9be8549e56">valueChanged</a>()), <span class="keyword">this</span>, SIGNAL(<a class="code hl_signal" href="class_glv_vector_widget__base.html#a767fa5f4d44cf329a6d77f9be8549e56">valueChanged</a>()));</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>}</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    widget-&gt;setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    index = _index;</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    parent = _parent;</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    label_index = <span class="keyword">new</span> QLabel;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    update_label_index();</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    remove_button = <span class="keyword">new</span> QPushButton(tr(<span class="stringliteral">&quot;x&quot;</span>));</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    remove_button-&gt;setFixedWidth(30);</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    QString info = QString(tr(<span class="stringliteral">&quot;Erase the element&quot;</span>));</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    remove_button-&gt;setWhatsThis(info);</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    remove_button-&gt;setToolTip(info);</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    layout-&gt;addWidget(label_index);</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    layout-&gt;addWidget(widget);</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    layout-&gt;addWidget(remove_button);</div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::~GlvVectorWidgetItem</a>() {</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    connect(remove_button, SIGNAL(clicked()), <span class="keyword">this</span>, SLOT(remove()));</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    connect(widget, SIGNAL(<a class="code hl_signal" href="class_glv_vector_widget__base.html#a767fa5f4d44cf329a6d77f9be8549e56">valueChanged</a>()), <span class="keyword">this</span>, SIGNAL(<a class="code hl_signal" href="class_glv_vector_widget__base.html#a767fa5f4d44cf329a6d77f9be8549e56">valueChanged</a>()));</div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>}</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno"><a class="line" href="class_glv_vector_widget_item.html#af98cb29bdf990e4b60f8fe06be4a5749">   91</a></span>T <a class="code hl_function" href="class_glv_vector_widget_item.html#af98cb29bdf990e4b60f8fe06be4a5749">GlvVectorWidgetItem&lt;T&gt;::get_value</a>()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::~GlvVectorWidgetItem</a>() {</div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keywordflow">return</span> widget-&gt;get_value();</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>}</div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>}</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno"><a class="line" href="class_glv_vector_widget_item.html#a415fe2005851ad1eed024f30b368f850">   98</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="class_glv_vector_widget_item.html#a415fe2005851ad1eed024f30b368f850">GlvVectorWidgetItem&lt;T&gt;::set_value</a>(<span class="keyword">const</span> T _value) {</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno"><a class="line" href="class_glv_vector_widget_item.html#af98cb29bdf990e4b60f8fe06be4a5749">   96</a></span>T <a class="code hl_function" href="class_glv_vector_widget_item.html#af98cb29bdf990e4b60f8fe06be4a5749">GlvVectorWidgetItem&lt;T&gt;::get_value</a>()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span> </div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keywordflow">return</span> widget-&gt;get_value();</div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    widget-&gt;set_value(_value);</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>}</div>
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>}</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span><a class="code hl_class" href="class_glv_widget.html">GlvWidget&lt;T&gt;</a>* <a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::get_widget</a>()<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    <span class="keywordflow">return</span> widget;</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno"><a class="line" href="class_glv_vector_widget_item.html#a415fe2005851ad1eed024f30b368f850">  103</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="class_glv_vector_widget_item.html#a415fe2005851ad1eed024f30b368f850">GlvVectorWidgetItem&lt;T&gt;::set_value</a>(<span class="keyword">const</span> T _value) {</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    widget-&gt;set_value(_value);</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span> </div>
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>}</div>
 <div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span> </div>
 <div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span><span class="keywordtype">void</span> <a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::increment_index</a>() {</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    index++;</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    update_label_index();</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>}</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span><span class="keywordtype">void</span> <a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::decrement_index</a>() {</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    index--;</div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    update_label_index();</div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>}</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span> </div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="keywordtype">void</span> <a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::update_label_index</a>() {</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    label_index-&gt;setText(<a class="code hl_function" href="namespaceglv.html#a9af29a213fe2989683796e1bf339d561">glv::toQString</a>(index));</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span><a class="code hl_class" href="class_glv_widget.html">GlvWidget&lt;T&gt;</a>* <a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::get_widget</a>()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    <span class="keywordflow">return</span> widget;</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>}</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span> </div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span><span class="keywordtype">void</span> <a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::increment_index</a>() {</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    index++;</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    update_label_index();</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>}</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span> </div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span><span class="keywordtype">void</span> <a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::decrement_index</a>() {</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    index--;</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    update_label_index();</div>
 <div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>}</div>
 <div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span> </div>
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span><span class="keywordtype">void</span> <a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::remove</a>() {</div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>    parent-&gt;removeWidget(index);</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span><span class="keywordtype">void</span> <a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::update_label_index</a>() {</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>    label_index-&gt;setText(<a class="code hl_function" href="namespaceglv.html#a9af29a213fe2989683796e1bf339d561">glv::toQString</a>(index));</div>
 <div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>}</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span> </div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="keywordtype">void</span> <a class="code hl_class" href="class_glv_vector_widget_item.html">GlvVectorWidgetItem&lt;T&gt;::remove</a>() {</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>    parent-&gt;removeWidget(index);</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>}</div>
 <div class="ttc" id="a_glv_vector_widget_item__base_8h_html"><div class="ttname"><a href="_glv_vector_widget_item__base_8h.html">GlvVectorWidgetItem_base.h</a></div></div>
 <div class="ttc" id="aclass_glv_vector_widget__base_html_a767fa5f4d44cf329a6d77f9be8549e56"><div class="ttname"><a href="class_glv_vector_widget__base.html#a767fa5f4d44cf329a6d77f9be8549e56">GlvVectorWidget_base::valueChanged</a></div><div class="ttdeci">void valueChanged(int _index)</div></div>
 <div class="ttc" id="aclass_glv_vector_widget_html"><div class="ttname"><a href="class_glv_vector_widget.html">GlvVectorWidget</a></div><div class="ttdef"><b>Definition:</b> GlvVectorWidget.h:32</div></div>
 <div class="ttc" id="aclass_glv_vector_widget_item__base_html"><div class="ttname"><a href="class_glv_vector_widget_item__base.html">GlvVectorWidgetItem_base</a></div><div class="ttdef"><b>Definition:</b> GlvVectorWidgetItem_base.h:27</div></div>
 <div class="ttc" id="aclass_glv_vector_widget_item_html"><div class="ttname"><a href="class_glv_vector_widget_item.html">GlvVectorWidgetItem</a></div><div class="ttdef"><b>Definition:</b> GlvVectorWidgetItem.h:29</div></div>
-<div class="ttc" id="aclass_glv_vector_widget_item_html_a415fe2005851ad1eed024f30b368f850"><div class="ttname"><a href="class_glv_vector_widget_item.html#a415fe2005851ad1eed024f30b368f850">GlvVectorWidgetItem::set_value</a></div><div class="ttdeci">void set_value(const T _value)</div><div class="ttdef"><b>Definition:</b> GlvVectorWidgetItem.h:98</div></div>
-<div class="ttc" id="aclass_glv_vector_widget_item_html_af98cb29bdf990e4b60f8fe06be4a5749"><div class="ttname"><a href="class_glv_vector_widget_item.html#af98cb29bdf990e4b60f8fe06be4a5749">GlvVectorWidgetItem::get_value</a></div><div class="ttdeci">T get_value() const</div><div class="ttdef"><b>Definition:</b> GlvVectorWidgetItem.h:91</div></div>
+<div class="ttc" id="aclass_glv_vector_widget_item_html_a415fe2005851ad1eed024f30b368f850"><div class="ttname"><a href="class_glv_vector_widget_item.html#a415fe2005851ad1eed024f30b368f850">GlvVectorWidgetItem::set_value</a></div><div class="ttdeci">void set_value(const T _value)</div><div class="ttdef"><b>Definition:</b> GlvVectorWidgetItem.h:103</div></div>
+<div class="ttc" id="aclass_glv_vector_widget_item_html_af98cb29bdf990e4b60f8fe06be4a5749"><div class="ttname"><a href="class_glv_vector_widget_item.html#af98cb29bdf990e4b60f8fe06be4a5749">GlvVectorWidgetItem::get_value</a></div><div class="ttdeci">T get_value() const</div><div class="ttdef"><b>Definition:</b> GlvVectorWidgetItem.h:96</div></div>
 <div class="ttc" id="aclass_glv_widget_html"><div class="ttname"><a href="class_glv_widget.html">GlvWidget</a></div><div class="ttdef"><b>Definition:</b> GlvWidget.h:26</div></div>
 <div class="ttc" id="aglv___q_string_8h_html"><div class="ttname"><a href="glv___q_string_8h.html">glv_QString.h</a></div></div>
 <div class="ttc" id="anamespaceglv_html_a9af29a213fe2989683796e1bf339d561"><div class="ttname"><a href="namespaceglv.html#a9af29a213fe2989683796e1bf339d561">glv::toQString</a></div><div class="ttdeci">QString toQString(const T &amp;_value)</div><div class="ttdef"><b>Definition:</b> glv_QString.h:51</div></div>

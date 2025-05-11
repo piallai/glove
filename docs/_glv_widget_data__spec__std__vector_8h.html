@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.5</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.6</span>
    </div>
   </td>
  </tr>
@@ -81,22 +81,21 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="_glv_widget_data_8h_source.html">GlvWidgetData.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_glv_vector_widget_8h_source.html">GlvVectorWidget.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="_slv_is_container_8h_source.html">SlvIsContainer.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="_slv_is_map_8h_source.html">SlvIsMap.h</a>&quot;</code><br />
+<code>#include &quot;GloveOptions.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="_glv_widget_maker_connect_8h_source.html">GlvWidgetMakerConnect.h</a>&quot;</code><br />
 </div>
 <p><a href="_glv_widget_data__spec__std__vector_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_widget_data_3_01std_1_1vector_3_01_t_01_4_00_01typename_01std_1_1enable__if_3_9_slv_is2fd18cad23bb9862f8a9dbe8ffb2cba3.html">GlvWidgetData&lt; std::vector&lt; T &gt;, typename std::enable_if&lt;!SlvIsContainer&lt; T &gt;::value||SlvIsMap&lt; T &gt;::value||std::is_same&lt; T, std::string &gt;::value &gt;::type &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_widget_data_3_01std_1_1vector_3_01_t_01_4_00_01typename_01std_1_1enable__if_3_01true_01_4_1_1type_01_4.html">GlvWidgetData&lt; std::vector&lt; T &gt;, typename std::enable_if&lt; true &gt;::type &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_glv_widget_maker_connect_3_01std_1_1vector_3_01_t_01_4_00_01typename_01std_1_1enable__if_46f98e047cecef288635098efbd44b30.html">GlvWidgetMakerConnect&lt; std::vector&lt; T &gt;, typename std::enable_if&lt;!SlvIsContainer&lt; T &gt;::value||SlvIsMap&lt; T &gt;::value||std::is_same&lt; T, std::string &gt;::value &gt;::type &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_glv_widget_maker_connect_3_01std_1_1vector_3_01_t_01_4_00_01typename_01std_1_1enable__if_3_01true_01_4_1_1type_01_4.html">GlvWidgetMakerConnect&lt; std::vector&lt; T &gt;, typename std::enable_if&lt; true &gt;::type &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a121251f5d20b85e1dfca5c8fa0f8105c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_widget_data__spec__std__vector_8h.html#a121251f5d20b85e1dfca5c8fa0f8105c">Tenable</a>&#160;&#160;&#160;typename std::enable_if&lt;!<a class="el" href="struct_slv_is_container.html">SlvIsContainer</a>&lt;T&gt;::value || <a class="el" href="struct_slv_is_map.html">SlvIsMap</a>&lt;T&gt;::value || std::is_same&lt;T, std::string&gt;::value&gt;::type</td></tr>
+<tr class="memitem:a121251f5d20b85e1dfca5c8fa0f8105c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_widget_data__spec__std__vector_8h.html#a121251f5d20b85e1dfca5c8fa0f8105c">Tenable</a>&#160;&#160;&#160;typename std::enable_if&lt;true&gt;::type</td></tr>
 <tr class="separator:a121251f5d20b85e1dfca5c8fa0f8105c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37c8dbd2de7a0b1aa192637202c376ef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_widget_data__spec__std__vector_8h.html#a37c8dbd2de7a0b1aa192637202c376ef">Tdata</a>&#160;&#160;&#160;std::vector&lt;T&gt;</td></tr>
 <tr class="separator:a37c8dbd2de7a0b1aa192637202c376ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -123,7 +122,7 @@ Macros</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define Tenable&#160;&#160;&#160;typename std::enable_if&lt;!<a class="el" href="struct_slv_is_container.html">SlvIsContainer</a>&lt;T&gt;::value || <a class="el" href="struct_slv_is_map.html">SlvIsMap</a>&lt;T&gt;::value || std::is_same&lt;T, std::string&gt;::value&gt;::type</td>
+          <td class="memname">#define Tenable&#160;&#160;&#160;typename std::enable_if&lt;true&gt;::type</td>
         </tr>
       </table>
 </div><div class="memdoc">

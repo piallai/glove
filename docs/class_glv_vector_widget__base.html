@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.5</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.6</span>
    </div>
   </td>
  </tr>
@@ -89,7 +89,7 @@ Inheritance diagram for GlvVectorWidget_base:</div>
   <map id="GlvVectorWidget_5Fbase_map" name="GlvVectorWidget_5Fbase_map">
 <area href="class_glv_vector_widget.html" alt="GlvVectorWidget&lt; T &gt;" shape="rect" coords="452,112,1346,136"/>
 <area href="class_glv_array_widget.html" alt="GlvArrayWidget&lt; T, N &gt;" shape="rect" coords="0,168,894,192"/>
-<area href="class_glv_widget_data_3_01std_1_1vector_3_01_t_01_4_00_01typename_01std_1_1enable__if_3_9_slv_is2fd18cad23bb9862f8a9dbe8ffb2cba3.html" alt="GlvWidgetData&lt; std::vector&lt; T &gt;, typename std::enable_if&lt;!SlvIsContainer&lt; T &gt;::value||SlvIsMap&lt; T &gt;::value||std::is_same&lt; T, std::string &gt;::value &gt;::type &gt;" shape="rect" coords="904,168,1798,192"/>
+<area href="class_glv_widget_data_3_01std_1_1vector_3_01_t_01_4_00_01typename_01std_1_1enable__if_3_01true_01_4_1_1type_01_4.html" alt="GlvWidgetData&lt; std::vector&lt; T &gt;, typename std::enable_if&lt; true &gt;::type &gt;" shape="rect" coords="904,168,1798,192"/>
 <area href="class_glv_widget_data_3_01std_1_1array_3_01_t_00_01_n_01_4_00_01typename_01std_1_1enable__if_3_972dc7e3141bd7226dd61050b3b493e58.html" alt="GlvWidgetData&lt; std::array&lt; T, N &gt;, typename std::enable_if&lt;!SlvIsContainer&lt; T &gt;::value||SlvIsMap&lt; T &gt;::value||std::is_same&lt; T, std::string &gt;::value &gt;::type &gt;" shape="rect" coords="0,224,894,248"/>
   </map>
 </div></div>
@@ -101,8 +101,16 @@ Signals</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a67a0fa7457e60a5e174e15e538f0d0a0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#a67a0fa7457e60a5e174e15e538f0d0a0">set_editable</a> (bool l_editable)</td></tr>
-<tr class="separator:a67a0fa7457e60a5e174e15e538f0d0a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a601310feb21a8a36b7aed7514d65949c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#a601310feb21a8a36b7aed7514d65949c">set_editable</a> (bool _l_editable)</td></tr>
+<tr class="separator:a601310feb21a8a36b7aed7514d65949c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae67e59bf1d2fb46c6e919d52f012de6c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#ae67e59bf1d2fb46c6e919d52f012de6c">set_checkable</a> (bool _l_checkable)</td></tr>
+<tr class="separator:ae67e59bf1d2fb46c6e919d52f012de6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8523171b1980fa2ca7971e57d42bd4d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#ae8523171b1980fa2ca7971e57d42bd4d">set_checked</a> (bool _l_checked)</td></tr>
+<tr class="separator:ae8523171b1980fa2ca7971e57d42bd4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accb840e5047ce4ff159318cea0058e39"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#accb840e5047ce4ff159318cea0058e39">set_Nelements_max</a> (const unsigned int _N)</td></tr>
+<tr class="separator:accb840e5047ce4ff159318cea0058e39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5065ba9230495b6a48e697a875c8f489"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#a5065ba9230495b6a48e697a875c8f489">set_items_top_aligment</a> (bool _l_top)</td></tr>
+<tr class="separator:a5065ba9230495b6a48e697a875c8f489"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-slots" name="pro-slots"></a>
 Protected Slots</h2></td></tr>
@@ -118,12 +126,20 @@ Protected Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:acddd2133a033f029e1c9a418f6ae1f0a"><td class="memItemLeft" align="right" valign="top">QWidget *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#acddd2133a033f029e1c9a418f6ae1f0a">buttons_widget</a></td></tr>
-<tr class="separator:acddd2133a033f029e1c9a418f6ae1f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a987d1ab77e1f90f007216f76a4918a16"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#a987d1ab77e1f90f007216f76a4918a16">Nelements_max</a></td></tr>
+<tr class="separator:a987d1ab77e1f90f007216f76a4918a16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6c7425ca70bb68803a0566aebabf20a"><td class="memItemLeft" align="right" valign="top">QGroupBox *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#ab6c7425ca70bb68803a0566aebabf20a">buttons_group_box</a></td></tr>
+<tr class="separator:ab6c7425ca70bb68803a0566aebabf20a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af815cfd48c33ebccc59a4d312b1d044c"><td class="memItemLeft" align="right" valign="top">QVBoxLayout *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#af815cfd48c33ebccc59a4d312b1d044c">layout_items</a></td></tr>
 <tr class="separator:af815cfd48c33ebccc59a4d312b1d044c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad19412a41ce6e1afaeed03854490bf8e"><td class="memItemLeft" align="right" valign="top">QPushButton *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#ad19412a41ce6e1afaeed03854490bf8e">button_push</a></td></tr>
+<tr class="separator:ad19412a41ce6e1afaeed03854490bf8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7cfee15836954f2f96122ee62611fa27"><td class="memItemLeft" align="right" valign="top">QPushButton *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#a7cfee15836954f2f96122ee62611fa27">button_pop</a></td></tr>
 <tr class="separator:a7cfee15836954f2f96122ee62611fa27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf5d90fa1d82711f10728be8ced6b34e"><td class="memItemLeft" align="right" valign="top">QPushButton *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#aaf5d90fa1d82711f10728be8ced6b34e">button_insert</a></td></tr>
+<tr class="separator:aaf5d90fa1d82711f10728be8ced6b34e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7824e36df28456ebfacb321debbe1000"><td class="memItemLeft" align="right" valign="top">QSpinBox *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_vector_widget__base.html#a7824e36df28456ebfacb321debbe1000">resize_spinbox</a></td></tr>
+<tr class="separator:a7824e36df28456ebfacb321debbe1000"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a0682c8856c3553e4724ba4428760205f" name="a0682c8856c3553e4724ba4428760205f"></a>
@@ -178,8 +194,46 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a67a0fa7457e60a5e174e15e538f0d0a0" name="a67a0fa7457e60a5e174e15e538f0d0a0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a67a0fa7457e60a5e174e15e538f0d0a0">&#9670;&#160;</a></span>set_editable()</h2>
+<a id="ae67e59bf1d2fb46c6e919d52f012de6c" name="ae67e59bf1d2fb46c6e919d52f012de6c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae67e59bf1d2fb46c6e919d52f012de6c">&#9670;&#160;</a></span>set_checkable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GlvVectorWidget_base::set_checkable </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_checkable</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Possibility to hide vector elements or not using checkable button. </p>
+
+</div>
+</div>
+<a id="ae8523171b1980fa2ca7971e57d42bd4d" name="ae8523171b1980fa2ca7971e57d42bd4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8523171b1980fa2ca7971e57d42bd4d">&#9670;&#160;</a></span>set_checked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GlvVectorWidget_base::set_checked </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_checked</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Show/hide vector elements by collapsing the group box. </p>
+
+</div>
+</div>
+<a id="a601310feb21a8a36b7aed7514d65949c" name="a601310feb21a8a36b7aed7514d65949c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a601310feb21a8a36b7aed7514d65949c">&#9670;&#160;</a></span>set_editable()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -188,11 +242,49 @@ Protected Attributes</h2></td></tr>
           <td class="memname">void GlvVectorWidget_base::set_editable </td>
           <td>(</td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>l_editable</em></td><td>)</td>
+          <td class="paramname"><em>_l_editable</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5065ba9230495b6a48e697a875c8f489" name="a5065ba9230495b6a48e697a875c8f489"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5065ba9230495b6a48e697a875c8f489">&#9670;&#160;</a></span>set_items_top_aligment()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GlvVectorWidget_base::set_items_top_aligment </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_top</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Align vector items to top. Default is false. </p>
+
+</div>
+</div>
+<a id="accb840e5047ce4ff159318cea0058e39" name="accb840e5047ce4ff159318cea0058e39"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#accb840e5047ce4ff159318cea0058e39">&#9670;&#160;</a></span>set_Nelements_max()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GlvVectorWidget_base::set_Nelements_max </td>
+          <td>(</td>
+          <td class="paramtype">const unsigned int&#160;</td>
+          <td class="paramname"><em>_N</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Define the maximum number of elements for the vector. Default is 999. </p>
 
 </div>
 </div>
@@ -249,6 +341,28 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="aaf5d90fa1d82711f10728be8ced6b34e" name="aaf5d90fa1d82711f10728be8ced6b34e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf5d90fa1d82711f10728be8ced6b34e">&#9670;&#160;</a></span>button_insert</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QPushButton* GlvVectorWidget_base::button_insert</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a7cfee15836954f2f96122ee62611fa27" name="a7cfee15836954f2f96122ee62611fa27"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7cfee15836954f2f96122ee62611fa27">&#9670;&#160;</a></span>button_pop</h2>
 
@@ -271,8 +385,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="acddd2133a033f029e1c9a418f6ae1f0a" name="acddd2133a033f029e1c9a418f6ae1f0a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acddd2133a033f029e1c9a418f6ae1f0a">&#9670;&#160;</a></span>buttons_widget</h2>
+<a id="ad19412a41ce6e1afaeed03854490bf8e" name="ad19412a41ce6e1afaeed03854490bf8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad19412a41ce6e1afaeed03854490bf8e">&#9670;&#160;</a></span>button_push</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -281,7 +395,29 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">QWidget* GlvVectorWidget_base::buttons_widget</td>
+          <td class="memname">QPushButton* GlvVectorWidget_base::button_push</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab6c7425ca70bb68803a0566aebabf20a" name="ab6c7425ca70bb68803a0566aebabf20a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6c7425ca70bb68803a0566aebabf20a">&#9670;&#160;</a></span>buttons_group_box</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QGroupBox* GlvVectorWidget_base::buttons_group_box</td>
         </tr>
       </table>
   </td>
@@ -304,6 +440,50 @@ Protected Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">QVBoxLayout* GlvVectorWidget_base::layout_items</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a987d1ab77e1f90f007216f76a4918a16" name="a987d1ab77e1f90f007216f76a4918a16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a987d1ab77e1f90f007216f76a4918a16">&#9670;&#160;</a></span>Nelements_max</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int GlvVectorWidget_base::Nelements_max</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7824e36df28456ebfacb321debbe1000" name="a7824e36df28456ebfacb321debbe1000"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7824e36df28456ebfacb321debbe1000">&#9670;&#160;</a></span>resize_spinbox</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QSpinBox* GlvVectorWidget_base::resize_spinbox</td>
         </tr>
       </table>
   </td>
