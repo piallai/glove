@@ -34,6 +34,7 @@ GlvVectorWidget_base::GlvVectorWidget_base(QWidget* _parent) : QWidget(_parent) 
     QString info;
 
     buttons_group_box = new QGroupBox(tr("Size"));
+    buttons_group_widget = buttons_group_box;
     buttons_group_box->setFlat(true);
     buttons_group_box->setCheckable(true);
     connect(buttons_group_box, SIGNAL(toggled(bool)), this, SLOT(show_vector_edit(bool)));
@@ -146,12 +147,12 @@ void GlvVectorWidget_base::set_editable(bool _l_editable) {
     QWidget::setEnabled(_l_editable);
 }
 
-void GlvVectorWidget_base::set_checkable(bool _l_checkable) {
+void GlvVectorWidget_base::set_checkable(bool _l_checkable, const QString _group_name) {
 
     vector_group_box->setCheckable(_l_checkable);
     QString title;
     if (_l_checkable) {
-        title = tr("vector");
+        title = _group_name;
     }
     vector_group_box->setTitle(title);
 

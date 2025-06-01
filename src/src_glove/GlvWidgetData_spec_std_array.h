@@ -31,7 +31,11 @@ template <class T, size_t N>
 class GlvWidgetData<Tdata, Tenable> : public GlvArrayWidget<T, N> {
 
 public:
-    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvArrayWidget<T, N>(_vector, _parent) {}
+    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvArrayWidget<T, N>(_vector, _parent) {
+        this->set_checkable(true, QObject::tr("array"));
+        this->set_checked(false);
+        this->set_items_top_aligment(true);
+    }
     ~GlvWidgetData() {}
 
 };

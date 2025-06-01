@@ -57,11 +57,8 @@ public:
     /*! Return true if inserted, false otherwise (key already exsists).*/
     bool insertValue(const Tkey& _key, const Tvalue& _value);
 
-    /*! Get widget of index \p i.*/
-    GlvWidget<Tvalue>* operator[] (const unsigned int i);
     /*! Get widget of key \p _key.*/
     GlvWidget<Tvalue>* operator[] (const Tkey _key);
-
 
 private:
 
@@ -141,7 +138,7 @@ _Tdata_ GlvMapWidget<Tkey, Tvalue, Tcompare>::get_value() const {
 
     _Tdata_ value;
     for (int i = 0; i < widgets.size(); i++) {
-        value[i] = widgets[i]->get_value();
+        value[widgets[i]->get_key()] = widgets[i]->get_value();
     }
     return value;
 
@@ -193,13 +190,6 @@ void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue(const int _i, const Tkey&
     for (unsigned int k = _i + 1; k < widgets.size(); k++) {
         widgets[k]->increment_index();
     }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvWidget<Tvalue>* GlvMapWidget<Tkey, Tvalue, Tcompare>::operator[] (const unsigned int i) {
-
-    return widgets[i]->get_value_widget();
 
 }
 

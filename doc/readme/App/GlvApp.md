@@ -51,7 +51,7 @@ Default is <code>false</code>.
 
 If <code>GLOVE_APP_RECURRENT_MODE</code> is set to <code>true</code>, the macro defines the type of the variable to be kept across all recurrent runs.
 One can for example define a structure in charge of keeping data from a run to another. Set <code>#define GLOVE_APP_RECURRENT_TYPE *Type*</code> before calling <code>GLOVE_APP</code>.
-Default is <code>int</code>.
+Default is <code>int</code>. Must be castable to <code>bool</code>. The returned boolean value accounts for the auto repeat mode to be enabled or not.
 
 #### <code>GLOVE_APP_THREAD_MODE</code>
 

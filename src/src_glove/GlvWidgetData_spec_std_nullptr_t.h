@@ -18,33 +18,27 @@
 #pragma once
 
 #include "GlvWidgetData.h"
-#include "GlvSize2dWidget.h"
-
-#define Tdata SlvSize2d<T>
-/*! GlvWidgetData specialization for template type: SlvSize2d.*/
-template <class T>
-class GlvWidgetData<Tdata> : public GlvSize2dWidget<T> {
-
-public:
-    GlvWidgetData(Tdata _size = Tdata(), QWidget* _parent = 0) :GlvSize2dWidget<T>(_size, _parent) {}
-    ~GlvWidgetData() {}
-
-    Tdata get_value() const {
-        return GlvSize2dWidget<T>::get_size();
-    }
-    void set_value(const Tdata& _value) {
-        return GlvSize2dWidget<T>::set_size(_value);
-    }
-
-};
-
 #include "GlvWidgetMakerConnect.h"
-template <class T>
-struct GlvWidgetMakerConnect<Tdata> {
-    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(valueChanged_width()), _widget_connector, SLOT(valueChanged_slot()));
-        QObject::connect(_widget, SIGNAL(valueChanged_height()), _widget_connector, SLOT(valueChanged_slot()));
+#include <QLineEdit>
+
+#define Tdata std::nullptr_t
+/*! GlvWidgetData specialization for type: std::nullptr_t.
+* Default type to 'disable' a parameter.*/
+template <>
+class GlvWidgetData<Tdata> : public QWidget {
+public:
+    GlvWidgetData(QWidget* _parent = 0) :QWidget(_parent) {}
+    GlvWidgetData(const Tdata& _value, QWidget* _parent = 0) {}
+    ~GlvWidgetData() {}
+    void set_editable(bool l_editable) {}
+    Tdata get_value() const {
+        return nullptr;
     }
+    void set_value(const Tdata& _value) {}
 };
 
+template <>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {}
+};
 #undef Tdata

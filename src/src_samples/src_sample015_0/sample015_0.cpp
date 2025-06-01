@@ -43,6 +43,10 @@ glvm_parametrization(ParametersCLI, "CLI parameters",
 
 struct RecurrentStruct {
 	int total_loops;
+	// Auto repeat if returns true
+	operator bool() const {
+		return false;
+	}
 };
 
 // Program supposed to manage 3 command line arguments

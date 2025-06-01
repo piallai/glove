@@ -51,7 +51,7 @@ private:
 template <class T, size_t N>
 GlvArrayWidget<T, N>::GlvArrayWidget(_Tdata_ _array, QWidget* _parent) : GlvVectorWidget<T>({}, _parent) {
 
-    this->buttons_widget->hide();
+    this->buttons_group_widget->hide();
 
     for (int i = 0; i < N; i++) {
         pushValue();

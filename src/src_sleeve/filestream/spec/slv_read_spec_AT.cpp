@@ -17,9 +17,6 @@
 
 #include "slv_read_spec_AT.h"
 
-//const std::string end_of_file_str = "end of file";
-//const std::string slv::rw::end_of_file_str = "end of file";
-
 template <>
 bool slv::rw::readB<int>(int& _dat, std::ifstream& _input_file) {
     if (!_input_file.eof()) {

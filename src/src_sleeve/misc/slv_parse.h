@@ -27,6 +27,7 @@ namespace slv {
 	/*! Parse \p _string to assign \p _value.
 	* Specialization by direct assignment because >> will parse a string separated by spaces.*/
 	bool parse(const std::string& _string, std::string& _value);
+
 }
 
 template <class T>

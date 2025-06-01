@@ -118,9 +118,10 @@ glvm_parametrization(GLOVE_APP_default_parametrization, "default");
 /*! Optional: Set application in recurrent mode. The program will be launched again upon acceptance.
 * Applies only if GLOVE_APP_THREAD_MODE is set to true.*/
 #define GLOVE_APP_RECURRENT_MODE false
+/*! Must be castable to bool. The returned boolean value accounts for the auto repeat mode to be enabled or not.*/
 #define GLOVE_APP_RECURRENT_TYPE int
-/*! Usef only if GLOVE_APP_RECURRENT_MODE is left false.*/
-static GLOVE_APP_RECURRENT_TYPE glove_recurrent_var;
+/*! Used only if GLOVE_APP_RECURRENT_MODE is left to false.*/
+static GLOVE_APP_RECURRENT_TYPE glove_recurrent_var = 0;
 
 
 #define glvm_pv_GLOVE_APP(Tparametrization, _l_auto_glove) \
@@ -287,12 +288,16 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 
 		save_load_widget->load(arguments.get_glove_argument());// Load parametrization file
 
+	} else if (SlvFile(autosave_file_name).exists()) {
+
+		save_load_widget->load(autosave_file_name);
+
 	}
 
-	Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
-	SlvStatus status;
-
 	if (!arguments.is_empty()) {
+
+		Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
+		SlvStatus status;
 
 		status = SlvCLI::parse(parametrization, arguments);
 
@@ -300,14 +305,10 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 
 		dialog.set_parametrization(parametrization);
 
-	} else if (SlvFile(autosave_file_name).exists() && arguments.get_glove_argument().empty()) {
-
-		save_load_widget->load(autosave_file_name);
-
 	}
 
 	int result;
-	if (Tparametrization::Nparameters() > 0) {
+	if (Tparametrization::Nparameters() > 0 && !(bool)_recurrent_var) {
 		result = dialog.exec();
 	} else {
 		result = QDialog::Accepted;

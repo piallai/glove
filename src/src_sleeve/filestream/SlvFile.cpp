@@ -186,6 +186,20 @@ bool SlvFile::operator!=(const SlvFile& _file) const {
 
 }
 
+bool SlvFile::is_equivalent(const SlvFile& _file) const {
+
+    if (this->exists() && _file.exists()) {
+#if __cplusplus > 201402L
+        return std::filesystem::equivalent(get_path(), _file.get_path());
+#else
+        return false;
+#endif
+    } else {
+        return false;
+    }
+
+}
+
 bool SlvFile::readB(std::ifstream& _input_file) {
 
     bool l_read = slv::rw::readB(file_name, _input_file);

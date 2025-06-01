@@ -99,6 +99,26 @@ namespace slv {
                 return readJson_spec<Tdat>(_value, _json);// use specialization
             }
 
+            /*! Convenience method to read json field \p _name.*/
+            template <class Tdat>
+            SlvStatus readJson(Tdat& _value, const std::string& _name, const nlohmann::json& _json) {
+                nlohmann::json::const_iterator it = _json.find(_name);
+                SlvStatus status;
+                if (it != _json.end()) {
+                    Tdat value;
+                    SlvStatus status_json = slv::rw::json::readJson(value, *it);
+                    if (status_json) {
+                        _value = value;
+                    } else {
+                        status = SlvStatus(SlvStatus::statusType::warning, "Problem reading json : " + _name);
+                        status.add_sub_status(status_json);
+                    }
+                } else {
+                    status = SlvStatus(SlvStatus::statusType::warning, "Can not find json field : " + _name);
+                }
+                return status;
+            }
+
         }
     }
 }
@@ -255,7 +275,10 @@ namespace slv {
                 struct is_json_container< std::map<Tkey, Tvalue> > {
                     static const bool value = true;
                 };
-
+                template <typename T, std::size_t N>
+                struct is_json_container< std::array<T, N> > {
+                    static const bool value = true;
+                };
             }
         }
     }
@@ -491,5 +514,7 @@ namespace slv {
         }
     }
 }
+
+#include "filestream/spec/slv_rw_json_spec_std_nullptr_t.h"
 
 #endif

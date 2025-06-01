@@ -140,6 +140,8 @@ A parametrization can currently contain up to 24 parameters of any type. Paramet
 
 ##### [List](/doc/readme/Parametrization/Parametrization_list.md)
 
+A parameter can be disabled by setting his type to <code>nullptr_t</code>.
+
 ### Save/load interface
 
 Each parametrization widget <code>GlvParametrizationWidget</code> and data widget <code>GlvWidget</code> can be extended easily with an input/output file interface.

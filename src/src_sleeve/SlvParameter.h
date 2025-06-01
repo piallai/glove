@@ -22,6 +22,9 @@
 #include "std_vector.h"
 #include "SlvParameter_base.h"
 class SlvParametrization_base;
+#if OPTION_USE_THIRDPARTY_JSON==1
+#include "filestream/slv_rw_json.h"
+#endif
 
 /*! Parameter class. Is inherited by parameters created in SlvParametrization**.*/
 template <class Tparam>
@@ -74,6 +77,11 @@ public:
     bool readB(std::ifstream& _input_file);
     void writeB(std::ofstream& _output_file) const;
 
+#if OPTION_USE_THIRDPARTY_JSON==1
+    void writeJson(nlohmann::json& _json) const;
+    SlvStatus readJson(const nlohmann::json& _json);
+#endif
+
 protected:
 
     void istream(std::istream& _is);
@@ -98,6 +106,7 @@ struct SlvParameterSpecSerialization {
 template <>
 struct SlvParameterSpecSerialization<bool>;
 
+
 template <class Tparam, typename = void>
 struct SlvParameterSpec {
     static void assign(Tparam& _parameter_value1, const Tparam& _parameter_value2, bool _l_param_only) {
@@ -109,6 +118,14 @@ struct SlvParameterSpec {
     static void writeB(const Tparam& _parameter_value, std::ofstream& _output_file) {
         slv::rw::writeB(_parameter_value, _output_file);
     }
+#if OPTION_USE_THIRDPARTY_JSON==1
+    static void writeJson(const Tparam& _parameter_value, const std::string& _parameter_name, nlohmann::json& _json) {
+        slv::rw::json::writeJson(_parameter_value, _json[_parameter_name]);
+    }
+    static SlvStatus readJson(Tparam& _parameter_value, const std::string& _parameter_name, const nlohmann::json& _json) {
+        return slv::rw::json::readJson(_parameter_value, _parameter_name, _json);
+    }
+#endif
     static void istream(Tparam& _parameter_value, std::istream& _is) {
         _is >> _parameter_value;
     }
@@ -131,6 +148,45 @@ struct SlvParameterSpec {
         return NULL;
     }
 };
+
+#define Tparam std::nullptr_t
+/*! Disable parameter operations for type std::nullptr_t*/
+template <>
+struct SlvParameterSpec<Tparam> {
+    static void assign(Tparam& _parameter_value1, const Tparam& _parameter_value2, bool _l_param_only) {
+    }
+    static bool readB(Tparam& _parameter_value, std::ifstream& _input_file) {
+        return true;
+    }
+    static void writeB(const Tparam& _parameter_value, std::ofstream& _output_file) {
+    }
+#if OPTION_USE_THIRDPARTY_JSON==1
+    static void writeJson(const Tparam& _parameter_value, const std::string& _parameter_name, nlohmann::json& _json) {
+    }
+    static SlvStatus readJson(Tparam& _parameter_value, const std::string& _parameter_name, const nlohmann::json& _json) {
+        return SlvStatus();
+    }
+#endif
+    static void istream(Tparam& _parameter_value, std::istream& _is) {
+    }
+    static void ostream(const Tparam& _parameter_value, std::ostream& _os) {
+    }
+    static void parse(Tparam& _parameter_value, const std::string& _string) {
+    }
+    static bool is_equal(const Tparam& _parameter_value1, const Tparam& _parameter_value2) {
+        return true;
+    }
+    static std::vector< std::pair<std::string, std::string> > get_string_serialization(const SlvParameter<Tparam>& _parameter) {
+        return {};
+    }
+    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
+        return {};
+    }
+    static const SlvParametrization_base* parametrization_cast(const Tparam& _parameter_value) {
+        return NULL;
+    }
+};
+#undef Tparam
 
 template <class Tparam>
 std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > SlvParameterSpecSerialization<Tparam>::get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
@@ -166,6 +222,14 @@ struct SlvParameterSpec<Tparam, typename std::enable_if<SlvIsParametrization<Tpa
     static void writeB(const Tparam& _parameter_value, std::ofstream& _output_file) {
         slv::rw::writeB(_parameter_value.param_cast(), _output_file);// param only
     }
+#if OPTION_USE_THIRDPARTY_JSON==1
+    static void writeJson(const Tparam& _parameter_value, const std::string& _parameter_name, nlohmann::json& _json) {
+        slv::rw::json::writeJson(_parameter_value, _json[_parameter_name]);
+    }
+    static SlvStatus readJson(Tparam& _parameter_value, const std::string& _parameter_name, const nlohmann::json& _json) {
+        return slv::rw::json::readJson(_parameter_value, _parameter_name, _json);
+    }
+#endif
     static void istream(Tparam& _parameter_value, std::istream& _is) {
         _is >> _parameter_value.param_cast();
     }
@@ -309,6 +373,25 @@ void SlvParameter<Tparam>::writeB(std::ofstream& _output_file) const {
 
 }
 
+#if OPTION_USE_THIRDPARTY_JSON==1
+template <class Tparam>
+void SlvParameter<Tparam>::writeJson(nlohmann::json& _json) const {
+
+    SlvParameterSpec<Tparam>::writeJson(value, get_name(), _json);
+
+}
+
+template <class Tparam>
+SlvStatus SlvParameter<Tparam>::readJson(const nlohmann::json& _json) {
+
+    Tparam value_ = get_default_value();
+    SlvStatus status = SlvParameterSpec<Tparam>::readJson(value_, get_name(), _json);
+    set_value(value_);
+    return status;
+
+}
+#endif
+
 template <class Tparam>
 void SlvParameter<Tparam>::istream(std::istream& _is) {
 
@@ -337,9 +420,16 @@ glvm_pv_parameter6(parameter_number, class_name, class_type, parameter_name, par
 #define glvm_pv_parameter6(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value) \
 glvm_pv_parameter7(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, SlvParameter<class_type>::default_marker_value())
 
+#include "SlvMacroSpecialize.h"
+
+#define TYPE_NULLPTR_T nullptr_t
+#define MACSPEC_COMPARE_nullptr_t(x) x
+#define IS_TYPE_NULLPTR_T(type) MACSPEC_COMPARE(type, TYPE_NULLPTR_T)
 
 #define glvm_pv_parameter7(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
-private:\
+MACSPEC_IIF(IS_TYPE_NULLPTR_T(class_type))(glvm_pv_parameter7_nullptr_t, glvm_pv_parameter7_general)(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)
+
+#define glvm_pv_parameter7_parameter(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
 class SlvPvClassParam_##class_name : public SlvParameter<class_type> {\
 public:\
 SlvPvClassParam_##class_name(SlvParametrization_base* _parametrization, class_type _value = default_value()):SlvParameter<class_type>(_parametrization, _value){ this->abide_rules();}\
@@ -369,7 +459,18 @@ std::vector< SlvParameterRuleT<class_type> > rules;\
 rules.push_back(SlvParameterRuleT<class_type>());/*default rule*/\
 return rules;}\
 glvm_staticVariable_const_get(bool, has_rules, false)\
-};\
+};
+
+#define glvm_pv_parameter7_nullptr_t(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
+private:\
+glvm_pv_parameter7_parameter(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)\
+protected:\
+typedef SlvPvClassParam_##class_name Tpv_parameter##parameter_number;\
+private:
+
+#define glvm_pv_parameter7_general(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
+private:\
+glvm_pv_parameter7_parameter(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)\
 protected:\
 typedef SlvPvClassParam_##class_name Tpv_parameter##parameter_number;\
 public:\

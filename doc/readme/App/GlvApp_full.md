@@ -47,6 +47,10 @@ glvm_parametrization(ParametersCLI, "CLI parameters",
 ```cpp
 struct RecurrentStruct {
     int total_loops = 0;
+    // Auto repeat if returns true
+    operator bool() const {
+    	return false;
+    }                
 };
 
 int main(int argc, char* argv[]) {

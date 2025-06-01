@@ -91,8 +91,13 @@ public:
     /*! Return true if the file exists.*/
     bool exists() const;
 
+    /*! Equal if file name, directory, description and allowed extensions are identical.
+    * Different of is_equivalent method.*/
     bool operator==(const SlvFile& _file) const;
     bool operator!=(const SlvFile& _file) const;
+
+    /*! Whether \p _file resolve to the same file. Not implemented for C++11 (return false).*/
+    bool is_equivalent(const SlvFile& _file) const;
 
     bool readB(std::ifstream& _input_file);
     void writeB(std::ofstream& _output_file) const;

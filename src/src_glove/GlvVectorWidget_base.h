@@ -43,6 +43,7 @@ protected:
     unsigned int Nelements_max;
 
     QGroupBox* buttons_group_box;
+    QWidget* buttons_group_widget;
     QVBoxLayout* layout_items;
     QPushButton* button_push;
     QPushButton* button_pop;
@@ -55,8 +56,8 @@ protected:
 public:
 
     void set_editable(bool _l_editable);
-    /*! Possibility to hide vector elements or not using checkable button.*/
-    void set_checkable(bool _l_checkable);
+    /*! Possibility to hide vector elements or not using checkable button. If checkable, possibility to set \p _group_name.*/
+    void set_checkable(bool _l_checkable, const QString _group_name = tr("vector"));
     /*! Show/hide vector elements by collapsing the group box.*/
     void set_checked(bool _l_checked);
     /*! Define the maximum number of elements for the vector. Default is 999.*/

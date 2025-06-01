@@ -140,34 +140,49 @@ void SlvCLI::Arguments::filter(const std::vector<std::string>& _arguments_remain
 
 std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments) {
 
+	std::vector< std::pair<std::string, std::string> > parameter_arguments;
+	for (std::vector< std::pair<std::string, std::string> >::const_iterator it = _parameter_arguments.begin(); it != _parameter_arguments.end(); ++it) {
+		if (it->first.front() == '-') {
+			parameter_arguments.push_back(*it);
+		}
+	}
+
+	std::vector<std::string> solo_arguments;
+	for (std::vector<std::string>::const_iterator it = _solo_arguments.begin(); it != _solo_arguments.end(); ++it) {
+		if (it->front() == '-') {
+			solo_arguments.push_back(*it);
+		}
+	}
+
+
 	int Nfilled_parameters = 0;
-	for (int i = 0; i < _parameter_arguments.size(); i++) {
-		if (!_parameter_arguments[i].second.empty()) {
+	for (int i = 0; i < parameter_arguments.size(); i++) {
+		if (!parameter_arguments[i].second.empty()) {
 			Nfilled_parameters++;
 		}
 	}
 
-	int argc = 2 * Nfilled_parameters + (int)_solo_arguments.size() + 1;
+	int argc = 2 * Nfilled_parameters + (int)solo_arguments.size() + 1;
 	char** argv = new char* [argc];
 
 	int k_arg = 0;
-	for (int i = 0; i < _parameter_arguments.size(); i++) {
+	for (int i = 0; i < parameter_arguments.size(); i++) {
 
-		if (!_parameter_arguments[i].second.empty()) {
+		if (!parameter_arguments[i].second.empty()) {
 
-			argv[1 + k_arg] = new char[_parameter_arguments[i].first.size() + 1];
+			argv[1 + k_arg] = new char[parameter_arguments[i].first.size() + 1];
 #ifdef COMPILER_GCC
-			strcpy(argv[1 + k_arg], _parameter_arguments[i].first.c_str());
+			strcpy(argv[1 + k_arg], parameter_arguments[i].first.c_str());
 #else
-			strcpy_s(argv[1 + k_arg], _parameter_arguments[i].first.size() + 1, _parameter_arguments[i].first.c_str());
+			strcpy_s(argv[1 + k_arg], parameter_arguments[i].first.size() + 1, parameter_arguments[i].first.c_str());
 #endif
 			k_arg++;
 
-			argv[1 + k_arg] = new char[_parameter_arguments[i].second.size() + 1];
+			argv[1 + k_arg] = new char[parameter_arguments[i].second.size() + 1];
 #ifdef COMPILER_GCC
-			strcpy(argv[1 + k_arg], _parameter_arguments[i].second.c_str());
+			strcpy(argv[1 + k_arg], parameter_arguments[i].second.c_str());
 #else
-			strcpy_s(argv[1 + k_arg], _parameter_arguments[i].second.size() + 1, _parameter_arguments[i].second.c_str());
+			strcpy_s(argv[1 + k_arg], parameter_arguments[i].second.size() + 1, parameter_arguments[i].second.c_str());
 #endif
 			k_arg++;
 
@@ -175,12 +190,12 @@ std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair<std::s
 
 	}
 
-	for (int i = 0; i < _solo_arguments.size(); i++) {
-		argv[1 + 2 * Nfilled_parameters + i] = new char[_solo_arguments[i].size() + 1];
+	for (int i = 0; i < solo_arguments.size(); i++) {
+		argv[1 + 2 * Nfilled_parameters + i] = new char[solo_arguments[i].size() + 1];
 #ifdef COMPILER_GCC
-		strcpy(argv[1 + 2 * Nfilled_parameters + i], _solo_arguments[i].c_str());
+		strcpy(argv[1 + 2 * Nfilled_parameters + i], solo_arguments[i].c_str());
 #else
-		strcpy_s(argv[1 + 2 * Nfilled_parameters + i], _solo_arguments[i].size() + 1, _solo_arguments[i].c_str());
+		strcpy_s(argv[1 + 2 * Nfilled_parameters + i], solo_arguments[i].size() + 1, solo_arguments[i].c_str());
 #endif
 	}
 

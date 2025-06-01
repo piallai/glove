@@ -40,6 +40,7 @@ ADD_LIBRARY(GloveAdd STATIC
 	GlvEnumWidget.h
 	
 	GlvSize2dWidget.h
+	GlvSides2dWidget.h
 
 	GlvWidgetData_spec_SlvEnum.h
     GlvWidgetData_spec_SlvParametrization.h
@@ -51,6 +52,7 @@ ADD_LIBRARY(GloveAdd STATIC
     GlvWidgetData_spec_SlvProportion.h
     GlvWidgetData_spec_SlvProportion.cpp
 	GlvWidgetData_spec_SlvSize2d.h
+	GlvWidgetData_spec_SlvSides2d.h
 
 	GlvWidgetData_spec_All.h
 	GlvParametrizationIncludes.h

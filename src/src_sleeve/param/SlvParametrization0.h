@@ -21,7 +21,8 @@
 #include "SlvStatus.h"
 #include "GloveOptions.h"
 #if OPTION_USE_THIRDPARTY_JSON==1
-#include "filestream/slv_rw_json.h"
+//#include "filestream/slv_rw_json.h"
+#include "json.hpp"
 #endif
 #include "SlvIsParametrization.h"
 #include "slv_vector.h"
@@ -97,25 +98,12 @@ public:
 #define glvm_pv_SlvParametrization_writeB(N) parameter##N->writeB(_output_file);
 #define glvm_pv_SlvParametrization_readB(N) const_cast<SlvParameter<T##N>*>(parameter##N)->readB(_input_file)
 #if OPTION_USE_THIRDPARTY_JSON==1
-#define glvm_pv_SlvParametrization_writeJson(N) slv::rw::json::writeJson(parameter##N->get_value(), _json[this->get_name()][parameter##N->get_name()]);
+#define glvm_pv_SlvParametrization_writeJson(N) parameter##N->writeJson(_json[this->get_name()]);
 #define glvm_pv_SlvParametrization_readJson(N)\
 if (status.get_type() != SlvStatus::statusType::critical) {\
 	nlohmann::json::const_iterator it_main = _json.find(this->get_name());\
 	if (it_main != _json.end()) {\
-		nlohmann::json::const_iterator it = it_main->find(parameter##N->get_name());\
-		SlvStatus status_parameter;\
-		if (it != it_main->end()) {\
-			T##N value = parameter##N->get_default_value();\
-			SlvStatus status_json = slv::rw::json::readJson(value, *it);\
-			if (status_json) {\
-				const_cast<SlvParameter<T##N>*>(parameter##N)->set_value(value);\
-			} else {\
-				status_parameter = SlvStatus(SlvStatus::statusType::warning, "Problem reading parameter : " + parameter##N->get_name());\
-				status_parameter.add_sub_status(status_json);\
-			}\
-		} else {\
-			status_parameter = SlvStatus(SlvStatus::statusType::warning, "Can not find parameter : " + parameter##N->get_name());\
-		}\
+		SlvStatus status_parameter = parameter##N->readJson(*it_main);\
 		if (!status_parameter) {\
 			status += SlvStatus(SlvStatus::statusType::warning, "Problem reading parametrization : " + this->get_name());\
 			status.add_sub_status(status_parameter);\

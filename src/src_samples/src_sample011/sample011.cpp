@@ -15,8 +15,10 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*! Example of how to use GlvVectorWidget to manage std::vector
-* and how to use GlvMapWidget to manage std::map.*/
+/*! Example of
+* - how to use GlvVectorWidget to manage std::vector
+* - how to use GlvMapWidget to manage std::map
+* - how to use GlvArrayWidget to manage std::array */
 
 #include <QApplication>
 
@@ -24,8 +26,8 @@
 #include "GlvVectorWidget.h"
 #include "GlvWidgetData_spec_AT.h"
 #include "GlvWidgetData_spec_std_string.h"
-
 #include "GlvMapWidget.h"
+#include "GlvArrayWidget.h"
 #else
 #include "glove.h"
 #endif
@@ -64,6 +66,15 @@ int main(int argc, char* argv[]) {
     map_widget2->show();
     map_widget2->set_key_editable(true);
     QObject::connect(map_widget2, SIGNAL(valueChanged(int)), &qtslots, SLOT(get(int)));
+
+    /////////////////////////////////////////
+    // std::array example
+    /////////////////////////////////////////
+
+    std::array<float, 6> array({ 5.3f, 1.2f, -2.8f, 6.4f, 19.1f, -63.4 });
+    GlvArrayWidget<float, 6>* array_widget = new GlvArrayWidget<float, 6>(array);
+    array_widget->show();
+    QObject::connect(array_widget, SIGNAL(valueChanged(int)), &qtslots, SLOT(get(int)));
 
     return app.exec();
 

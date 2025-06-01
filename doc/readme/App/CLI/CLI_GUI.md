@@ -123,7 +123,7 @@ When clicking the *Ok* button, the parameters are automatically saved in the exe
 
 - *CLI_parameters* otherwise (binary file)
 
-When executing the program with the <code>-glove</code> cli argument, if an autosaved parameters file exists, then it is loaded.
+When executing the program with the <code>-glove</code> cli argument, if an autosaved parameters file exists, then it is automatically loaded.
 
 However, if any other cli argument is added, then auto loading of the last parameters is disabled.
 
@@ -135,23 +135,27 @@ A specific parametrization file can also be loaded (equivalent to clicking the *
 ./main -glove "path-to-parametrization-file"
 ```
 
-In this case, one can add parameter arguments that will replace those loaded in the parametrization file.
+#### Parameters file and CLI arguments
 
-Considering the example above, it means that:
+One can add parameter arguments that will replace those loaded in the parametrization file.
+
+Such as:
 
 ```cpp
 ./main -glove CLI_parameters.json -I /foo/foo/path
 ```
 
-is not equivalent to:
+which is equivalent to:
 
 ```cpp
 ./main -glove -I /foo/foo/path
 ```
 
-For the first command, the parameters contained in *CLI_parameters.json* are being loaded and the *-I* parameter is being assigned another value. 
+For the two commands, the parameters contained in *CLI_parameters.json* are being loaded and the *-I* parameter is being assigned another value.
 
-For the second command, the default autosaved *CLI_parameters.json* is being ignored since a parameter argument is provided.
+#### Reset to default parameters
+
+To reset to default parameters, the autosaved parameters file can be removed.
 
 ###### Without GUI
 

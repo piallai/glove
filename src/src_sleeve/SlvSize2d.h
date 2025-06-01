@@ -18,6 +18,11 @@
 #pragma once
 
 #include "SlvIOS.h"
+#include "GloveOptions.h"
+#if OPTION_USE_THIRDPARTY_JSON==1
+#include "json.hpp"
+#include "SlvStatus.h"
+#endif
 
 template <class T>
 class SlvSize2d : public SlvIOS {
@@ -34,6 +39,11 @@ public:
 	bool readB(std::ifstream& _input_file);
 	void writeB(std::ofstream& _output_file) const;
 
+#if OPTION_USE_THIRDPARTY_JSON==1
+	void writeJson(nlohmann::json& _json) const;
+	SlvStatus readJson(const nlohmann::json& _json);
+#endif
+
 private:
 
 	void istream(std::istream& _is);
@@ -42,6 +52,7 @@ private:
 };
 
 #include "filestream/slv_rw.h"
+#include "filestream/slv_rw_json.h"
 
 template <class T>
 SlvSize2d<T>::SlvSize2d(T _width, T _height) {
@@ -79,12 +90,8 @@ void SlvSize2d<T>::istream(std::istream& _is) {
 
     std::string size_str;
     _is >> size_str;
-    
-	size_t pos = size_str.find('x');
-	if (pos != std::string::npos) {
-		std::istringstream(size_str.substr(0, pos)) >> width;
-		std::istringstream(size_str.substr(pos + 1)) >> height;
-	}
+
+	slv::parse(size_str, *this);
 
 }
 
@@ -93,4 +100,49 @@ void SlvSize2d<T>::ostream(std::ostream& _os) const {
 
     _os << width << "x" << height;
 
+}
+
+#if OPTION_USE_THIRDPARTY_JSON==1
+template <class T>
+void SlvSize2d<T>::writeJson(nlohmann::json& _json) const {
+
+	slv::rw::json::writeJson(width, _json["width"]);
+	slv::rw::json::writeJson(height, _json["height"]);
+
+}
+
+template <class T>
+SlvStatus SlvSize2d<T>::readJson(const nlohmann::json& _json) {
+
+	SlvStatus status = slv::rw::json::readJson(width, "width", _json);
+	status += slv::rw::json::readJson(height, "height", _json);
+
+	return status;
+}
+#endif
+
+
+namespace slv {
+    /*! Parse \p _string to assign \p _size. Reciprocal to << operator.*/
+    template <class T>
+    bool parse(const std::string& _string, SlvSize2d<T>& _size);
+}
+
+#include "misc/slv_parse.h"
+
+template <class T>
+bool slv::parse(const std::string& _string, SlvSize2d<T>& _size) {
+
+    bool l_parsing_ok = true;
+
+    size_t pos = _string.find('x');
+    if (pos != std::string::npos) {
+        l_parsing_ok = slv::parse(_string.substr(0, pos), _size.width);
+        l_parsing_ok &= slv::parse(_string.substr(pos + 1), _size.height);
+    } else {
+        l_parsing_ok = false;
+		std::cout << "Parsing issue for type " << SlvDataName<SlvSize2d<T>>::name() << " and for string " << _string << std::endl;
+    }
+
+    return l_parsing_ok;
 }

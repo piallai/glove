@@ -70,6 +70,7 @@ SET(GLOVE_SOURCES
     GlvWidgetData_spec_AT.cpp
 	GlvWidgetData_spec_std_string.h
 	GlvWidgetData_spec_std_string.cpp
+	GlvWidgetData_spec_std_nullptr_t.h
 
 	GlvSaveLoad.h
 	GlvSaveLoad.cpp

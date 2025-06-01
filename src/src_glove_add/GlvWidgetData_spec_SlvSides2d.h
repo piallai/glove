@@ -18,22 +18,22 @@
 #pragma once
 
 #include "GlvWidgetData.h"
-#include "GlvSize2dWidget.h"
+#include "GlvSides2dWidget.h"
 
-#define Tdata SlvSize2d<T>
-/*! GlvWidgetData specialization for template type: SlvSize2d.*/
+#define Tdata SlvSides2d<T>
+/*! GlvWidgetData specialization for template type: SlvSides2d.*/
 template <class T>
-class GlvWidgetData<Tdata> : public GlvSize2dWidget<T> {
+class GlvWidgetData<Tdata> : public GlvSides2dWidget<T> {
 
 public:
-    GlvWidgetData(Tdata _size = Tdata(), QWidget* _parent = 0) :GlvSize2dWidget<T>(_size, _parent) {}
+    GlvWidgetData(Tdata _sides = Tdata(), QWidget* _parent = 0) :GlvSides2dWidget<T>(_sides, _parent) {}
     ~GlvWidgetData() {}
 
     Tdata get_value() const {
-        return GlvSize2dWidget<T>::get_size();
+        return GlvSides2dWidget<T>::get_sides();
     }
     void set_value(const Tdata& _value) {
-        return GlvSize2dWidget<T>::set_size(_value);
+        return GlvSides2dWidget<T>::set_sides(_value);
     }
 
 };
@@ -42,8 +42,10 @@ public:
 template <class T>
 struct GlvWidgetMakerConnect<Tdata> {
     static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
-        QObject::connect(_widget, SIGNAL(valueChanged_width()), _widget_connector, SLOT(valueChanged_slot()));
-        QObject::connect(_widget, SIGNAL(valueChanged_height()), _widget_connector, SLOT(valueChanged_slot()));
+        QObject::connect(_widget, SIGNAL(valueChanged_left()), _widget_connector, SLOT(valueChanged_slot()));
+        QObject::connect(_widget, SIGNAL(valueChanged_right()), _widget_connector, SLOT(valueChanged_slot()));
+        QObject::connect(_widget, SIGNAL(valueChanged_up()), _widget_connector, SLOT(valueChanged_slot()));
+        QObject::connect(_widget, SIGNAL(valueChanged_bottom()), _widget_connector, SLOT(valueChanged_slot()));
     }
 };
 

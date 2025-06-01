@@ -17,27 +17,30 @@
 
 #pragma once
 
-#include "iostream/spec/iostream_spec_std_array_decl.h"
+#include "misc/slv_parse.h"
+#include "std_vector.h"
 
-template <class T, size_t N>
-std::ostream& operator<<(std::ostream& _os, const std::array<T, N>& _array) {
-    _os << "[";
-    for (typename std::array<T, N>::const_iterator it = _array.begin(); it != _array.end(); ++it) {
-        _os << *it;
-        if (std::next(it) != _array.end()) {
-            _os << ",";
-        }
-    }
-    _os << "]";
-    return _os;
+namespace slv {
+    /*! Parse \p _string to assign \p _array. Reciprocal to << operator.*/
+    template <class T, size_t N>
+    bool parse(const std::string& _string, std::array<T, N>& _array);
 }
 
+#include "misc/spec/slv_parse_spec_std_vector.h"
+
 template <class T, size_t N>
-std::istream& operator>>(std::istream& _is, std::array<T, N>& _array) {
-    int i = 0;
-    for (typename std::array<T, N>::iterator it = _array.begin(); it != _array.end(); ++it, i++) {
-        std::cout << "enter element: " << i << std::endl;
-        _is >> *it;
+bool slv::parse(const std::string& _string, std::array<T, N>& _array) {
+    
+    bool l_parsing_ok = true;
+
+    std::vector<T> vector;
+    l_parsing_ok = slv::parse(_string, vector);
+
+    if (l_parsing_ok && vector.size() == N) {
+        std::copy_n(vector.begin(), N, _array.begin());
+    } else {
+        std::cout << "Parsing issue for type " << SlvDataName<std::array<T, N>>::name() << " and for string " << _string << std::endl;
     }
-    return _is;
+
+    return l_parsing_ok;
 }

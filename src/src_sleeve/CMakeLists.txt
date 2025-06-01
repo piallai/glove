@@ -107,6 +107,7 @@ set(FILESTREAM_SOURCES
 	filestream/spec/slv_rw_spec_multi.h
 	
 	filestream/slv_rw_json.h
+	filestream/spec/slv_rw_json_spec_std_nullptr_t.h
 )
 
 set(IO_SOURCES
@@ -163,6 +164,7 @@ set(MISC_SOURCES
 	misc/slv_parse.h
 	misc/spec/slv_parse_spec_std_vector.h
 	misc/spec/slv_parse_spec_std_map.h
+	misc/spec/slv_parse_spec_std_array.h
 )
 
 file(
@@ -175,6 +177,7 @@ file(
 SET(SLEEVE_SOURCES
 
 	SlvMacros.h
+	SlvMacroSpecialize.h
 	SlvIsType.h
 	SlvIsContainer.h
 	SlvIsMap.h
@@ -250,6 +253,7 @@ SET(SLEEVE_SOURCES
 	SlvSort.h
 			
 	SlvSize2d.h
+	SlvSides2d.h
 	
 	SlvProgression.h
 	SlvProgression.cpp

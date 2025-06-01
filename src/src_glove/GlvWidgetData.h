@@ -39,3 +39,5 @@ signals:
 * These methods can be directly available if the inherited widget contains them, or the methods can be implemented in the class.*/
 template <class Tdata, typename = void>
 class GlvWidgetData;
+
+#include "GlvWidgetData_spec_std_nullptr_t.h"

@@ -21,7 +21,7 @@
 
 #define GLOVE_VERSION_MAJOR 0
 #define GLOVE_VERSION_MINOR 7
-#define GLOVE_VERSION_PATCH 6
+#define GLOVE_VERSION_PATCH 7
 
 #ifndef GLOVE_DISABLE_QT
 #define OPTION_ENABLE_SLV_QT_PROGRESS 1
@@ -117,6 +117,7 @@
 #include <qnamespace.h>
 #include <QStringListModel>
 #include <QBoxLayout>
+#include <QGridLayout>
 #endif
 #if !(__cplusplus > 201402L)
 #include <sys/types.h>
@@ -128,7 +129,6 @@
 #include <cmath>
 #ifndef GLOVE_DISABLE_QT
 #include <QAbstractItemView>
-#include <QGridLayout>
 #include <QScrollArea>
 #include <QDir>
 #include <QFileDialog>
@@ -201,7 +201,7 @@ std::ostream& operator<<(std::ostream& _os, const boost::container::vector<T>& _
     for (typename boost::containe::vector<T>::const_iterator it = _vector.begin(); it != _vector.end(); ++it) {
         _os << *it;
         if (std::next(it) != _vector.end()) {
-            _os << ", ";
+            _os << ",";
         }
     }
     _os << "]";
@@ -860,8 +860,13 @@ public:
     /*! Return true if the file exists.*/
     bool exists() const;
 
+    /*! Equal if file name, directory, description and allowed extensions are identical.
+    * Different of is_equivalent method.*/
     bool operator==(const SlvFile& _file) const;
     bool operator!=(const SlvFile& _file) const;
+
+    /*! Whether \p _file resolve to the same file. Not implemented for C++11 (return false).*/
+    bool is_equivalent(const SlvFile& _file) const;
 
     bool readB(std::ifstream& _input_file);
     void writeB(std::ofstream& _output_file) const;
@@ -1208,7 +1213,7 @@ std::ostream& operator<<(std::ostream& _os, const std::array<T, N>& _array) {
     for (typename std::array<T, N>::const_iterator it = _array.begin(); it != _array.end(); ++it) {
         _os << *it;
         if (std::next(it) != _array.end()) {
-            _os << ", ";
+            _os << ",";
         }
     }
     _os << "]";
@@ -1224,1189 +1229,6 @@ std::istream& operator>>(std::istream& _is, std::array<T, N>& _array) {
     }
     return _is;
 }
-
-namespace slv {
-    /*! Read functions for misc types. Common data types are being specialized.*/
-    namespace rw {
-
-        template <class Tdat, size_t N>
-        bool readB(std::array<Tdat, N>& _array, std::ifstream& _input_file);
-
-        template <class Tdat, size_t N>
-        void writeB(const std::array<Tdat, N>& _array, std::ofstream& _output_file);
-    }
-}
-
-template <class T>
-std::ostream& operator<<(std::ostream& _os, const std::list<T>& _list) {
-    _os << "[";
-    for (typename std::list<T>::const_iterator it = _list.begin(); it != _list.end(); ++it) {
-        _os << " " << *it;
-    }
-    _os << "]";
-    return _os;
-}
-
-template <class T>
-std::istream& operator>>(std::istream& _is, std::list<T>& _list) {
-    _list.clear();
-    std::cout << "enter list size:" << std::endl;
-    unsigned int list_size;
-    _is >> list_size;
-    T value;
-    for (unsigned int i = 0; i < list_size; i++) {
-        std::cout << "enter element: " << i << std::endl;
-        _is >> value;
-        _list.push_back(value);
-    }
-    return _is;
-}
-
-namespace slv {
-    /*! Read functions for misc types. Common data types are being specialized.*/
-    namespace rw {
-
-        template <class Tdat>
-        bool readB(std::list<Tdat>& _list, std::ifstream& _input_file);
-
-        template <class Tdat>
-        void writeB(const std::list<Tdat>& _list, std::ofstream& _output_file);
-    }
-}
-
-template <class T>
-std::ostream& operator<<(std::ostream& _os, const std::deque<T>& _deque) {
-    _os << "[";
-    for (typename std::deque<T>::const_iterator it = _deque.begin(); it != _deque.end(); ++it) {
-        _os << " " << *it;
-    }
-    _os << "]";
-    return _os;
-}
-
-template <class T>
-std::istream& operator>>(std::istream& _is, std::deque<T>& _deque) {
-    _deque.clear();
-    std::cout << "enter deque size:" << std::endl;
-    unsigned int deque_size;
-    _is >> deque_size;
-    T value;
-    for (unsigned int i = 0; i < deque_size; i++) {
-        std::cout << "enter element: " << i << std::endl;
-        _is >> value;
-        _deque.push_back(value);
-    }
-    return _is;
-}
-
-namespace slv {
-    /*! Read functions for misc types. Common data types are being specialized.*/
-    namespace rw {
-
-        template <class Tdat>
-        bool readB(std::deque<Tdat>& _deque, std::ifstream& _input_file);
-
-        template <class Tdat>
-        void writeB(const std::deque<Tdat>& _deque, std::ofstream& _output_file);
-    }
-}
-
-namespace slv {
-	namespace rw {
-		template <class Tkey, class T>
-		void writeB(const std::map<Tkey, T>& _map, std::ofstream& _output_file);
-		template <class Tkey, class T>
-		bool readB(std::map<Tkey, T>& _map, std::ifstream& _input_file);
-	}
-}
-
-namespace slv {
-	namespace rw {
-		template <class Tkey, class T>
-		void writeB(const std::unordered_map<Tkey, T>& _map, std::ofstream& _output_file);
-		template <class Tkey, class T>
-		bool readB(std::unordered_map<Tkey, T>& _map, std::ifstream& _input_file);
-	}
-}
-
-namespace slv {
-    /*! Read functions for misc types. Common data types are being specialized.*/
-    namespace rw {
-
-        /*template <class Tdat>
-        bool read(std::vector<Tdat>& _dat, std::ifstream& _input_file);*/
-        template <class Tdat1, class Tdat2>
-        bool readB(std::pair<Tdat1, Tdat2>& _pair, std::ifstream& _input_file);
-        //bool read(std::vector<bool>& _vector, std::ifstream& _input_file);
-        template <class Tdat1, class Tdat2>
-        void writeB(const std::pair<Tdat1, Tdat2>& _pair, std::ofstream& _output_file);
-    }
-}
-
-#if !defined(GLOVE_PV_SINGLE_HEADER) || OPTION_USE_BOOST==1
-
-namespace slv {
-    namespace rw {
-        template <class Tkey, class T>
-        void writeB(const boost::unordered::unordered_map<Tkey, T>& _map, std::ofstream& _output_file);
-        template <class Tkey, class T>
-        bool readB(boost::unordered::unordered_map<Tkey, T>& _map, std::ifstream& _input_file);
-    }
-
-}
-
-#endif
-
-//! This header is only useful for clang compiler or C++ before 17. No need to use it otherwise (adds potential unnecessary headers to include)
-
-#if !defined(GLOVE_PV_SINGLE_HEADER) || OPTION_USE_BOOST==1
-
-template <class Tdat>
-bool slv::rw::readB(boost::container::vector<Tdat>& _dat, std::ifstream& _input_file) {
-
-    unsigned int size;
-    bool l_read = slv::rw::readB(size, _input_file);
-    if (!l_read) size = 0;
-    _dat.resize(size);
-    for (typename boost::container::vector<Tdat>::iterator it = _dat.begin(); it != _dat.end() && l_read; ++it) {
-        l_read = slv::rw::readB(*it, _input_file);
-    }
-
-    return l_read;
-}
-
-template <class Tdat>
-void slv::rw::writeB(const boost::container::vector<Tdat>& _dat, std::ofstream& _output_file) {
-
-    unsigned int size = _dat.size();
-    slv::rw::writeB(size, _output_file);
-    for (typename boost::container::vector<Tdat>::const_iterator it = _dat.begin(); it != _dat.end(); ++it) {
-        slv::rw::writeB(*it, _output_file);
-    }
-}
-
-template <class Tkey, class T>
-void slv::rw::writeB(const boost::unordered::unordered_map<Tkey, T>& _map, std::ofstream& _output_file) {
-
-    slv::rw::writeB((unsigned int)_map.size(), _output_file);
-    for (typename boost::unordered::unordered_map<Tkey, T>::const_iterator it = _map.begin(); it != _map.end(); it++) {
-
-        slv::rw::writeB(it->first, _output_file);
-        slv::rw::writeB(it->second, _output_file);
-    }
-
-}
-
-template <class Tkey, class T>
-bool slv::rw::readB(boost::unordered::unordered_map<Tkey, T>& _map, std::ifstream& _input_file) {
-
-    _map.clear();
-    unsigned int size;
-    bool l_read = slv::rw::readB(size, _input_file);
-    if (!l_read) size = 0;
-    Tkey key;
-    T value;
-    for (unsigned int i = 0; i < size && l_read; i++) {
-        l_read = slv::rw::readB(key, _input_file);
-        if (l_read) l_read = slv::rw::readB(value, _input_file);
-        _map[key] = value;
-    }
-
-    return l_read;
-
-}
-
-#endif
-
-template <class Tdat, size_t N>
-bool slv::rw::readB(std::array<Tdat, N>& _array, std::ifstream& _input_file) {
-    bool l_read = true;
-    for (typename std::array<Tdat, N>::iterator it = _array.begin(); it != _array.end() && l_read; ++it) {
-        l_read = slv::rw::readB(*it, _input_file);
-    }
-    return l_read;
-}
-
-template <class Tdat, size_t N>
-void slv::rw::writeB(const std::array<Tdat, N>& _array, std::ofstream& _output_file) {
-    for (typename std::array<Tdat, N>::const_iterator it = _array.begin(); it != _array.end(); ++it) {
-        slv::rw::writeB(*it, _output_file);
-    }
-}
-
-template <>
-bool slv::rw::readB<std::string>(std::string& _dat, std::ifstream& _input_file);
-template <>
-void slv::rw::writeB<std::string>(const std::string& _dat, std::ofstream& _output_file);
-
-template <class Tdat>
-bool slv::rw::readB(std::vector<Tdat>& _vector, std::ifstream& _input_file) {
-    unsigned int size;
-    bool l_read = slv::rw::readB(size, _input_file);
-    if (size > 100000000) {
-        slv::flag::ISSUE(slv::flag::InvalidArgument, "reading a vector of size : ", size, " is suspicious. Data formatting is probably wrong.");
-    }
-    if (!l_read) size = 0;
-    _vector.resize(size);
-    for (typename std::vector<Tdat>::iterator it = _vector.begin(); it != _vector.end() && l_read; ++it) {
-        l_read = slv::rw::readB(*it, _input_file);
-    }
-    return l_read;
-}
-
-template <class Tdat>
-void slv::rw::writeB(const std::vector<Tdat>& _vector, std::ofstream& _output_file) {
-    unsigned int size = (unsigned int)_vector.size();
-    slv::rw::writeB(size, _output_file);
-    for (typename std::vector<Tdat>::const_iterator it = _vector.begin(); it != _vector.end(); ++it) {
-        slv::rw::writeB(*it, _output_file);
-    }
-}
-
-template <class Tdat>
-bool slv::rw::readB(std::deque<Tdat>& _deque, std::ifstream& _input_file) {
-    unsigned int size;
-    bool l_read = slv::rw::readB(size, _input_file);
-    if (size > 100000000) {
-        slv::flag::ISSUE(slv::flag::InvalidArgument, "reading a vector of size : ", size, " is suspicious. Data formatting is probably wrong.");
-    }
-    if (!l_read) size = 0;
-    _deque.resize(size);
-    for (typename std::deque<Tdat>::iterator it = _deque.begin(); it != _deque.end() && l_read; ++it) {
-        l_read = slv::rw::readB(*it, _input_file);
-    }
-    return l_read;
-}
-
-template <class Tdat>
-void slv::rw::writeB(const std::deque<Tdat>& _deque, std::ofstream& _output_file) {
-    unsigned int size = (unsigned int)_deque.size();
-    slv::rw::writeB(size, _output_file);
-    for (typename std::deque<Tdat>::const_iterator it = _deque.begin(); it != _deque.end(); ++it) {
-        slv::rw::writeB(*it, _output_file);
-    }
-}
-
-template <class Tdat>
-bool slv::rw::readB(std::list<Tdat>& _list, std::ifstream& _input_file) {
-    unsigned int size;
-    bool l_read = slv::rw::readB(size, _input_file);
-    if (size > 100000000) {
-        slv::flag::ISSUE(slv::flag::InvalidArgument, "reading a vector of size : ", size, " is suspicious. Data formatting is probably wrong.");
-    }
-    if (!l_read) size = 0;
-    _list.resize(size);
-    for (typename std::list<Tdat>::iterator it = _list.begin(); it != _list.end() && l_read; ++it) {
-        l_read = slv::rw::readB(*it, _input_file);
-    }
-    return l_read;
-}
-
-template <class Tdat>
-void slv::rw::writeB(const std::list<Tdat>& _list, std::ofstream& _output_file) {
-    unsigned int size = (unsigned int)_list.size();
-    slv::rw::writeB(size, _output_file);
-    for (typename std::list<Tdat>::const_iterator it = _list.begin(); it != _list.end(); ++it) {
-        slv::rw::writeB(*it, _output_file);
-    }
-}
-
-template <class Tdat1, class Tdat2>
-bool slv::rw::readB(std::pair<Tdat1, Tdat2>& _pair, std::ifstream& _input_file) {
-    bool l_read = slv::rw::readB(_pair.first, _input_file);
-    if (l_read) l_read = slv::rw::readB(_pair.second, _input_file);
-    return l_read;
-}
-
-template <class Tdat1, class Tdat2>
-void slv::rw::writeB(const std::pair<Tdat1, Tdat2>& _pair, std::ofstream& _output_file) {
-    slv::rw::writeB(_pair.first, _output_file);
-    slv::rw::writeB(_pair.second, _output_file);
-}
-
-template <class Tkey, class T>
-void slv::rw::writeB(const std::map<Tkey, T>& _map, std::ofstream& _output_file) {
-
-	slv::rw::writeB((unsigned int)_map.size(), _output_file);
-	for (typename std::map<Tkey, T>::const_iterator it = _map.begin(); it != _map.end(); it++) {
-
-		slv::rw::writeB(it->first, _output_file);
-		slv::rw::writeB(it->second, _output_file);
-	}
-
-}
-
-template <class Tkey, class T>
-bool slv::rw::readB(std::map<Tkey, T>& _map, std::ifstream& _input_file) {
-
-	_map.clear();
-	unsigned int size;
-	bool l_read = slv::rw::readB(size, _input_file);
-	if (!l_read) size = 0;
-	Tkey key;
-	T value;
-	for (unsigned int i = 0; i < size && l_read; i++) {
-		l_read = slv::rw::readB(key, _input_file);
-		if (l_read) l_read = slv::rw::readB(value, _input_file);
-		_map[key] = value;
-	}
-
-	return l_read;
-}
-
-template <class Tkey, class T>
-void slv::rw::writeB(const std::unordered_map<Tkey, T>& _map, std::ofstream& _output_file) {
-
-	slv::rw::writeB((unsigned int)_map.size(), _output_file);
-	for (typename std::unordered_map<Tkey, T>::const_iterator it = _map.begin(); it != _map.end(); it++) {
-
-		slv::rw::writeB(it->first, _output_file);
-		slv::rw::writeB(it->second, _output_file);
-	}
-
-}
-
-template <class Tkey, class T>
-bool slv::rw::readB(std::unordered_map<Tkey, T>& _map, std::ifstream& _input_file) {
-
-	_map.clear();
-	unsigned int size;
-	bool l_read = slv::rw::readB(size, _input_file);
-	if (!l_read) size = 0;
-	Tkey key;
-	T value;
-	for (unsigned int i = 0; i < size && l_read; i++) {
-		l_read = slv::rw::readB(key, _input_file);
-		if (l_read) l_read = slv::rw::readB(value, _input_file);
-		_map[key] = value;
-	}
-
-	return l_read;
-}
-
-/*! Get name of template type by using typeid.*/
-template <class T, typename = void>
-struct SlvDataName {
-    static std::string name() {
-        return typeid(T).name();
-    }
-};
-
-template <typename T>
-class has_name_method {
-    typedef char one;
-    struct two { char x[2]; };
-    template <typename T2> static one test(decltype(&T2::name));
-    template <typename T2> static two test(...);
-public:
-    enum { value = sizeof(test<T>(0)) == sizeof(char) };
-};
-
-/*! Get name of template type. Specializaition. If the template type has a static name() method, use it for name.*/
-template <class T>
-struct SlvDataName<T, typename std::enable_if<has_name_method<T>::value>::type> {
-    static const std::string& name() {
-        return T::name();
-    }
-};
-
-/*! Get name of template type. Specialization. If the type is a container, add container name.*/
-template < template <class T> class Tbox, class T>
-struct SlvDataName< Tbox<T>, typename std::enable_if<has_name_method<Tbox<T> >::value>::type> {
-    static std::string name() {
-        std::string name = Tbox<T>::name();
-        name += "<";
-        name += SlvDataName<T>::name();
-        name += ">";
-        return name;
-    }
-};
-
-// As standard, specialization for STL std::string and std::vector are included.
-
-// Arithmetic Types explicit specializations
-
-/*! Get name of template type. Specialization. Name int.*/
-template <>
-struct SlvDataName<int> {
-    glvm_staticVariable(const, std::string, name, "int");
-};
-
-/*! Get name of template type. Specialization. Name unsigned int.*/
-template <>
-struct SlvDataName<unsigned int> {
-    glvm_staticVariable(const, std::string, name, "uint");
-};
-
-/*! Get name of template type. Specialization. Name float.*/
-template <>
-struct SlvDataName<float> {
-    glvm_staticVariable(const, std::string, name, "float");
-};
-
-/*! Get name of template type. Specialization. Name double.*/
-template <>
-struct SlvDataName<double> {
-    glvm_staticVariable(const, std::string, name, "double");
-};
-
-/*! Get name of template type. Specialization. Name bool.*/
-template <>
-struct SlvDataName<bool> {
-    glvm_staticVariable(const, std::string, name, "bool");
-};
-
-/*! Get name of template type. Specialization. Name std::string.*/
-template <>
-struct SlvDataName<std::string> {
-    glvm_staticVariable(const, std::string, name, "std::string");
-};
-
-/*! Get name of template type. Specialization. Name std::vector.*/
-template <class T>
-struct SlvDataName< std::vector<T> > {
-    static std::string name() {
-        std::string name = "std::vector";
-        name += "<";
-        name += SlvDataName<T>::name();
-        name += ">";
-        return name;
-    }
-};
-
-/*! Get name of template type. Specialization. Name std::array.*/
-template <class T, size_t N>
-struct SlvDataName< std::array<T, N> > {
-    static std::string name() {
-        std::string name = "std::array";
-        name += "<";
-        name += SlvDataName<T>::name();
-        name += ", ";
-        name += std::to_string(N);
-        name += ">";
-        return name;
-    }
-};
-
-/*! Get name of template type. Specialization. Name std::deque.*/
-template <class T>
-struct SlvDataName< std::deque<T> > {
-    static std::string name() {
-        std::string name = "std::deque";
-        name += "<";
-        name += SlvDataName<T>::name();
-        name += ">";
-        return name;
-    }
-};
-
-/*! Get name of template type. Specialization. Name std::list.*/
-template <class T>
-struct SlvDataName< std::list<T> > {
-    static std::string name() {
-        std::string name = "std::list";
-        name += "<";
-        name += SlvDataName<T>::name();
-        name += ">";
-        return name;
-    }
-};
-
-/*! Get name of template type. Specialization. Name std::pair.*/
-template <class Tvalue1, class Tvalue2>
-struct SlvDataName< std::pair<Tvalue1, Tvalue2> > {
-    static std::string name() {
-        std::string name = "std::pair";
-        name += "<";
-        name += SlvDataName<Tvalue1>::name();
-        name += ", ";
-        name += SlvDataName<Tvalue2>::name();
-        name += ">";
-        return name;
-    }
-};
-
-/*! Get name of template type. Specialization. Name std::map.*/
-template <class Tkey, class Tvalue>
-struct SlvDataName< std::map<Tkey, Tvalue> > {
-    static std::string name() {
-        std::string name = "std::map";
-        name += "<";
-        name += SlvDataName<Tkey>::name();
-        name += ", ";
-        name += SlvDataName<Tvalue>::name();
-        name += ">";
-        return name;
-    }
-};
-
-template <class Tkey, class T>
-std::ostream& operator<<(std::ostream& _os, const std::unordered_map<Tkey, T>& _map) {
-    _os << "[";
-    for (typename std::unordered_map<Tkey, T>::const_iterator it = _map.begin(); it != _map.end(); it++) {
-        _os << " ";
-        _os << "(" << it->first << "," << it->second << ")";
-    }
-    _os << "]";
-    return _os;
-}
-
-/*! Get name of template type. Specialization. Name std::unordered_map.*/
-template <class Tkey, class Tvalue>
-struct SlvDataName< std::unordered_map<Tkey, Tvalue> > {
-    static std::string name() {
-        std::string name = "std::unordered_map";
-        name += "<";
-        name += SlvDataName<Tkey>::name();
-        name += ", ";
-        name += SlvDataName<Tvalue>::name();
-        name += ">";
-        return name;
-    }
-};
-
-#define VECTOR_EXPLICIT_ALGORITHM 0 //Explicit reimplementation of algorithms
-
-namespace slv {
-
-    /*! Methods related to manipulation of std::vector.*/
-    namespace vector {
-
-        /*! Remove from \p _elements the first value which equals \p _element.
-        * Return true if found and removed.*/
-        template <class T>
-        bool remove(const T& _element, std::vector<T>& _elements);
-        /*! Remove all \p _elements in \p element.*/
-        template <class T>
-        void remove(std::vector<T>& elements, const std::vector<T>& _elements);
-        /*! Add all \p _elements in \p elements.*/
-        template <class T>
-        void add(std::vector<const T*>& elements, const std::vector<T*>& _elements);
-        /*! Add all \p _elements in \p element.*/
-        template <class T>
-        void add(std::vector<const T>& elements, const std::vector<T>& _elements);
-        /*! Add all \p _elements in \p element.*/
-        template <class T>
-        void add(std::vector<T>& elements, const std::vector<T>& _elements);
-        /*! Add all \p _elements1 and \p _elements2 (concatenate) and return result.*/
-        template <class T>
-        std::vector<T> add(const std::vector<T>& _elements1, const std::vector<T>& _elements2);
-        /*! Add all \p _elements in \p elements (concatenate). Static cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void add_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
-        /*! Add all \p _elements in \p elements (concatenate). Static cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void add_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements);
-        /*! Add all \p _elements in \p elements (concatenate). Dynamic cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void add_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
-        /*! Converts \p _elements into \p elements by static cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void assign_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
-        /*! Converts \p _elements into \p elements by static cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void assign_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements);
-        /*! Converts \p _elements into \p elements by dynamic cast of Targ* to T*.*/
-        template <class T, class Targ>
-        void assign_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
-        /*! Return the first index where \p _elements is equal to \p _element. Returns -1 if no match is found.*/
-        template <class T>
-        unsigned int getIndex(const T& _element, const std::vector<T>& _elements);
-        /*! Check if \p _elements contains a value equal to \p _element*/
-        template <class T>
-        bool find(const T& _element, const std::vector<T>& _elements);
-        /*! Check if \p _elements contains a value equal to \p _element*/
-        template <class T>
-        bool find(const T& _element, const std::vector<const T>& _elements);
-        /*! Check if \p _elements contains a dereferenced pointer equal to \p _element*/
-        template <class T>
-        bool find(const T& _element, const std::vector<T*>& _elements);
-        /*! Returns the position where \p _element should be inserted in \p _elements in descending order.*/
-        template <class T>
-        unsigned int sortIndex_descending(const T& _element, const std::vector<T>& _elements);
-        /*! Returns the position where \p _element should be inserted in \p _elements in ascending order.*/
-        template <class T>
-        unsigned int sortIndex_ascending(const T& _element, const std::vector<T>& _elements);
-
-        /*! Return true if for each element of \p _vector1, there is an equal element in \p _vector2. False otherwise.*/
-        template <class T>
-        bool equalUnordered(const std::vector<T>& _vector1, const std::vector<T>& _vector2);
-
-        /*! Return ascending sequence [\p _start, \p _start + \p _increment, \p _start + 2* \p _increment, ..] of size \p _size.*/
-        template <class T>
-        std::vector<T> make_sequence(const unsigned int _size, const T _start = 0, const T _increment = T(1));
-
-        /*! Sort \p _element in ascending order up to \p _range index. If \p _range is 0, sort all vector.*/
-        template <class T>
-        void sort_ascending(std::vector<T>& _elements, unsigned int _range = 0);
-        /*! Sort \p _element in ascending order up to \p _range index. If \p _range is 0, sort all vector.
-        * Provided \p _elements_arg has the same size as \p elements, rearrange \p _elements_arg in the same way as \p _elements.*/
-        template <class T, class Targ>
-        void sort_ascending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range = 0);
-        /*! Sort \p _element in descending order up to \p _range index. If \p _range is 0, sort all vector.*/
-        template <class T>
-        void sort_descending(std::vector<T>& _elements, unsigned int _range = 0);
-        /*! Sort \p _element in descending order up to \p _range index. If \p _range is 0, sort all vector.
-        * Provided \p _elements_arg has the same size as \p elements, rearrange \p _elements_arg in the same way as \p _elements.*/
-        template <class T, class Targ>
-        void sort_descending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range = 0);
-
-        /*! Returns the position where \p _element would be inserted in \p _elements in descending order.*/
-        template <class T>
-        unsigned int sortInsert_descending(const T& _element, std::vector<T>& _elements);
-        /*! Returns the position where \p _element would be inserted in \p _elements in ascending order.*/
-        template <class T>
-        unsigned int sortInsert_ascending(const T& _element, std::vector<T>& _elements);
-
-        /*! Return true if every element of \p _elements1 matches the element of \p _elements2 (same order).*/
-        template <class T>
-        bool is_equal(const std::vector<T>& _elements1, const std::vector<T>& _elements2);
-
-    }
-
-}
-
-template <class T>
-bool slv::vector::remove(const T& _element, std::vector<T>& _elements) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element == _elements[el]);
-        el++;
-    }
-    if (l_found) {
-        el--;
-        _elements.erase(_elements.begin() + el);
-    }
-    return l_found;
-#else
-
-    typename std::vector<T>::iterator it = std::find(_elements.begin(), _elements.end(), _element);
-    if (it != _elements.end()) {
-        _elements.erase(it);
-        return true;
-    } else {
-        return false;
-    }
-#endif
-}
-
-template <class T>
-void slv::vector::remove(std::vector<T>& elements, const std::vector<T>& _elements) {
-
-    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
-        remove(*it, elements);
-    }
-
-}
-
-template <class T>
-void slv::vector::add(std::vector<const T*>& elements, const std::vector<T*>& _elements) {
-
-    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
-        elements.push_back(*it);
-    }
-}
-
-template <class T>
-void slv::vector::add(std::vector<const T>& elements, const std::vector<T>& _elements) {
-
-    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
-        elements.push_back(*it);
-    }
-
-}
-
-template <class T>
-void slv::vector::add(std::vector<T>& elements, const std::vector<T>& _elements) {
-    elements.insert(elements.end(), _elements.begin(), _elements.end());
-}
-
-template <class T>
-std::vector<T> slv::vector::add(const std::vector<T>& _elements1, const std::vector<T>& _elements2) {
-    std::vector<T> elements = _elements1;
-    slv::vector::add(elements, _elements2);
-    return elements;
-}
-
-template <class T, class Targ>
-void slv::vector::add_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
-
-    for (typename std::vector<const Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
-        elements.push_back(static_cast<const T*> (*it));
-    }
-}
-
-template <class T, class Targ>
-void slv::vector::add_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements) {
-
-    for (typename std::vector<Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
-        elements.push_back(static_cast<T*> (*it));
-    }
-}
-
-template <class T, class Targ>
-void slv::vector::add_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
-
-    for (typename std::vector<const Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
-        elements.push_back(dynamic_cast<const T*> (*it));
-    }
-}
-
-template <class T, class Targ>
-void slv::vector::assign_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
-
-    elements.resize(0);
-    add_static_cast(elements, _elements);
-}
-
-template <class T, class Targ>
-void slv::vector::assign_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements) {
-
-    elements.resize(0);
-    add_static_cast(elements, _elements);
-}
-
-template <class T, class Targ>
-void slv::vector::assign_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
-
-    elements.resize(0);
-    vectorAdd_dynamic_cast(elements, _elements);
-}
-
-template <class T>
-unsigned int slv::vector::getIndex(const T& _element, const std::vector<T>& _elements) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element == _elements[el]);
-        el++;
-    }
-    if (l_found) {
-        el--;
-        return el;
-    } else {
-        //std::cout << "WARNING - vectorGetIndex - there is no element " << _element << " in the vector" << std::endl;
-        return -1;
-    }
-#else
-    typename std::vector<T>::const_iterator it = std::find(_elements.begin(), _elements.end(), _element);
-    if (it != _elements.end()) {
-        return std::distance(_elements.begin(), it);
-    } else {
-        return -1;
-    }
-#endif
-}
-
-template <class T>
-bool slv::vector::find(const T& _element, const std::vector<T>& _elements) {
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element == _elements[el]);
-        el++;
-    }
-    return l_found;
-#else
-    return std::find(_elements.begin(), _elements.end(), _element) != _elements.end();
-#endif
-}
-
-template <class T>
-bool slv::vector::find(const T& _element, const std::vector<const T>& _elements) {
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element == _elements[el]);
-        el++;
-    }
-    return l_found;
-#else
-    return std::find(_elements.begin(), _elements.end(), _element) != _elements.end();
-#endif
-}
-
-template <class T>
-bool slv::vector::find(const T& _element, const std::vector<T*>& _elements) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element == *_elements[el]);
-        el++;
-    }
-    return l_found;
-#else
-
-    typename std::vector<T*>::const_iterator it = _elements.begin();
-    while (it != _elements.end() && **it != _element) {
-        ++it;
-    }
-
-    return it != _elements.end();
-#endif
-}
-
-template <class T>
-unsigned int slv::vector::sortIndex_descending(const T& _element, const std::vector<T>& _elements) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element > _elements[el]);
-        el++;
-    }
-    if (l_found) {
-        el--;
-    }
-    return el;
-#else
-
-    typename std::vector<T>::const_iterator it = _elements.begin();
-    bool l_found = false;
-    while (!l_found && it != _elements.end()) {
-        l_found = (_element > *it);
-        if (!l_found) ++it;
-    }
-
-    return std::distance(_elements.begin(), it);
-#endif
-}
-
-template <class T>
-unsigned int slv::vector::sortIndex_ascending(const T& _element, const std::vector<T>& _elements) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    bool l_found = false;
-    unsigned int el = 0;
-    while (!l_found && el < _elements.size()) {
-        l_found = (_element < _elements[el]);
-        el++;
-    }
-    if (l_found) {
-        el--;
-    }
-    return el;
-#else
-
-    typename std::vector<T>::const_iterator it = _elements.begin();
-    bool l_found = false;
-    while (!l_found && it != _elements.end()) {
-        l_found = (_element < *it);
-        if (!l_found) ++it;
-    }
-
-    return std::distance(_elements.begin(), it);
-#endif
-}
-
-template <class T>
-unsigned int slv::vector::sortInsert_descending(const T& _element, std::vector<T>& _elements) {
-
-    unsigned int el = sortIndex_decrease(_element, _elements);
-    _elements.insert(_elements.begin() + el, _element);
-    return el;
-}
-
-template <class T>
-unsigned int slv::vector::sortInsert_ascending(const T& _element, std::vector<T>& _elements) {
-
-    unsigned int el = sortIndex_increase(_element, _elements);
-    _elements.insert(_elements.begin() + el, _element);
-    return el;
-}
-
-template <class T>
-bool slv::vector::equalUnordered(const std::vector<T>& _vector1, const std::vector<T>& _vector2) {
-
-    if (_vector1.size() != _vector2.size()) {
-        return false;
-    } else {
-        unsigned int i = 0;
-        unsigned int j;
-        std::vector<bool> vector2_already_match(_vector2.size(), false);
-        bool l_equal = true;
-        while (l_equal && i < _vector1.size()) {
-            j = 0;
-            while (j < _vector2.size() && (_vector1[i] != _vector2[j] || vector2_already_match[j])) {
-                j++;
-            }//stops : either if j out of range, either if matching is found (provided not already match)
-            if (j == _vector2.size()) {
-                l_equal = false;//no matching found
-            } else {
-                vector2_already_match[j] = true;
-                i++;
-            }
-        }
-        return l_equal;
-    }
-
-}
-
-template <class T>
-std::vector<T> slv::vector::make_sequence(const unsigned int _size, const T _start, const T _increment) {
-
-    std::vector<T> vector_sequence;
-    vector_sequence.push_back(_start);
-    for (unsigned int i = 1; i < _size; i++) {
-        vector_sequence.push_back(vector_sequence.back() + _increment);
-    }
-
-    return vector_sequence;
-}
-
-template <class T>
-void slv::vector::sort_ascending(std::vector<T>& _elements, unsigned int _range) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    if (_range == 0) {
-        _range = _elements.size();
-    }
-
-    unsigned int el, el2;
-    for (el = 1; el < _range; el++) {
-        el2 = el;
-        while (el2 > 0 && _elements[el2] < _elements[el2 - 1]) {
-            std::swap(_elements[el2 - 1], _elements[el2]);
-            el2--;
-        }
-    }
-#else
-    typename std::vector<T>::iterator it;
-    if (_range != 0) {
-        it = _elements.begin() + _range;
-    } else {
-        it = _elements.end();
-    }
-    std::sort(_elements.begin(), it);
-#endif
-}
-
-template <class T, class Targ>
-void slv::vector::sort_ascending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range) {
-
-    if (_elements.size() == _elements_arg.size()) {
-
-        if (_range == 0) {
-            _range = _elements.size();
-        }
-
-        unsigned int el, el2;
-        for (el = 1; el < _range; el++) {
-            el2 = el;
-            while (el2 > 0 && _elements[el2] < _elements[el2 - 1]) {
-                std::swap(_elements[el2 - 1], _elements[el2]);
-                std::swap(_elements_arg[el2 - 1], _elements_arg[el2]);
-                el2--;
-            }
-        }
-
-    } else {
-        slv::flag::ISSUE(slv::flag::InvalidArgument, "bad size");
-    }
-
-}
-
-template <class T>
-void slv::vector::sort_descending(std::vector<T>& _elements, unsigned int _range) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    if (_range == 0) {
-        _range = _elements.size();
-    }
-
-    unsigned int el, el2;
-    for (el = 1; el < _range; el++) {
-        el2 = el;
-        while (el2 > 0 && _elements[el2] > _elements[el2 - 1]) {
-            std::swap(_elements[el2 - 1], _elements[el2]);
-            el2--;
-        }
-    }
-#else
-
-    typename std::vector<T>::iterator it;
-    if (_range != 0) {
-        it = _elements.begin() + _range;
-    } else {
-        it = _elements.end();
-    }
-    std::sort(_elements.begin(), it, std::greater<T>());
-#endif
-
-}
-
-template <class T, class Targ>
-void slv::vector::sort_descending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range) {
-
-    if (_elements.size() == _elements_arg.size()) {
-
-        if (_range == 0) {
-            _range = _elements.size();
-        }
-
-        unsigned int el, el2;
-        for (el = 1; el < _range; el++) {
-            el2 = el;
-            while (el2 > 0 && _elements[el2] > _elements[el2 - 1]) {
-                std::swap(_elements[el2 - 1], _elements[el2]);
-                std::swap(_elements_arg[el2 - 1], _elements_arg[el2]);
-                el2--;
-            }
-        }
-
-    } else {
-        slv::flag::ISSUE(slv::flag::InvalidArgument, "bad size");
-    }
-
-}
-
-template <class T>
-bool slv::vector::is_equal(const std::vector<T>& _elements1, const std::vector<T>& _elements2) {
-
-#if VECTOR_EXPLICIT_ALGORITHM==1
-    if (_elements1.size() == _elements2.size()) {
-        unsigned int i = 0;
-        bool l_ok = true;
-        while (l_ok && i < _elements1.size()) {
-            l_ok = (_elements1[i] == _elements2[i]);
-            i++;
-        }
-        return l_ok;
-    } else {
-        return false;
-    }
-#else
-    bool l_equal = true;
-    if (_elements1.size() == _elements2.size()) {
-
-        typename std::vector<T>::const_iterator it1 = _elements1.begin();
-        typename std::vector<T>::const_iterator it2 = _elements2.begin();
-
-        while (l_equal && it1 != _elements1.end()) {
-            l_equal = (*it1 == *it2);
-            ++it1;
-            ++it2;
-        }
-
-    } else {
-        l_equal = false;
-    }
-    return l_equal;
-#endif
-
-}
-
-#undef VECTOR_EXPLICIT_ALGORITHM
-
-/*! Class allowing to access the name of instance when the type is not known.
-* Usefull for templated parametrizations to redirect pure virtual get_name() to base parametrization's.
-* Usefull to be inherited by classes having a static name, defined by macro staticGetVariable.*/
-class SlvVirtualGetName {
-
-public:
-    SlvVirtualGetName() {}
-    virtual ~SlvVirtualGetName() {}
-    /*! Get name of the instance.*/
-    virtual const std::string& get_name() const = 0;
-};
-
-namespace slv {
-    /*! Some typical labels. Related to SlvLabeling.*/
-    namespace lbl {
-        typedef unsigned int Identifier;
-        static const Identifier null_Id = 99999999;
-        typedef std::string Name;// Related to SlvLblName.
-        static const Name null_name = "";
-    }
-}
-
-/*! Label class for unicity check. Mostly used to be inherited. Allows labeling of the child class with template type Tlabel.
-* The label is not supposed to change after instantation.*/
-template <class Tlabel>
-class SlvLabeling : virtual public SlvOS {
-
-public:
-
-	typedef Tlabel Tlabeling;
-
-private:
-
-	const Tlabel label;
-
-public:
-
-	SlvLabeling(const Tlabel& _label);
-	~SlvLabeling();
-
-	/*! Get label value.*/
-	const Tlabel& get_label() const;
-
-protected:
-
-	void ostream(std::ostream& _os) const;
-
-};
-
-template <class Tlabel>
-SlvLabeling<Tlabel>::SlvLabeling(const Tlabel& _label) :label(_label) {
-
-}
-
-template <class Tlabel>
-SlvLabeling<Tlabel>::~SlvLabeling() {
-
-}
-
-template <class Tlabel>
-const Tlabel& SlvLabeling<Tlabel>::get_label() const {
-	return label;
-}
-
-template <class Tlabel>
-void SlvLabeling<Tlabel>::ostream(std::ostream& _os) const {
-
-	_os << "SlvLabeling: " << label << std::endl;
-}
-
-/*! Convenience class to label as name (unsigned int)*/
-class SlvLblIdentifier : public SlvLabeling<slv::lbl::Identifier> {
-
-public:
-
-	SlvLblIdentifier(slv::lbl::Identifier _Id);
-	~SlvLblIdentifier();
-
-	/*! Reimplementation of get_label() as get_Id().*/
-	const slv::lbl::Identifier& get_Id() const;
-
-};
-
-/*! Convenience class to label as name (std::string) using dedicated class SlvLabeling.*/
-class SlvLblName : public SlvLabeling<slv::lbl::Name>, virtual public SlvOS, virtual public SlvVirtualGetName {
-
-public:
-
-	SlvLblName(std::string _name);
-	virtual ~SlvLblName();
-
-	/*! Reimplementation of get_label() as get_name().*/
-	const std::string& get_name() const;
-
-private:
-
-	void ostream(std::ostream& _os) const;
-
-};
 
 /*! Class in charge of enum management. Not recommended to use directly. Use glvm_SlvEnum of glvm_SlvEnum_simple for instantiation.
 * Example: glvm_SlvEnum(EnumName, A, B, C, D), or glvm_SlvEnum_named(EnumName, A, "A", B, "B", C, "C", D, "D").*/
@@ -5344,6 +4166,1359 @@ SlvStatus SlvCLI::parse(Tparametrization& _parametrization, Arguments& _argument
 	return status;
 }
 
+/*! Class allowing to access the name of instance when the type is not known.
+* Usefull for templated parametrizations to redirect pure virtual get_name() to base parametrization's.
+* Usefull to be inherited by classes having a static name, defined by macro staticGetVariable.*/
+class SlvVirtualGetName {
+
+public:
+    SlvVirtualGetName() {}
+    virtual ~SlvVirtualGetName() {}
+    /*! Get name of the instance.*/
+    virtual const std::string& get_name() const = 0;
+};
+
+namespace slv {
+    /*! Some typical labels. Related to SlvLabeling.*/
+    namespace lbl {
+        typedef unsigned int Identifier;
+        static const Identifier null_Id = 99999999;
+        typedef std::string Name;// Related to SlvLblName.
+        static const Name null_name = "";
+    }
+}
+
+/*! Label class for unicity check. Mostly used to be inherited. Allows labeling of the child class with template type Tlabel.
+* The label is not supposed to change after instantation.*/
+template <class Tlabel>
+class SlvLabeling : virtual public SlvOS {
+
+public:
+
+	typedef Tlabel Tlabeling;
+
+private:
+
+	const Tlabel label;
+
+public:
+
+	SlvLabeling(const Tlabel& _label);
+	~SlvLabeling();
+
+	/*! Get label value.*/
+	const Tlabel& get_label() const;
+
+protected:
+
+	void ostream(std::ostream& _os) const;
+
+};
+
+template <class Tlabel>
+SlvLabeling<Tlabel>::SlvLabeling(const Tlabel& _label) :label(_label) {
+
+}
+
+template <class Tlabel>
+SlvLabeling<Tlabel>::~SlvLabeling() {
+
+}
+
+template <class Tlabel>
+const Tlabel& SlvLabeling<Tlabel>::get_label() const {
+	return label;
+}
+
+template <class Tlabel>
+void SlvLabeling<Tlabel>::ostream(std::ostream& _os) const {
+
+	_os << "SlvLabeling: " << label << std::endl;
+}
+
+/*! Convenience class to label as name (unsigned int)*/
+class SlvLblIdentifier : public SlvLabeling<slv::lbl::Identifier> {
+
+public:
+
+	SlvLblIdentifier(slv::lbl::Identifier _Id);
+	~SlvLblIdentifier();
+
+	/*! Reimplementation of get_label() as get_Id().*/
+	const slv::lbl::Identifier& get_Id() const;
+
+};
+
+/*! Convenience class to label as name (std::string) using dedicated class SlvLabeling.*/
+class SlvLblName : public SlvLabeling<slv::lbl::Name>, virtual public SlvOS, virtual public SlvVirtualGetName {
+
+public:
+
+	SlvLblName(std::string _name);
+	virtual ~SlvLblName();
+
+	/*! Reimplementation of get_label() as get_name().*/
+	const std::string& get_name() const;
+
+private:
+
+	void ostream(std::ostream& _os) const;
+
+};
+
+/*! Convenience class to be inherited to provide a direct method to write the instance into a binary file.*/
+class SlvWriteBinary {
+
+public:
+
+	SlvWriteBinary();
+	virtual ~SlvWriteBinary();
+
+	/*! Export the object by writing the BINARY file at \p _file_path.*/
+	SlvStatus write_binary(std::string _file_path, std::ios::openmode _position = std::ios::trunc) const;
+
+	/*! Binary write method to implement.*/
+	virtual void writeB(std::ofstream& _output_file) const = 0;
+
+};
+
+/*! Convenience class to be inherited to provide a direct method to read the instance from a binary file.*/
+class SlvReadBinary {
+
+public:
+
+	SlvReadBinary();
+	virtual ~SlvReadBinary();
+
+	/*! Set the object by reading the BINARY file at \p _file_path.*/
+	SlvStatus read_binary(std::string _file_path);
+
+	/*! Binary read method to implement.*/
+	virtual bool readB(std::ifstream& _input_file) = 0;
+
+};
+
+/*! Convenience class to both read and write the instance into a binary file.*/
+class SlvReadWriteBinary : virtual public SlvReadBinary, virtual public SlvWriteBinary {
+
+public:
+
+	SlvReadWriteBinary() {}
+	~SlvReadWriteBinary() {}
+
+};
+
+/*! Class providing basic name management with get/set accessors.*/
+class SlvName {
+
+protected:
+
+    std::string name;
+
+public:
+
+    SlvName(std::string _name);
+    ~SlvName();
+
+    const std::string& get_name() const;
+    void set_name(const std::string& _name);
+
+};
+
+/*! Convenience class to manage file writing by using automatically the name of the instance.
+* Tname_class must have the method std::string get_name().*/
+template <class Tname_class>
+class SlvWriteBinaryNamedT : virtual public SlvWriteBinary, public Tname_class {
+
+public:
+
+	SlvWriteBinaryNamedT(std::string _name = "") :Tname_class(_name) {}
+	~SlvWriteBinaryNamedT() {}
+
+	/*! Write the instance in a file named after the instance's name.
+	* \p _prefix_path can be set so that the path will be such as \p _prefix_path + get_name()*/
+	SlvStatus write_binary_auto(std::string _prefix_path = "", std::ios::openmode _position = std::ios::trunc) const;
+
+};
+
+template <class Tname_class>
+SlvStatus SlvWriteBinaryNamedT<Tname_class>::write_binary_auto(std::string _prefix, std::ios::openmode _position) const {
+
+	return SlvWriteBinary::write_binary(_prefix + Tname_class::get_name(), _position);
+
+}
+
+/*! Convenience class.*/
+typedef SlvWriteBinaryNamedT<SlvLblName> SlvWriteBinaryLblNamed;
+
+/*! Convenience class.*/
+typedef SlvWriteBinaryNamedT<SlvName> SlvWriteBinaryNamed;
+
+/*! Class to be inherited to provide file output stream.*/
+class SlvOFS {
+
+public:
+
+	SlvOFS();
+	virtual ~SlvOFS();
+
+	friend std::ofstream& operator<<(std::ofstream& _os, const SlvOFS& _OFS);
+
+protected:
+
+	/*! Output file stream method to reimplement.*/
+	virtual void ofstream(std::ofstream& _ofs) const = 0;
+
+};
+
+/*! Convenience class to be inherited to provide a direct method to write the instance into a text file.*/
+class SlvWriteText : public SlvOFS {
+
+public:
+
+	SlvWriteText();
+	virtual ~SlvWriteText();
+
+	/*! Export the object by writing the TEXT file (Clear writing) at \p _file_path.
+	* Uses operator<<.*/
+	SlvStatus write_text(std::string _file_path, std::ios::openmode _position = std::ios::trunc) const;
+
+};
+
+/*! Class to be inherited to provide file input stream.*/
+class SlvIFS {
+
+public:
+
+	SlvIFS();
+	virtual ~SlvIFS();
+
+	friend std::ifstream& operator>>(std::ifstream& _is, SlvIFS& _IFS);
+
+protected:
+
+	/*! Input file stream method to reimplement.*/
+	virtual void ifstream(std::ifstream& _ifs) = 0;
+
+};
+
+/*! Convenience class to be inherited to provide a direct method to read the instance from a text file.*/
+class SlvReadText : public SlvIFS {
+
+public:
+
+	SlvReadText();
+	virtual ~SlvReadText();
+
+	/*! Set the object by reading the TEXT file (Clear reading) at \p _file_path.
+	* Uses operator>>.*/
+	SlvStatus read_text(std::string _file_path);
+
+};
+
+/*! Convenience class to both read and write the instance into a text file.*/
+class SlvReadWriteText : virtual public SlvReadText, virtual public SlvWriteText {
+
+public:
+
+	SlvReadWriteText() {}
+	~SlvReadWriteText() {}
+
+};
+
+/*! Convenience class to inherit both from SlvIFS and SlvOFS.*/
+class SlvIOFS : virtual public SlvIFS, virtual public SlvOFS {
+
+public:
+
+	SlvIOFS() {}
+	~SlvIOFS() {}
+
+};
+
+/*! Get name of template type by using typeid.*/
+template <class T, typename = void>
+struct SlvDataName {
+    static std::string name() {
+        return typeid(T).name();
+    }
+};
+
+template <typename T>
+class has_name_method {
+    typedef char one;
+    struct two { char x[2]; };
+    template <typename T2> static one test(decltype(&T2::name));
+    template <typename T2> static two test(...);
+public:
+    enum { value = sizeof(test<T>(0)) == sizeof(char) };
+};
+
+/*! Get name of template type. Specializaition. If the template type has a static name() method, use it for name.*/
+template <class T>
+struct SlvDataName<T, typename std::enable_if<has_name_method<T>::value>::type> {
+    static const std::string& name() {
+        return T::name();
+    }
+};
+
+/*! Get name of template type. Specialization. If the type is a container, add container name.*/
+template < template <class T> class Tbox, class T>
+struct SlvDataName< Tbox<T>, typename std::enable_if<has_name_method<Tbox<T> >::value>::type> {
+    static std::string name() {
+        std::string name = Tbox<T>::name();
+        name += "<";
+        name += SlvDataName<T>::name();
+        name += ">";
+        return name;
+    }
+};
+
+// As standard, specialization for STL std::string and std::vector are included.
+
+// Arithmetic Types explicit specializations
+
+/*! Get name of template type. Specialization. Name int.*/
+template <>
+struct SlvDataName<int> {
+    glvm_staticVariable(const, std::string, name, "int");
+};
+
+/*! Get name of template type. Specialization. Name unsigned int.*/
+template <>
+struct SlvDataName<unsigned int> {
+    glvm_staticVariable(const, std::string, name, "uint");
+};
+
+/*! Get name of template type. Specialization. Name float.*/
+template <>
+struct SlvDataName<float> {
+    glvm_staticVariable(const, std::string, name, "float");
+};
+
+/*! Get name of template type. Specialization. Name double.*/
+template <>
+struct SlvDataName<double> {
+    glvm_staticVariable(const, std::string, name, "double");
+};
+
+/*! Get name of template type. Specialization. Name bool.*/
+template <>
+struct SlvDataName<bool> {
+    glvm_staticVariable(const, std::string, name, "bool");
+};
+
+/*! Get name of template type. Specialization. Name std::string.*/
+template <>
+struct SlvDataName<std::string> {
+    glvm_staticVariable(const, std::string, name, "std::string");
+};
+
+/*! Get name of template type. Specialization. Name std::vector.*/
+template <class T>
+struct SlvDataName< std::vector<T> > {
+    static std::string name() {
+        std::string name = "std::vector";
+        name += "<";
+        name += SlvDataName<T>::name();
+        name += ">";
+        return name;
+    }
+};
+
+namespace slv {
+    /*! Read functions for misc types. Common data types are being specialized.*/
+    namespace rw {
+
+        template <class Tdat, size_t N>
+        bool readB(std::array<Tdat, N>& _array, std::ifstream& _input_file);
+
+        template <class Tdat, size_t N>
+        void writeB(const std::array<Tdat, N>& _array, std::ofstream& _output_file);
+    }
+}
+
+template <class T>
+std::ostream& operator<<(std::ostream& _os, const std::list<T>& _list) {
+    _os << "[";
+    for (typename std::list<T>::const_iterator it = _list.begin(); it != _list.end(); ++it) {
+        _os << " " << *it;
+    }
+    _os << "]";
+    return _os;
+}
+
+template <class T>
+std::istream& operator>>(std::istream& _is, std::list<T>& _list) {
+    _list.clear();
+    std::cout << "enter list size:" << std::endl;
+    unsigned int list_size;
+    _is >> list_size;
+    T value;
+    for (unsigned int i = 0; i < list_size; i++) {
+        std::cout << "enter element: " << i << std::endl;
+        _is >> value;
+        _list.push_back(value);
+    }
+    return _is;
+}
+
+namespace slv {
+    /*! Read functions for misc types. Common data types are being specialized.*/
+    namespace rw {
+
+        template <class Tdat>
+        bool readB(std::list<Tdat>& _list, std::ifstream& _input_file);
+
+        template <class Tdat>
+        void writeB(const std::list<Tdat>& _list, std::ofstream& _output_file);
+    }
+}
+
+template <class T>
+std::ostream& operator<<(std::ostream& _os, const std::deque<T>& _deque) {
+    _os << "[";
+    for (typename std::deque<T>::const_iterator it = _deque.begin(); it != _deque.end(); ++it) {
+        _os << " " << *it;
+    }
+    _os << "]";
+    return _os;
+}
+
+template <class T>
+std::istream& operator>>(std::istream& _is, std::deque<T>& _deque) {
+    _deque.clear();
+    std::cout << "enter deque size:" << std::endl;
+    unsigned int deque_size;
+    _is >> deque_size;
+    T value;
+    for (unsigned int i = 0; i < deque_size; i++) {
+        std::cout << "enter element: " << i << std::endl;
+        _is >> value;
+        _deque.push_back(value);
+    }
+    return _is;
+}
+
+namespace slv {
+    /*! Read functions for misc types. Common data types are being specialized.*/
+    namespace rw {
+
+        template <class Tdat>
+        bool readB(std::deque<Tdat>& _deque, std::ifstream& _input_file);
+
+        template <class Tdat>
+        void writeB(const std::deque<Tdat>& _deque, std::ofstream& _output_file);
+    }
+}
+
+namespace slv {
+	namespace rw {
+		template <class Tkey, class T>
+		void writeB(const std::map<Tkey, T>& _map, std::ofstream& _output_file);
+		template <class Tkey, class T>
+		bool readB(std::map<Tkey, T>& _map, std::ifstream& _input_file);
+	}
+}
+
+namespace slv {
+	namespace rw {
+		template <class Tkey, class T>
+		void writeB(const std::unordered_map<Tkey, T>& _map, std::ofstream& _output_file);
+		template <class Tkey, class T>
+		bool readB(std::unordered_map<Tkey, T>& _map, std::ifstream& _input_file);
+	}
+}
+
+namespace slv {
+    /*! Read functions for misc types. Common data types are being specialized.*/
+    namespace rw {
+
+        /*template <class Tdat>
+        bool read(std::vector<Tdat>& _dat, std::ifstream& _input_file);*/
+        template <class Tdat1, class Tdat2>
+        bool readB(std::pair<Tdat1, Tdat2>& _pair, std::ifstream& _input_file);
+        //bool read(std::vector<bool>& _vector, std::ifstream& _input_file);
+        template <class Tdat1, class Tdat2>
+        void writeB(const std::pair<Tdat1, Tdat2>& _pair, std::ofstream& _output_file);
+    }
+}
+
+#if !defined(GLOVE_PV_SINGLE_HEADER) || OPTION_USE_BOOST==1
+
+namespace slv {
+    namespace rw {
+        template <class Tkey, class T>
+        void writeB(const boost::unordered::unordered_map<Tkey, T>& _map, std::ofstream& _output_file);
+        template <class Tkey, class T>
+        bool readB(boost::unordered::unordered_map<Tkey, T>& _map, std::ifstream& _input_file);
+    }
+
+}
+
+#endif
+
+//! This header is only useful for clang compiler or C++ before 17. No need to use it otherwise (adds potential unnecessary headers to include)
+
+#if !defined(GLOVE_PV_SINGLE_HEADER) || OPTION_USE_BOOST==1
+
+template <class Tdat>
+bool slv::rw::readB(boost::container::vector<Tdat>& _dat, std::ifstream& _input_file) {
+
+    unsigned int size;
+    bool l_read = slv::rw::readB(size, _input_file);
+    if (!l_read) size = 0;
+    _dat.resize(size);
+    for (typename boost::container::vector<Tdat>::iterator it = _dat.begin(); it != _dat.end() && l_read; ++it) {
+        l_read = slv::rw::readB(*it, _input_file);
+    }
+
+    return l_read;
+}
+
+template <class Tdat>
+void slv::rw::writeB(const boost::container::vector<Tdat>& _dat, std::ofstream& _output_file) {
+
+    unsigned int size = _dat.size();
+    slv::rw::writeB(size, _output_file);
+    for (typename boost::container::vector<Tdat>::const_iterator it = _dat.begin(); it != _dat.end(); ++it) {
+        slv::rw::writeB(*it, _output_file);
+    }
+}
+
+template <class Tkey, class T>
+void slv::rw::writeB(const boost::unordered::unordered_map<Tkey, T>& _map, std::ofstream& _output_file) {
+
+    slv::rw::writeB((unsigned int)_map.size(), _output_file);
+    for (typename boost::unordered::unordered_map<Tkey, T>::const_iterator it = _map.begin(); it != _map.end(); it++) {
+
+        slv::rw::writeB(it->first, _output_file);
+        slv::rw::writeB(it->second, _output_file);
+    }
+
+}
+
+template <class Tkey, class T>
+bool slv::rw::readB(boost::unordered::unordered_map<Tkey, T>& _map, std::ifstream& _input_file) {
+
+    _map.clear();
+    unsigned int size;
+    bool l_read = slv::rw::readB(size, _input_file);
+    if (!l_read) size = 0;
+    Tkey key;
+    T value;
+    for (unsigned int i = 0; i < size && l_read; i++) {
+        l_read = slv::rw::readB(key, _input_file);
+        if (l_read) l_read = slv::rw::readB(value, _input_file);
+        _map[key] = value;
+    }
+
+    return l_read;
+
+}
+
+#endif
+
+template <class Tdat, size_t N>
+bool slv::rw::readB(std::array<Tdat, N>& _array, std::ifstream& _input_file) {
+    bool l_read = true;
+    for (typename std::array<Tdat, N>::iterator it = _array.begin(); it != _array.end() && l_read; ++it) {
+        l_read = slv::rw::readB(*it, _input_file);
+    }
+    return l_read;
+}
+
+template <class Tdat, size_t N>
+void slv::rw::writeB(const std::array<Tdat, N>& _array, std::ofstream& _output_file) {
+    for (typename std::array<Tdat, N>::const_iterator it = _array.begin(); it != _array.end(); ++it) {
+        slv::rw::writeB(*it, _output_file);
+    }
+}
+
+template <>
+bool slv::rw::readB<std::string>(std::string& _dat, std::ifstream& _input_file);
+template <>
+void slv::rw::writeB<std::string>(const std::string& _dat, std::ofstream& _output_file);
+
+template <class Tdat>
+bool slv::rw::readB(std::vector<Tdat>& _vector, std::ifstream& _input_file) {
+    unsigned int size;
+    bool l_read = slv::rw::readB(size, _input_file);
+    if (size > 100000000) {
+        slv::flag::ISSUE(slv::flag::InvalidArgument, "reading a vector of size : ", size, " is suspicious. Data formatting is probably wrong.");
+    }
+    if (!l_read) size = 0;
+    _vector.resize(size);
+    for (typename std::vector<Tdat>::iterator it = _vector.begin(); it != _vector.end() && l_read; ++it) {
+        l_read = slv::rw::readB(*it, _input_file);
+    }
+    return l_read;
+}
+
+template <class Tdat>
+void slv::rw::writeB(const std::vector<Tdat>& _vector, std::ofstream& _output_file) {
+    unsigned int size = (unsigned int)_vector.size();
+    slv::rw::writeB(size, _output_file);
+    for (typename std::vector<Tdat>::const_iterator it = _vector.begin(); it != _vector.end(); ++it) {
+        slv::rw::writeB(*it, _output_file);
+    }
+}
+
+template <class Tdat>
+bool slv::rw::readB(std::deque<Tdat>& _deque, std::ifstream& _input_file) {
+    unsigned int size;
+    bool l_read = slv::rw::readB(size, _input_file);
+    if (size > 100000000) {
+        slv::flag::ISSUE(slv::flag::InvalidArgument, "reading a vector of size : ", size, " is suspicious. Data formatting is probably wrong.");
+    }
+    if (!l_read) size = 0;
+    _deque.resize(size);
+    for (typename std::deque<Tdat>::iterator it = _deque.begin(); it != _deque.end() && l_read; ++it) {
+        l_read = slv::rw::readB(*it, _input_file);
+    }
+    return l_read;
+}
+
+template <class Tdat>
+void slv::rw::writeB(const std::deque<Tdat>& _deque, std::ofstream& _output_file) {
+    unsigned int size = (unsigned int)_deque.size();
+    slv::rw::writeB(size, _output_file);
+    for (typename std::deque<Tdat>::const_iterator it = _deque.begin(); it != _deque.end(); ++it) {
+        slv::rw::writeB(*it, _output_file);
+    }
+}
+
+template <class Tdat>
+bool slv::rw::readB(std::list<Tdat>& _list, std::ifstream& _input_file) {
+    unsigned int size;
+    bool l_read = slv::rw::readB(size, _input_file);
+    if (size > 100000000) {
+        slv::flag::ISSUE(slv::flag::InvalidArgument, "reading a vector of size : ", size, " is suspicious. Data formatting is probably wrong.");
+    }
+    if (!l_read) size = 0;
+    _list.resize(size);
+    for (typename std::list<Tdat>::iterator it = _list.begin(); it != _list.end() && l_read; ++it) {
+        l_read = slv::rw::readB(*it, _input_file);
+    }
+    return l_read;
+}
+
+template <class Tdat>
+void slv::rw::writeB(const std::list<Tdat>& _list, std::ofstream& _output_file) {
+    unsigned int size = (unsigned int)_list.size();
+    slv::rw::writeB(size, _output_file);
+    for (typename std::list<Tdat>::const_iterator it = _list.begin(); it != _list.end(); ++it) {
+        slv::rw::writeB(*it, _output_file);
+    }
+}
+
+template <class Tdat1, class Tdat2>
+bool slv::rw::readB(std::pair<Tdat1, Tdat2>& _pair, std::ifstream& _input_file) {
+    bool l_read = slv::rw::readB(_pair.first, _input_file);
+    if (l_read) l_read = slv::rw::readB(_pair.second, _input_file);
+    return l_read;
+}
+
+template <class Tdat1, class Tdat2>
+void slv::rw::writeB(const std::pair<Tdat1, Tdat2>& _pair, std::ofstream& _output_file) {
+    slv::rw::writeB(_pair.first, _output_file);
+    slv::rw::writeB(_pair.second, _output_file);
+}
+
+template <class Tkey, class T>
+void slv::rw::writeB(const std::map<Tkey, T>& _map, std::ofstream& _output_file) {
+
+	slv::rw::writeB((unsigned int)_map.size(), _output_file);
+	for (typename std::map<Tkey, T>::const_iterator it = _map.begin(); it != _map.end(); it++) {
+
+		slv::rw::writeB(it->first, _output_file);
+		slv::rw::writeB(it->second, _output_file);
+	}
+
+}
+
+template <class Tkey, class T>
+bool slv::rw::readB(std::map<Tkey, T>& _map, std::ifstream& _input_file) {
+
+	_map.clear();
+	unsigned int size;
+	bool l_read = slv::rw::readB(size, _input_file);
+	if (!l_read) size = 0;
+	Tkey key;
+	T value;
+	for (unsigned int i = 0; i < size && l_read; i++) {
+		l_read = slv::rw::readB(key, _input_file);
+		if (l_read) l_read = slv::rw::readB(value, _input_file);
+		_map[key] = value;
+	}
+
+	return l_read;
+}
+
+template <class Tkey, class T>
+void slv::rw::writeB(const std::unordered_map<Tkey, T>& _map, std::ofstream& _output_file) {
+
+	slv::rw::writeB((unsigned int)_map.size(), _output_file);
+	for (typename std::unordered_map<Tkey, T>::const_iterator it = _map.begin(); it != _map.end(); it++) {
+
+		slv::rw::writeB(it->first, _output_file);
+		slv::rw::writeB(it->second, _output_file);
+	}
+
+}
+
+template <class Tkey, class T>
+bool slv::rw::readB(std::unordered_map<Tkey, T>& _map, std::ifstream& _input_file) {
+
+	_map.clear();
+	unsigned int size;
+	bool l_read = slv::rw::readB(size, _input_file);
+	if (!l_read) size = 0;
+	Tkey key;
+	T value;
+	for (unsigned int i = 0; i < size && l_read; i++) {
+		l_read = slv::rw::readB(key, _input_file);
+		if (l_read) l_read = slv::rw::readB(value, _input_file);
+		_map[key] = value;
+	}
+
+	return l_read;
+}
+
+/*! Get name of template type. Specialization. Name std::deque.*/
+template <class T>
+struct SlvDataName< std::deque<T> > {
+    static std::string name() {
+        std::string name = "std::deque";
+        name += "<";
+        name += SlvDataName<T>::name();
+        name += ">";
+        return name;
+    }
+};
+
+/*! Get name of template type. Specialization. Name std::array.*/
+template <class T, size_t N>
+struct SlvDataName< std::array<T, N> > {
+    static std::string name() {
+        std::string name = "std::array";
+        name += "<";
+        name += SlvDataName<T>::name();
+        name += ", ";
+        name += std::to_string(N);
+        name += ">";
+        return name;
+    }
+};
+
+/*! Get name of template type. Specialization. Name std::list.*/
+template <class T>
+struct SlvDataName< std::list<T> > {
+    static std::string name() {
+        std::string name = "std::list";
+        name += "<";
+        name += SlvDataName<T>::name();
+        name += ">";
+        return name;
+    }
+};
+
+/*! Get name of template type. Specialization. Name std::pair.*/
+template <class Tvalue1, class Tvalue2>
+struct SlvDataName< std::pair<Tvalue1, Tvalue2> > {
+    static std::string name() {
+        std::string name = "std::pair";
+        name += "<";
+        name += SlvDataName<Tvalue1>::name();
+        name += ", ";
+        name += SlvDataName<Tvalue2>::name();
+        name += ">";
+        return name;
+    }
+};
+
+/*! Get name of template type. Specialization. Name std::map.*/
+template <class Tkey, class Tvalue>
+struct SlvDataName< std::map<Tkey, Tvalue> > {
+    static std::string name() {
+        std::string name = "std::map";
+        name += "<";
+        name += SlvDataName<Tkey>::name();
+        name += ", ";
+        name += SlvDataName<Tvalue>::name();
+        name += ">";
+        return name;
+    }
+};
+
+template <class Tkey, class T>
+std::ostream& operator<<(std::ostream& _os, const std::unordered_map<Tkey, T>& _map) {
+    _os << "[";
+    for (typename std::unordered_map<Tkey, T>::const_iterator it = _map.begin(); it != _map.end(); it++) {
+        _os << " ";
+        _os << "(" << it->first << "," << it->second << ")";
+    }
+    _os << "]";
+    return _os;
+}
+
+/*! Get name of template type. Specialization. Name std::unordered_map.*/
+template <class Tkey, class Tvalue>
+struct SlvDataName< std::unordered_map<Tkey, Tvalue> > {
+    static std::string name() {
+        std::string name = "std::unordered_map";
+        name += "<";
+        name += SlvDataName<Tkey>::name();
+        name += ", ";
+        name += SlvDataName<Tvalue>::name();
+        name += ">";
+        return name;
+    }
+};
+
+#define VECTOR_EXPLICIT_ALGORITHM 0 //Explicit reimplementation of algorithms
+
+namespace slv {
+
+    /*! Methods related to manipulation of std::vector.*/
+    namespace vector {
+
+        /*! Remove from \p _elements the first value which equals \p _element.
+        * Return true if found and removed.*/
+        template <class T>
+        bool remove(const T& _element, std::vector<T>& _elements);
+        /*! Remove all \p _elements in \p element.*/
+        template <class T>
+        void remove(std::vector<T>& elements, const std::vector<T>& _elements);
+        /*! Add all \p _elements in \p elements.*/
+        template <class T>
+        void add(std::vector<const T*>& elements, const std::vector<T*>& _elements);
+        /*! Add all \p _elements in \p element.*/
+        template <class T>
+        void add(std::vector<const T>& elements, const std::vector<T>& _elements);
+        /*! Add all \p _elements in \p element.*/
+        template <class T>
+        void add(std::vector<T>& elements, const std::vector<T>& _elements);
+        /*! Add all \p _elements1 and \p _elements2 (concatenate) and return result.*/
+        template <class T>
+        std::vector<T> add(const std::vector<T>& _elements1, const std::vector<T>& _elements2);
+        /*! Add all \p _elements in \p elements (concatenate). Static cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void add_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
+        /*! Add all \p _elements in \p elements (concatenate). Static cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void add_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements);
+        /*! Add all \p _elements in \p elements (concatenate). Dynamic cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void add_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
+        /*! Converts \p _elements into \p elements by static cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void assign_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
+        /*! Converts \p _elements into \p elements by static cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void assign_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements);
+        /*! Converts \p _elements into \p elements by dynamic cast of Targ* to T*.*/
+        template <class T, class Targ>
+        void assign_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements);
+        /*! Return the first index where \p _elements is equal to \p _element. Returns -1 if no match is found.*/
+        template <class T>
+        unsigned int getIndex(const T& _element, const std::vector<T>& _elements);
+        /*! Check if \p _elements contains a value equal to \p _element*/
+        template <class T>
+        bool find(const T& _element, const std::vector<T>& _elements);
+        /*! Check if \p _elements contains a value equal to \p _element*/
+        template <class T>
+        bool find(const T& _element, const std::vector<const T>& _elements);
+        /*! Check if \p _elements contains a dereferenced pointer equal to \p _element*/
+        template <class T>
+        bool find(const T& _element, const std::vector<T*>& _elements);
+        /*! Returns the position where \p _element should be inserted in \p _elements in descending order.*/
+        template <class T>
+        unsigned int sortIndex_descending(const T& _element, const std::vector<T>& _elements);
+        /*! Returns the position where \p _element should be inserted in \p _elements in ascending order.*/
+        template <class T>
+        unsigned int sortIndex_ascending(const T& _element, const std::vector<T>& _elements);
+
+        /*! Return true if for each element of \p _vector1, there is an equal element in \p _vector2. False otherwise.*/
+        template <class T>
+        bool equalUnordered(const std::vector<T>& _vector1, const std::vector<T>& _vector2);
+
+        /*! Return ascending sequence [\p _start, \p _start + \p _increment, \p _start + 2* \p _increment, ..] of size \p _size.*/
+        template <class T>
+        std::vector<T> make_sequence(const unsigned int _size, const T _start = 0, const T _increment = T(1));
+
+        /*! Sort \p _element in ascending order up to \p _range index. If \p _range is 0, sort all vector.*/
+        template <class T>
+        void sort_ascending(std::vector<T>& _elements, unsigned int _range = 0);
+        /*! Sort \p _element in ascending order up to \p _range index. If \p _range is 0, sort all vector.
+        * Provided \p _elements_arg has the same size as \p elements, rearrange \p _elements_arg in the same way as \p _elements.*/
+        template <class T, class Targ>
+        void sort_ascending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range = 0);
+        /*! Sort \p _element in descending order up to \p _range index. If \p _range is 0, sort all vector.*/
+        template <class T>
+        void sort_descending(std::vector<T>& _elements, unsigned int _range = 0);
+        /*! Sort \p _element in descending order up to \p _range index. If \p _range is 0, sort all vector.
+        * Provided \p _elements_arg has the same size as \p elements, rearrange \p _elements_arg in the same way as \p _elements.*/
+        template <class T, class Targ>
+        void sort_descending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range = 0);
+
+        /*! Returns the position where \p _element would be inserted in \p _elements in descending order.*/
+        template <class T>
+        unsigned int sortInsert_descending(const T& _element, std::vector<T>& _elements);
+        /*! Returns the position where \p _element would be inserted in \p _elements in ascending order.*/
+        template <class T>
+        unsigned int sortInsert_ascending(const T& _element, std::vector<T>& _elements);
+
+        /*! Return true if every element of \p _elements1 matches the element of \p _elements2 (same order).*/
+        template <class T>
+        bool is_equal(const std::vector<T>& _elements1, const std::vector<T>& _elements2);
+
+    }
+
+}
+
+template <class T>
+bool slv::vector::remove(const T& _element, std::vector<T>& _elements) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element == _elements[el]);
+        el++;
+    }
+    if (l_found) {
+        el--;
+        _elements.erase(_elements.begin() + el);
+    }
+    return l_found;
+#else
+
+    typename std::vector<T>::iterator it = std::find(_elements.begin(), _elements.end(), _element);
+    if (it != _elements.end()) {
+        _elements.erase(it);
+        return true;
+    } else {
+        return false;
+    }
+#endif
+}
+
+template <class T>
+void slv::vector::remove(std::vector<T>& elements, const std::vector<T>& _elements) {
+
+    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
+        remove(*it, elements);
+    }
+
+}
+
+template <class T>
+void slv::vector::add(std::vector<const T*>& elements, const std::vector<T*>& _elements) {
+
+    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
+        elements.push_back(*it);
+    }
+}
+
+template <class T>
+void slv::vector::add(std::vector<const T>& elements, const std::vector<T>& _elements) {
+
+    for (typename std::vector<T>::const_iterator it = _elements.begin(); it != _elements.end(); ++it) {
+        elements.push_back(*it);
+    }
+
+}
+
+template <class T>
+void slv::vector::add(std::vector<T>& elements, const std::vector<T>& _elements) {
+    elements.insert(elements.end(), _elements.begin(), _elements.end());
+}
+
+template <class T>
+std::vector<T> slv::vector::add(const std::vector<T>& _elements1, const std::vector<T>& _elements2) {
+    std::vector<T> elements = _elements1;
+    slv::vector::add(elements, _elements2);
+    return elements;
+}
+
+template <class T, class Targ>
+void slv::vector::add_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
+
+    for (typename std::vector<const Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
+        elements.push_back(static_cast<const T*> (*it));
+    }
+}
+
+template <class T, class Targ>
+void slv::vector::add_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements) {
+
+    for (typename std::vector<Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
+        elements.push_back(static_cast<T*> (*it));
+    }
+}
+
+template <class T, class Targ>
+void slv::vector::add_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
+
+    for (typename std::vector<const Targ*>::const_iterator it = _elements.begin(); it != _elements.end(); it++) {
+        elements.push_back(dynamic_cast<const T*> (*it));
+    }
+}
+
+template <class T, class Targ>
+void slv::vector::assign_static_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
+
+    elements.resize(0);
+    add_static_cast(elements, _elements);
+}
+
+template <class T, class Targ>
+void slv::vector::assign_static_cast(std::vector<T*>& elements, const std::vector<Targ*>& _elements) {
+
+    elements.resize(0);
+    add_static_cast(elements, _elements);
+}
+
+template <class T, class Targ>
+void slv::vector::assign_dynamic_cast(std::vector<const T*>& elements, const std::vector<const Targ*>& _elements) {
+
+    elements.resize(0);
+    vectorAdd_dynamic_cast(elements, _elements);
+}
+
+template <class T>
+unsigned int slv::vector::getIndex(const T& _element, const std::vector<T>& _elements) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element == _elements[el]);
+        el++;
+    }
+    if (l_found) {
+        el--;
+        return el;
+    } else {
+        //std::cout << "WARNING - vectorGetIndex - there is no element " << _element << " in the vector" << std::endl;
+        return -1;
+    }
+#else
+    typename std::vector<T>::const_iterator it = std::find(_elements.begin(), _elements.end(), _element);
+    if (it != _elements.end()) {
+        return std::distance(_elements.begin(), it);
+    } else {
+        return -1;
+    }
+#endif
+}
+
+template <class T>
+bool slv::vector::find(const T& _element, const std::vector<T>& _elements) {
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element == _elements[el]);
+        el++;
+    }
+    return l_found;
+#else
+    return std::find(_elements.begin(), _elements.end(), _element) != _elements.end();
+#endif
+}
+
+template <class T>
+bool slv::vector::find(const T& _element, const std::vector<const T>& _elements) {
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element == _elements[el]);
+        el++;
+    }
+    return l_found;
+#else
+    return std::find(_elements.begin(), _elements.end(), _element) != _elements.end();
+#endif
+}
+
+template <class T>
+bool slv::vector::find(const T& _element, const std::vector<T*>& _elements) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element == *_elements[el]);
+        el++;
+    }
+    return l_found;
+#else
+
+    typename std::vector<T*>::const_iterator it = _elements.begin();
+    while (it != _elements.end() && **it != _element) {
+        ++it;
+    }
+
+    return it != _elements.end();
+#endif
+}
+
+template <class T>
+unsigned int slv::vector::sortIndex_descending(const T& _element, const std::vector<T>& _elements) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element > _elements[el]);
+        el++;
+    }
+    if (l_found) {
+        el--;
+    }
+    return el;
+#else
+
+    typename std::vector<T>::const_iterator it = _elements.begin();
+    bool l_found = false;
+    while (!l_found && it != _elements.end()) {
+        l_found = (_element > *it);
+        if (!l_found) ++it;
+    }
+
+    return std::distance(_elements.begin(), it);
+#endif
+}
+
+template <class T>
+unsigned int slv::vector::sortIndex_ascending(const T& _element, const std::vector<T>& _elements) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    bool l_found = false;
+    unsigned int el = 0;
+    while (!l_found && el < _elements.size()) {
+        l_found = (_element < _elements[el]);
+        el++;
+    }
+    if (l_found) {
+        el--;
+    }
+    return el;
+#else
+
+    typename std::vector<T>::const_iterator it = _elements.begin();
+    bool l_found = false;
+    while (!l_found && it != _elements.end()) {
+        l_found = (_element < *it);
+        if (!l_found) ++it;
+    }
+
+    return std::distance(_elements.begin(), it);
+#endif
+}
+
+template <class T>
+unsigned int slv::vector::sortInsert_descending(const T& _element, std::vector<T>& _elements) {
+
+    unsigned int el = sortIndex_decrease(_element, _elements);
+    _elements.insert(_elements.begin() + el, _element);
+    return el;
+}
+
+template <class T>
+unsigned int slv::vector::sortInsert_ascending(const T& _element, std::vector<T>& _elements) {
+
+    unsigned int el = sortIndex_increase(_element, _elements);
+    _elements.insert(_elements.begin() + el, _element);
+    return el;
+}
+
+template <class T>
+bool slv::vector::equalUnordered(const std::vector<T>& _vector1, const std::vector<T>& _vector2) {
+
+    if (_vector1.size() != _vector2.size()) {
+        return false;
+    } else {
+        unsigned int i = 0;
+        unsigned int j;
+        std::vector<bool> vector2_already_match(_vector2.size(), false);
+        bool l_equal = true;
+        while (l_equal && i < _vector1.size()) {
+            j = 0;
+            while (j < _vector2.size() && (_vector1[i] != _vector2[j] || vector2_already_match[j])) {
+                j++;
+            }//stops : either if j out of range, either if matching is found (provided not already match)
+            if (j == _vector2.size()) {
+                l_equal = false;//no matching found
+            } else {
+                vector2_already_match[j] = true;
+                i++;
+            }
+        }
+        return l_equal;
+    }
+
+}
+
+template <class T>
+std::vector<T> slv::vector::make_sequence(const unsigned int _size, const T _start, const T _increment) {
+
+    std::vector<T> vector_sequence;
+    vector_sequence.push_back(_start);
+    for (unsigned int i = 1; i < _size; i++) {
+        vector_sequence.push_back(vector_sequence.back() + _increment);
+    }
+
+    return vector_sequence;
+}
+
+template <class T>
+void slv::vector::sort_ascending(std::vector<T>& _elements, unsigned int _range) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    if (_range == 0) {
+        _range = _elements.size();
+    }
+
+    unsigned int el, el2;
+    for (el = 1; el < _range; el++) {
+        el2 = el;
+        while (el2 > 0 && _elements[el2] < _elements[el2 - 1]) {
+            std::swap(_elements[el2 - 1], _elements[el2]);
+            el2--;
+        }
+    }
+#else
+    typename std::vector<T>::iterator it;
+    if (_range != 0) {
+        it = _elements.begin() + _range;
+    } else {
+        it = _elements.end();
+    }
+    std::sort(_elements.begin(), it);
+#endif
+}
+
+template <class T, class Targ>
+void slv::vector::sort_ascending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range) {
+
+    if (_elements.size() == _elements_arg.size()) {
+
+        if (_range == 0) {
+            _range = _elements.size();
+        }
+
+        unsigned int el, el2;
+        for (el = 1; el < _range; el++) {
+            el2 = el;
+            while (el2 > 0 && _elements[el2] < _elements[el2 - 1]) {
+                std::swap(_elements[el2 - 1], _elements[el2]);
+                std::swap(_elements_arg[el2 - 1], _elements_arg[el2]);
+                el2--;
+            }
+        }
+
+    } else {
+        slv::flag::ISSUE(slv::flag::InvalidArgument, "bad size");
+    }
+
+}
+
+template <class T>
+void slv::vector::sort_descending(std::vector<T>& _elements, unsigned int _range) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    if (_range == 0) {
+        _range = _elements.size();
+    }
+
+    unsigned int el, el2;
+    for (el = 1; el < _range; el++) {
+        el2 = el;
+        while (el2 > 0 && _elements[el2] > _elements[el2 - 1]) {
+            std::swap(_elements[el2 - 1], _elements[el2]);
+            el2--;
+        }
+    }
+#else
+
+    typename std::vector<T>::iterator it;
+    if (_range != 0) {
+        it = _elements.begin() + _range;
+    } else {
+        it = _elements.end();
+    }
+    std::sort(_elements.begin(), it, std::greater<T>());
+#endif
+
+}
+
+template <class T, class Targ>
+void slv::vector::sort_descending(std::vector<T>& _elements, std::vector<Targ>& _elements_arg, unsigned int _range) {
+
+    if (_elements.size() == _elements_arg.size()) {
+
+        if (_range == 0) {
+            _range = _elements.size();
+        }
+
+        unsigned int el, el2;
+        for (el = 1; el < _range; el++) {
+            el2 = el;
+            while (el2 > 0 && _elements[el2] > _elements[el2 - 1]) {
+                std::swap(_elements[el2 - 1], _elements[el2]);
+                std::swap(_elements_arg[el2 - 1], _elements_arg[el2]);
+                el2--;
+            }
+        }
+
+    } else {
+        slv::flag::ISSUE(slv::flag::InvalidArgument, "bad size");
+    }
+
+}
+
+template <class T>
+bool slv::vector::is_equal(const std::vector<T>& _elements1, const std::vector<T>& _elements2) {
+
+#if VECTOR_EXPLICIT_ALGORITHM==1
+    if (_elements1.size() == _elements2.size()) {
+        unsigned int i = 0;
+        bool l_ok = true;
+        while (l_ok && i < _elements1.size()) {
+            l_ok = (_elements1[i] == _elements2[i]);
+            i++;
+        }
+        return l_ok;
+    } else {
+        return false;
+    }
+#else
+    bool l_equal = true;
+    if (_elements1.size() == _elements2.size()) {
+
+        typename std::vector<T>::const_iterator it1 = _elements1.begin();
+        typename std::vector<T>::const_iterator it2 = _elements2.begin();
+
+        while (l_equal && it1 != _elements1.end()) {
+            l_equal = (*it1 == *it2);
+            ++it1;
+            ++it2;
+        }
+
+    } else {
+        l_equal = false;
+    }
+    return l_equal;
+#endif
+
+}
+
+#undef VECTOR_EXPLICIT_ALGORITHM
+
 class SlvParametrization_base;
 
 /*! Parent class of SlvParameter<T> to handle vectors of parameters.*/
@@ -5750,6 +5925,7 @@ protected:
     unsigned int Nelements_max;
 
     QGroupBox* buttons_group_box;
+    QWidget* buttons_group_widget;
     QVBoxLayout* layout_items;
     QPushButton* button_push;
     QPushButton* button_pop;
@@ -5762,8 +5938,8 @@ protected:
 public:
 
     void set_editable(bool _l_editable);
-    /*! Possibility to hide vector elements or not using checkable button.*/
-    void set_checkable(bool _l_checkable);
+    /*! Possibility to hide vector elements or not using checkable button. If checkable, possibility to set \p _group_name.*/
+    void set_checkable(bool _l_checkable, const QString _group_name = tr("vector"));
     /*! Show/hide vector elements by collapsing the group box.*/
     void set_checked(bool _l_checked);
     /*! Define the maximum number of elements for the vector. Default is 999.*/
@@ -6720,194 +6896,32 @@ public:
 
 };
 
-namespace slv {
+/*! Macro for method detection in a struct/class/type, for instance when using std::enable_if.
+* struct_name is the name of the structure to be used such as: std::enable_if<struct_name<T>::value>
+* method_name is the method struct_name is supposed to contain such as: struct_name::method_name.
+* method_name must be a public method.*/
+#define glvm_SlvHasMethod(struct_name, method_name) \
+template <typename T>\
+class struct_name {\
+    typedef char one;\
+    struct two { char x[2]; };\
+    template <typename C> static one test(decltype(&C::method_name));\
+    template <typename C> static two test(...);\
+public:\
+    enum { value = sizeof(test<T>(0)) == sizeof(char) };\
+};
 
-	/*! Parse \p _string to assign \p _value. Default parsing is using >> operator.*/
-	template <class T>
-	bool parse(const std::string& _string, T& _value);
-	/*! Parse \p _string to assign \p _value.
-	* Specialization by direct assignment because >> will parse a string separated by spaces.*/
-	bool parse(const std::string& _string, std::string& _value);
-}
-
-template <class T>
-bool slv::parse(const std::string& _string, T& _value) {
-
-	std::istringstream iss(_string);
-
-	iss >> _value;
-
-	return true;
-}
-
-inline bool slv::parse(const std::string& _string, std::string& _value) {
-
-	_value = _string;
-
-	return true;
-}
-
-namespace slv {
-	/*! Parse \p _string to assign \p _map. Reciprocal to << operator.*/
-	template <class Tkey, class Tvalue>
-	bool parse(const std::string& _string, std::map<Tkey, Tvalue>& _map);
-
-    namespace {
-        template <class Tkey, class Tvalue>
-        bool parse(const std::string& _string, Tkey& _key, Tvalue& _value);
-    }
-}
-
-namespace slv {
-    namespace {
-        template <class Tkey, class Tvalue>
-        bool parse(const std::string& _string, Tkey& _key, Tvalue& _value) {
-
-            bool l_parsing_ok = true;
-
-            if (_string[0] == '{' && _string.back() == '}') {
-                std::string string = _string;
-                string.erase(string.begin());
-                string.pop_back();
-
-                std::size_t pos = slv::string::find_first_of(string, ',');
-                if (pos != std::string::npos) {
-                    std::string string_key = string.substr(0, pos);
-                    string.erase(0, pos + 1);
-                    std::string string_value = string;
-
-                    slv::parse(string_key, _key);
-                    slv::parse(string_value, _value);
-
-                } else {
-                    // Issue : map element must contain a comma
-                    l_parsing_ok = false;
-                }
-
-            } else {
-                l_parsing_ok = false;
-            }
-
-            return l_parsing_ok;
-
-        }
-    }
-}
-
-template <class Tkey, class Tvalue>
-bool slv::parse(const std::string& _string, std::map<Tkey, Tvalue>& _map) {
-
-    bool l_parsing_ok = true;
-
-    _map.clear();
-
-    Tkey key;
-    Tvalue value;
-    if (_string.front() == '[' && _string.back() == ']') {
-
-        std::string string = _string;
-        std::string sub_string;
-        std::size_t pos;
-
-        string.erase(string.begin());
-        string.pop_back();
-
-        do {
-            pos = slv::string::find_first_of(string, ',');
-
-            if (pos != 0) {
-                sub_string = string.substr(0, pos);
-
-                l_parsing_ok = parse(sub_string, key, value);
-                if (l_parsing_ok) {
-                    _map[key] = value;
-
-                    if (pos != std::string::npos) {
-                        string.erase(0, pos + 1);
-                    } else {
-                        string.clear();
-                    }
-                }
-
-            }
-
-        } while (!string.empty() && l_parsing_ok);
-
-        if (!l_parsing_ok) {
-            std::cout << "Parsing issue for type " << SlvDataName<std::map<Tkey, Tvalue>>::name() << " and for string " << _string << std::endl;
-            _map.clear();
-        }
-
-    } else {
-        // Parse a single value
-        l_parsing_ok = parse(_string, key, value);
-        if (l_parsing_ok) {
-            _map[key] = value;
-        }
-    }
-
-    return l_parsing_ok;
-}
-
-namespace slv {
-    /*! Parse \p _string to assign \p _vector. Reciprocal to << operator.*/
-    template <class T>
-    bool parse(const std::string& _string, std::vector<T>& _vector);
-}
-
-template <class T>
-bool slv::parse(const std::string& _string, std::vector<T>& _vector) {
-    
-    bool l_parsing_ok = true;
-
-    _vector.clear();
-
-    T value;
-    if (_string.front() == '[' && _string.back() == ']') {
-
-        std::string string = _string;
-        std::string sub_string;
-        std::size_t pos;
-
-        string.erase(string.begin());
-        string.pop_back();
-
-        do {
-            pos = slv::string::find_first_of(string, ',');
-
-            if (pos != 0) {
-                sub_string = string.substr(0, pos);
-
-                l_parsing_ok = slv::parse(sub_string, value);
-                if (l_parsing_ok) {
-                    _vector.push_back(value);
-
-                    if (pos != std::string::npos) {
-                        string.erase(0, pos + 1);
-                    } else {
-                        string.clear();
-                    }
-                }
-
-            }
-
-        } while (!string.empty() && l_parsing_ok);
-
-        if (!l_parsing_ok) {
-            std::cout << "Parsing issue for type " << SlvDataName<std::vector<T>>::name() << " and for string " << _string << std::endl;
-            _vector.clear();
-        }
-
-    } else {
-        // Parse a single value
-        l_parsing_ok = slv::parse(_string, value);
-        if (l_parsing_ok) {
-            _vector.push_back(value);
-        }
-    }
-
-    return l_parsing_ok;
-}
+/*! Same as glvm_SlvHasMethod but can manage overloaded methods.*/
+#define glvm_SlvHasMethodSignature(struct_name, method_type, method_name, method_argument) \
+template <typename T>\
+class struct_name {\
+    typedef char one;\
+    struct two { char x[2]; };\
+    template <typename C> static one test(decltype(method_type (std::declval<C &>().method_name(method_argument)))*);\
+    template <typename C> static two test(...);\
+public:\
+    enum { value = sizeof(test<T>(0)) == sizeof(char) };\
+};
 
 /*! Macro for type detection, for instance when using std::enable_if.
 * struct_name is the name of the structure to be used such as: std::enable_if<struct_name<T>::value>
@@ -7314,7 +7328,7 @@ private:
 template <class T, size_t N>
 GlvArrayWidget<T, N>::GlvArrayWidget(_Tdata_ _array, QWidget* _parent) : GlvVectorWidget<T>({}, _parent) {
 
-    this->buttons_widget->hide();
+    this->buttons_group_widget->hide();
 
     for (int i = 0; i < N; i++) {
         pushValue();
@@ -7380,7 +7394,11 @@ template <class T, size_t N>
 class GlvWidgetData<Tdata, Tenable> : public GlvArrayWidget<T, N> {
 
 public:
-    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvArrayWidget<T, N>(_vector, _parent) {}
+    GlvWidgetData(Tdata _vector = Tdata(), QWidget* _parent = 0) :GlvArrayWidget<T, N>(_vector, _parent) {
+        this->set_checkable(true, QObject::tr("array"));
+        this->set_checked(false);
+        this->set_items_top_aligment(true);
+    }
     ~GlvWidgetData() {}
 
 };
@@ -7789,8 +7807,6 @@ public:
     /*! Return true if inserted, false otherwise (key already exsists).*/
     bool insertValue(const Tkey& _key, const Tvalue& _value);
 
-    /*! Get widget of index \p i.*/
-    GlvWidget<Tvalue>* operator[] (const unsigned int i);
     /*! Get widget of key \p _key.*/
     GlvWidget<Tvalue>* operator[] (const Tkey _key);
 
@@ -7868,7 +7884,7 @@ _Tdata_ GlvMapWidget<Tkey, Tvalue, Tcompare>::get_value() const {
 
     _Tdata_ value;
     for (int i = 0; i < widgets.size(); i++) {
-        value[i] = widgets[i]->get_value();
+        value[widgets[i]->get_key()] = widgets[i]->get_value();
     }
     return value;
 
@@ -7920,13 +7936,6 @@ void GlvMapWidget<Tkey, Tvalue, Tcompare>::insertValue(const int _i, const Tkey&
     for (unsigned int k = _i + 1; k < widgets.size(); k++) {
         widgets[k]->increment_index();
     }
-
-}
-
-template <class Tkey, class Tvalue, class Tcompare>
-GlvWidget<Tvalue>* GlvMapWidget<Tkey, Tvalue, Tcompare>::operator[] (const unsigned int i) {
-
-    return widgets[i]->get_value_widget();
 
 }
 
@@ -8194,33 +8203,6 @@ struct GlvWidgetMakerConnect<Tdata> {
 * Alternative: std::enable_if<std::is_base_of<SlvParametrization_base, Tparametrization>::value>*/
 glvm_SlvIsType(SlvIsParametrization, Tparametrization)
 
-/*! Macro for method detection in a struct/class/type, for instance when using std::enable_if.
-* struct_name is the name of the structure to be used such as: std::enable_if<struct_name<T>::value>
-* method_name is the method struct_name is supposed to contain such as: struct_name::method_name.
-* method_name must be a public method.*/
-#define glvm_SlvHasMethod(struct_name, method_name) \
-template <typename T>\
-class struct_name {\
-    typedef char one;\
-    struct two { char x[2]; };\
-    template <typename C> static one test(decltype(&C::method_name));\
-    template <typename C> static two test(...);\
-public:\
-    enum { value = sizeof(test<T>(0)) == sizeof(char) };\
-};
-
-/*! Same as glvm_SlvHasMethod but can manage overloaded methods.*/
-#define glvm_SlvHasMethodSignature(struct_name, method_type, method_name, method_argument) \
-template <typename T>\
-class struct_name {\
-    typedef char one;\
-    struct two { char x[2]; };\
-    template <typename C> static one test(decltype(method_type (std::declval<C &>().method_name(method_argument)))*);\
-    template <typename C> static two test(...);\
-public:\
-    enum { value = sizeof(test<T>(0)) == sizeof(char) };\
-};
-
 template <typename T>
 struct SlvHasOstreamOperator {
     template <typename V>
@@ -8239,532 +8221,6 @@ struct SlvHasIstreamOperator {
     static auto test(...) -> std::false_type;
 
     static constexpr bool value = std::is_same<decltype(test<T>(nullptr)), void>::value;
-};
-
-/*! Class to be inherited to provide file input stream.*/
-class SlvIFS {
-
-public:
-
-	SlvIFS();
-	virtual ~SlvIFS();
-
-	friend std::ifstream& operator>>(std::ifstream& _is, SlvIFS& _IFS);
-
-protected:
-
-	/*! Input file stream method to reimplement.*/
-	virtual void ifstream(std::ifstream& _ifs) = 0;
-
-};
-
-/*! Convenience class to be inherited to provide a direct method to read the instance from a text file.*/
-class SlvReadText : public SlvIFS {
-
-public:
-
-	SlvReadText();
-	virtual ~SlvReadText();
-
-	/*! Set the object by reading the TEXT file (Clear reading) at \p _file_path.
-	* Uses operator>>.*/
-	SlvStatus read_text(std::string _file_path);
-
-};
-
-/*! Class to be inherited to provide file output stream.*/
-class SlvOFS {
-
-public:
-
-	SlvOFS();
-	virtual ~SlvOFS();
-
-	friend std::ofstream& operator<<(std::ofstream& _os, const SlvOFS& _OFS);
-
-protected:
-
-	/*! Output file stream method to reimplement.*/
-	virtual void ofstream(std::ofstream& _ofs) const = 0;
-
-};
-
-/*! Convenience class to be inherited to provide a direct method to write the instance into a text file.*/
-class SlvWriteText : public SlvOFS {
-
-public:
-
-	SlvWriteText();
-	virtual ~SlvWriteText();
-
-	/*! Export the object by writing the TEXT file (Clear writing) at \p _file_path.
-	* Uses operator<<.*/
-	SlvStatus write_text(std::string _file_path, std::ios::openmode _position = std::ios::trunc) const;
-
-};
-
-/*! Convenience class to both read and write the instance into a text file.*/
-class SlvReadWriteText : virtual public SlvReadText, virtual public SlvWriteText {
-
-public:
-
-	SlvReadWriteText() {}
-	~SlvReadWriteText() {}
-
-};
-
-/*! Class providing basic name management with get/set accessors.*/
-class SlvName {
-
-protected:
-
-    std::string name;
-
-public:
-
-    SlvName(std::string _name);
-    ~SlvName();
-
-    const std::string& get_name() const;
-    void set_name(const std::string& _name);
-
-};
-
-/*! Convenience class to be inherited to provide a direct method to write the instance into a binary file.*/
-class SlvWriteBinary {
-
-public:
-
-	SlvWriteBinary();
-	virtual ~SlvWriteBinary();
-
-	/*! Export the object by writing the BINARY file at \p _file_path.*/
-	SlvStatus write_binary(std::string _file_path, std::ios::openmode _position = std::ios::trunc) const;
-
-	/*! Binary write method to implement.*/
-	virtual void writeB(std::ofstream& _output_file) const = 0;
-
-};
-
-/*! Convenience class to be inherited to provide a direct method to read the instance from a binary file.*/
-class SlvReadBinary {
-
-public:
-
-	SlvReadBinary();
-	virtual ~SlvReadBinary();
-
-	/*! Set the object by reading the BINARY file at \p _file_path.*/
-	SlvStatus read_binary(std::string _file_path);
-
-	/*! Binary read method to implement.*/
-	virtual bool readB(std::ifstream& _input_file) = 0;
-
-};
-
-/*! Convenience class to both read and write the instance into a binary file.*/
-class SlvReadWriteBinary : virtual public SlvReadBinary, virtual public SlvWriteBinary {
-
-public:
-
-	SlvReadWriteBinary() {}
-	~SlvReadWriteBinary() {}
-
-};
-
-/*! Convenience class to manage file writing by using automatically the name of the instance.
-* Tname_class must have the method std::string get_name().*/
-template <class Tname_class>
-class SlvWriteBinaryNamedT : virtual public SlvWriteBinary, public Tname_class {
-
-public:
-
-	SlvWriteBinaryNamedT(std::string _name = "") :Tname_class(_name) {}
-	~SlvWriteBinaryNamedT() {}
-
-	/*! Write the instance in a file named after the instance's name.
-	* \p _prefix_path can be set so that the path will be such as \p _prefix_path + get_name()*/
-	SlvStatus write_binary_auto(std::string _prefix_path = "", std::ios::openmode _position = std::ios::trunc) const;
-
-};
-
-template <class Tname_class>
-SlvStatus SlvWriteBinaryNamedT<Tname_class>::write_binary_auto(std::string _prefix, std::ios::openmode _position) const {
-
-	return SlvWriteBinary::write_binary(_prefix + Tname_class::get_name(), _position);
-
-}
-
-/*! Convenience class.*/
-typedef SlvWriteBinaryNamedT<SlvLblName> SlvWriteBinaryLblNamed;
-
-/*! Convenience class.*/
-typedef SlvWriteBinaryNamedT<SlvName> SlvWriteBinaryNamed;
-
-/*! Convenience class to manage file writing by using automatically the name of the instance.
-* Tname_class must have the method std::string get_name().*/
-template <class Tname_class>
-class SlvWriteTextNamedT : virtual public SlvWriteText, public Tname_class {
-
-public:
-
-	SlvWriteTextNamedT(std::string _name = "") :Tname_class(_name) {}
-	~SlvWriteTextNamedT() {}
-
-	/*! Write the instance in a file named after the instance's name.
-	* \p _prefix_path can be set so that the path will be such as \p _prefix_path + get_name()*/
-	void write_text_auto(std::string _prefix_path = "", std::ios::openmode _position = std::ios::trunc) const;
-
-};
-
-template <class Tname_class>
-void SlvWriteTextNamedT<Tname_class>::write_text_auto(std::string _prefix, std::ios::openmode _position) const {
-
-	SlvWriteText::write_text(_prefix + Tname_class::get_name(), _position);
-
-}
-
-/*! Convenience class.*/
-typedef SlvWriteTextNamedT<SlvLblName> SlvWriteTextLblNamed;
-
-/*! Convenience class.*/
-typedef SlvWriteTextNamedT<SlvName> SlvWriteTextNamed;
-
-/*! Class to measure execution time.
-* At instantiation/reset, a reference time is measured and added to stack of checked times.
-* Each time get_elasped_time, get_elasped_time_last, or check_display, method is called, a new checked time is added. Check sample012 for example.*/
-class SlvTimer : public SlvName {
-
-private:
-
-	std::vector<clock_t> check_times;
-
-public:
-
-	SlvTimer(std::string _name = "");
-	~SlvTimer();
-
-	/*! Reset timer by clearing all checked times and taking current time as new reference.*/
-	void reset();
-
-	/*! Parse elapsed time since instance reference into a string.*/
-	std::string get_string() const;
-
-	/*! Get elapsed time from reference into hours, minutes, seconds, milliseconds.
-	* Each time this method is called, a check time is added.*/
-	std::vector<int> get_elasped_time();
-	/*! Get elapsed time from last check into hours, minutes, seconds, milliseconds.
-	* Each time this method is called, a check time is added.*/
-	std::vector<int> get_elasped_time_last();
-
-	/*! Measure elapsed time and display it via std::cout. \p _message is an optional display message.
-	* Each time this method is called, a check time is added.*/
-	void check_display(std::string _message = "");
-
-private:
-
-	/*! Display time \p _time.*/
-	void time_display(clock_t _time) const;
-	/*! Parse \p _time into hours, minutes, seconds, milliseconds.*/
-	std::vector<int> get_time(clock_t _time) const;
-
-};
-
-/*! Class managing the progress signals of a loop.*/
-class SlvProgressionQt :
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	public QObject,
-#endif
-	public SlvLblName {
-
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	Q_OBJECT
-#endif
-
-private:
-
-	/*! Tracked index of progress.
-	It is important to set a safe index because it can be set to Niterations if cancel is triggered.
-	ie: Use a different index for data manipulation.*/
-	void* iterator_ptr;
-	enum IteratorType { Int, UnsignedInt, Size_t };
-	/*! Type of the iterator defined at start.*/
-	IteratorType iterator_type;
-
-	/*! Expected maximum number of iterations. Set by emit_start method.*/
-	unsigned int Niterations;
-
-	/*! Whether progression instance is used directly as an iterator
-	* true : instance is an iterator. See operator= method.
-	* false : instance may control an external iterator using a pointer.*/
-	bool l_iterating;
-	/*! Iteration value when l_iterating is true.*/
-	std::size_t iterator;
-
-	bool l_started;
-	/*! If Niterations was not provided, then there is no feedback on progress.
-	* This variable checks if progress has ended or not.*/
-	bool l_no_feedback_ended;
-
-	/*! Optional message.*/
-	glvm_GetSetVariable(std::string, message);
-
-	/*! Whether the progression has been canceled externally or not.*/
-	bool l_was_canceled;
-
-	/*! Whether this progress is being called multiple times.
-	* If true, default hiding policy on ending will avoid glitches.
-	* In this case, hiding must be managed using finish().*/
-	bool l_recurrent;
-
-public:
-
-	SlvProgressionQt(std::string _name = "", bool _l_recurrent = false);
-	SlvProgressionQt(const SlvProgressionQt& _progression);
-	~SlvProgressionQt();
-
-private:
-	/*! Reset progress status.*/
-	void clear_progress();
-
-public:
-	/*! Reset progress status.*/
-	void clear();
-
-	/*! Does nothing. Disable assigment to ensure progress variables are not mixed.*/
-	SlvProgressionQt& operator=(const SlvProgressionQt& _progression);
-
-	/*! Whether this progress is being called multiple times.
-	* If true, default hiding policy on ending will avoid glitches.
-	* In this case, hiding must be managed using finish().*/
-	void set_recurrent(bool _l_recurrent);
-	/*! Whether this progress is being called multiple times.
-	* If true, default hiding policy on ending will avoid glitches.
-	* In this case, hiding must be managed using finish().*/
-	bool is_recurrent() const;
-
-	/*! Whether the progression as reached its maximum or not: *iterator_ptr >= Niterations-1.
-	* Return true if the progression was not started yet.*/
-	bool is_over() const;
-	/*! Whether the progression is managing a iterator_ptr or not. Depends on start() strategy.*/
-	bool has_iterator_ptr() const;
-	/*! Whether progression instance is used as an iterator. See operator= method.*/
-	bool is_iterating() const;
-	/*! Whether control on progress is possible or not.*/
-	bool is_cancelable() const;
-
-	/*! Emit start signal. Progress without bar nor control on the loop (no cancel button).*/
-	void start();
-	/*! Emit start signal. Progress without control on the loop (no cancel button).
-	* Use explicit update(int _value) at the end of the loop to update progress.*/
-	void start(const unsigned int _Niterations);
-	/*! Emit start signal.
-	* Use update() at the end of the loop to update progress.
-	* \p _iterator_ptr : pointer to the iteration value. Takes control of value by setting it to \p _Niterations in case the progression is stopped.*/
-	template <class Titerator>
-	void start(Titerator* _iterator_ptr, const unsigned int _Niterations);
-private :
-	void start_pv(const unsigned int _Niterations);
-public :
-
-	/*! Emit progress by using _iterator_ptr pointer and Niterations number defined by emit_start.
-	* Return false if _iterator_ptr pointer or Niterations number is null.
-	* If _iterator_ptr reaches Niterations, then ended() is emitted.*/
-	bool update();
-	/*! Update progress by explicitly setting the progress value \p _value.
-	* To be used with start(const unsigned int _Niterations).
-	* Does not assign value to _iterator_ptr pointer.
-	* Return false if _iterator_ptr number is null.*/
-	bool update(int _value);
-	/*! Confirm manually the progress is over.
-	* To be used if started with start(), ie no progress bar nor cancel control.
-	* If the progress is already monitored by a _iterator_ptr or an iterator, is automatically called at end of loop. No need to call it explicitly.
-	* Apply iterator finish.
-	* Release iterator_ptr pointer (set to NULL).*/
-	void end();
-	/*! Implies that progress monitoring is completely over. 
-	* If _l_remove is true, will remove Qt progression from GlvProgressMgr. Doing so means the progression will need to be added again to a Qt GlvProgressMgr.
-	* Apply iterator finish.
-	* Release _terator_ptr pointer (set to NULL).
-	* ie: Same as end() with removal from GlvProgressMgr if _l_remove is true.*/
-	void finish(bool _l_remove = true);
-
-	/*! Apply cancel to tracked iterator/iterator_ptr.
-	* Ends the loop.
-	* Does not emit signals. Use end() method instead.*/
-	void cancel();
-	/*! Whether the progression has been canceled externally or not.
-	* If so, it means the algorithm that was watched probably did not go through.*/
-	bool was_canceled() const;
-
-	/*! Cast to iterator.*/
-	operator std::size_t() const;
-	/*! Initialize iterator and start progress.*/
-	SlvProgressionQt& operator=(const std::size_t _iterator);
-
-	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
-	* Leaves < operator possible on iterator index, without impacting progression.
-	* On the other hand, bitwise operation is not possible of iterator index.
-	* Use init() or start() methods as an alternative to manage Niterations with classical int iterator index.*/
-	bool operator<<(std::size_t _Niterations);
-	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
-	bool operator<<(int _Niterations);
-	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
-	bool operator<<(unsigned int _Niterations);
-
-	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
-	* Leaves < operator possible on iterator index, without impacting progression.
-	* On the other hand, bitwise operation is not possible of iterator index.
-	* Use init() or start() methods as an alternative to manage Niterations with classical int iterator index.*/
-	bool operator<<=(std::size_t _Niterations);
-	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
-	bool operator<<=(int _Niterations);
-	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
-	bool operator<<=(unsigned int _Niterations);
-
-	/*! Increase iterator and update progress.*/
-	SlvProgressionQt& operator++();
-	/*! Increase iterator and update progress.*/
-	SlvProgressionQt operator++(int);
-
-private:
-
-	/*! Enforce finish by setting the iterator_ptr to finish value Niterations.
-	* The loop will end if the iterator is properly related to the iterator_ptr pointer.*/
-	void iterator_finish();
-
-	/*! iterator_ptr pointer is being checked at end of loop content.*/
-	static bool is_iterator_ptr_over(unsigned int _iterator_value, unsigned int _Niterations);
-	/*! Iterator is being checked at beginning of loop content.*/
-	static bool is_iterator_over(std::size_t _iterator, unsigned int _Niterations);
-
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-signals:
-
-	/*! Emitted when progress starts.*/
-	void started();
-	/*! Emit progress value in a range [0, 100] when progress is updated.*/
-	void updated(int _value);
-	/*! If an iterator or iterator_ptr is provided, is automatically emitted at end of loop.*/
-	void ended();
-	/*! Emitted when progress is completely over. If _l_remove is true, the progression will be removed of the progression manager (if managed by one).*/
-	void finished(bool _l_remove);
-#endif
-
-};
-
-/*! Use Qt signals.*/
-
-/*! Convenience class to embed a SlvProgressionQt in a class.
-* Typical use: to be inherited by a class which contains a method to monitor.
-* The key class is actually SlvProgressionQt, but it is convenient to encapsulate it in SlvProgression in order to not add too many inherited methods in inheriting classes.
-* Also convenient to track the get_progression() method.*/
-class SlvProgression {
-
-private:
-
-	SlvProgressionQt progression;
-
-public:
-
-	SlvProgression(std::string _name = "", bool _l_recurrent = false);
-	SlvProgression(const SlvProgression& _progression);
-	~SlvProgression();
-
-	/*! To be used. Const qualifier make the instance compliant with inherited const method.
-	In other words, the progression ignores the const qualifier of the child class instance.*/
-	SlvProgressionQt* get_progression() const;
-
-protected:
-
-	/*! Assignment operator to avoid assigning SlvProgressionQt progression.*/
-	SlvProgression& operator=(const SlvProgression& _progression);
-
-};
-
-class SlvParametrization_base : virtual public SlvVirtualGetName, virtual public SlvIOS {
-
-protected:
-
-	/* Copy of the pointer of the parameters set in SlvParametrization**.
-	* Convenient to call virtual methods on all the parameters without neededing to known the parameter template type.*/
-	std::vector<const SlvParameter_base*> parameters;
-
-	/*! Whether param_init() method is called each time a parameter's value is modified.*/
-	bool l_param_init_auto;
-
-public:
-
-	/*! Separate static name of the class to parameters. ex: name@[param1,param2,param3].*/
-	glvm_staticVariable(const, char, separator, '@');
-
-protected:
-	SlvParametrization_base();
-public:
-	virtual ~SlvParametrization_base();
-
-	/*! Whether param_init() method is called each time a parameter's value is modified.
-	* Either by SlvParametrization**::operator=
-	* Or SlvParametrization**::set_***(value).
-	* Default is true.*/
-	bool is_param_init_auto() const;
-	/*! Set whether param_init() method is called each time a parameter's value is modified.
-	* Either by SlvParametrization**::operator=
-	* Or SlvParametrization**::set_***(value).
-	* Default is true.*/
-	void set_param_init_auto(bool _l_param_init_auto);
-
-	/*! Get string identification of the parametrization.*/
-	std::string get_id_str() const;
-	/*! Get a name of the instance plus string identification of the parametrization.*/
-	std::string get_full_name() const;
-
-	/*! Check parameters rules.*/
-	virtual SlvStatus check_parameters() const = 0;
-
-	/*! Check if the parametrization has rules or not.*/
-	bool has_rules() const;
-	/*! Returns false if the rules were not abided, meaning there was a modification of the parametrization.
-	* Returns true if rules are abided, meaning there was no modification of the parameterization.*/
-	virtual bool abide_rules() = 0;
-
-	/*! Process of parameters at construction.
-	* Usefull to call after a param_cast() assignment.
-	* When definition of param_init() is needed, must be reimplemented in the parametrization class inheriting from SlvParametrization.
-	* Ex: private parameter deriving from other ones.*/
-	virtual void param_init();
-
-	/*! Recursively find the parameters which name is \p _parameter_name.
-	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
-	* If false, they are excluded (but recursivity still applies).*/
-	std::vector<const SlvParameter_base*> find(std::string _parameter_name, bool _l_parametrizations) const;
-	/*! Recursively find the frist parameter which name is \p _parameter_name.
-	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
-	* If false, they are excluded (but recursivity still applies).
-	* Returns NULL if none found.*/
-	const SlvParameter_base* find_first(std::string _parameter_name, bool _l_parametrizations) const;
-
-	/*! Set parameter values using >> operator by providing parameter name and corresponding value as string.
-	* Returns :
-	* First of pair: the conflicts corresponding to multiple parameters with the same name. Ie: assignment ambiguity.
-	* Second of pair : parameter names that could not be found in the parametrization.*/
-	std::pair< std::map<std::string, int>, std::vector<std::string> > set_stream_values(const std::map<std::string, std::string>& _stream_values, bool _l_parametrizations);
-
-private:
-	/*! Get a vector (one element per parameter) of strings. Each string is the slv::string::to_id_str of the parameter value.
-	* The marker value is used to discriminate which parameters are being converted to string.
-	* Setting the marker value of a parameter is possible in the macro classParameter.*/
-	virtual std::vector<std::string> get_vector_id_str(unsigned int _marker = SlvParameter_base::default_marker_value()) const = 0;
-};
-
-/*! Convenience class to inherit both from SlvIFS and SlvOFS.*/
-class SlvIOFS : virtual public SlvIFS, virtual public SlvOFS {
-
-public:
-
-	SlvIOFS() {}
-	~SlvIOFS() {}
-
 };
 
 #if OPTION_USE_THIRDPARTY_JSON==1
@@ -8842,6 +8298,26 @@ namespace slv {
             template <class Tdat>
             typename std::enable_if<typemgr::is_read_specialized<Tdat>::value, SlvStatus>::type readJson(Tdat& _value, const nlohmann::json& _json) {
                 return readJson_spec<Tdat>(_value, _json);// use specialization
+            }
+
+            /*! Convenience method to read json field \p _name.*/
+            template <class Tdat>
+            SlvStatus readJson(Tdat& _value, const std::string& _name, const nlohmann::json& _json) {
+                nlohmann::json::const_iterator it = _json.find(_name);
+                SlvStatus status;
+                if (it != _json.end()) {
+                    Tdat value;
+                    SlvStatus status_json = slv::rw::json::readJson(value, *it);
+                    if (status_json) {
+                        _value = value;
+                    } else {
+                        status = SlvStatus(SlvStatus::statusType::warning, "Problem reading json : " + _name);
+                        status.add_sub_status(status_json);
+                    }
+                } else {
+                    status = SlvStatus(SlvStatus::statusType::warning, "Can not find json field : " + _name);
+                }
+                return status;
             }
 
         }
@@ -8997,7 +8473,10 @@ namespace slv {
                 struct is_json_container< std::map<Tkey, Tvalue> > {
                     static const bool value = true;
                 };
-
+                template <typename T, std::size_t N>
+                struct is_json_container< std::array<T, N> > {
+                    static const bool value = true;
+                };
             }
         }
     }
@@ -9225,7 +8704,583 @@ namespace slv {
     }
 }
 
+// For slv::rw::json::ReadWrite::l_valid. But does nothing.
+// Usefull for parameter of type std::nullptr_t.
+// slv::rw::json::ReadWrite<Tparametrization>::l_valid is true if one of the parameters is of type std::nullptr_t
+template <>
+inline void slv::rw::json::writeJson_spec<std::nullptr_t>(const std::nullptr_t& _value, nlohmann::json& _json) {
+	
+}
+
+template <>
+inline SlvStatus slv::rw::json::readJson_spec<std::nullptr_t>(std::nullptr_t& _value, const nlohmann::json& _json) {
+	return SlvStatus();
+}
+
 #endif
+
+namespace slv {
+
+	/*! Parse \p _string to assign \p _value. Default parsing is using >> operator.*/
+	template <class T>
+	bool parse(const std::string& _string, T& _value);
+	/*! Parse \p _string to assign \p _value.
+	* Specialization by direct assignment because >> will parse a string separated by spaces.*/
+	bool parse(const std::string& _string, std::string& _value);
+
+}
+
+template <class T>
+bool slv::parse(const std::string& _string, T& _value) {
+
+	std::istringstream iss(_string);
+
+	iss >> _value;
+
+	return true;
+}
+
+inline bool slv::parse(const std::string& _string, std::string& _value) {
+
+	_value = _string;
+
+	return true;
+}
+
+namespace slv {
+    /*! Parse \p _string to assign \p _vector. Reciprocal to << operator.*/
+    template <class T>
+    bool parse(const std::string& _string, std::vector<T>& _vector);
+}
+
+template <class T>
+bool slv::parse(const std::string& _string, std::vector<T>& _vector) {
+    
+    bool l_parsing_ok = true;
+
+    _vector.clear();
+
+    T value;
+    if (_string.front() == '[' && _string.back() == ']') {
+
+        std::string string = _string;
+        std::string sub_string;
+        std::size_t pos;
+
+        string.erase(string.begin());
+        string.pop_back();
+
+        do {
+            pos = slv::string::find_first_of(string, ',');
+
+            if (pos != 0) {
+                sub_string = string.substr(0, pos);
+
+                l_parsing_ok = slv::parse(sub_string, value);
+                if (l_parsing_ok) {
+                    _vector.push_back(value);
+
+                    if (pos != std::string::npos) {
+                        string.erase(0, pos + 1);
+                    } else {
+                        string.clear();
+                    }
+                }
+
+            }
+
+        } while (!string.empty() && l_parsing_ok);
+
+        if (!l_parsing_ok) {
+            std::cout << "Parsing issue for type " << SlvDataName<std::vector<T>>::name() << " and for string " << _string << std::endl;
+            _vector.clear();
+        }
+
+    } else {
+        // Parse a single value
+        l_parsing_ok = slv::parse(_string, value);
+        if (l_parsing_ok) {
+            _vector.push_back(value);
+        }
+    }
+
+    return l_parsing_ok;
+}
+
+namespace slv {
+    /*! Parse \p _string to assign \p _array. Reciprocal to << operator.*/
+    template <class T, size_t N>
+    bool parse(const std::string& _string, std::array<T, N>& _array);
+}
+
+template <class T, size_t N>
+bool slv::parse(const std::string& _string, std::array<T, N>& _array) {
+    
+    bool l_parsing_ok = true;
+
+    std::vector<T> vector;
+    l_parsing_ok = slv::parse(_string, vector);
+
+    if (l_parsing_ok && vector.size() == N) {
+        std::copy_n(vector.begin(), N, _array.begin());
+    } else {
+        std::cout << "Parsing issue for type " << SlvDataName<std::array<T, N>>::name() << " and for string " << _string << std::endl;
+    }
+
+    return l_parsing_ok;
+}
+
+template <class T>
+class SlvSides2d : public SlvIOS {
+
+public:
+
+	T left;
+	T right;
+	T up;
+	T bottom;
+
+	SlvSides2d(T _left = T(), T _right = T(), T _up = T(), T _bottom = T());
+
+	bool operator==(const SlvSides2d<T>& _sides) const;
+
+	bool readB(std::ifstream& _input_file);
+	void writeB(std::ofstream& _output_file) const;
+
+#if OPTION_USE_THIRDPARTY_JSON==1
+	void writeJson(nlohmann::json& _json) const;
+	SlvStatus readJson(const nlohmann::json& _json);
+#endif
+
+private:
+
+	void istream(std::istream& _is);
+	void ostream(std::ostream& _os) const;
+
+};
+
+template <class T>
+SlvSides2d<T>::SlvSides2d(T _left, T _right, T _up, T _bottom) {
+
+	left = _left;
+	right = _right;
+	up = _up;
+	bottom = _bottom;
+
+}
+
+template <class T>
+bool SlvSides2d<T>::operator==(const SlvSides2d<T>& _size) const {
+
+	return left == _size.left && right == _size.right && up == _size.up && bottom == _size.bottom;
+
+}
+
+template <class T>
+bool SlvSides2d<T>::readB(std::ifstream& _input_file) {
+
+    bool l_read = slv::rw::readB(left, _input_file);
+    if (l_read) l_read = slv::rw::readB(right, _input_file);
+    if (l_read) l_read = slv::rw::readB(up, _input_file);
+    if (l_read) l_read = slv::rw::readB(bottom, _input_file);
+    return l_read;
+
+}
+
+template <class T>
+void SlvSides2d<T>::writeB(std::ofstream& _output_file) const {
+
+    slv::rw::writeB(left, _output_file);
+    slv::rw::writeB(right, _output_file);
+    slv::rw::writeB(up, _output_file);
+    slv::rw::writeB(bottom, _output_file);
+}
+
+template <class T>
+void SlvSides2d<T>::istream(std::istream& _is) {
+	
+	std::array<T, 4> array;
+	_is >> array;
+	left = array[0];
+	right = array[1];
+	up = array[2];
+	bottom = array[3];
+
+}
+
+template <class T>
+void SlvSides2d<T>::ostream(std::ostream& _os) const {
+
+	std::array<T, 4> array;
+	array[0] = left;
+	array[1] = right;
+	array[2] = up;
+	array[3] = bottom;
+	_os << array;
+
+}
+
+#if OPTION_USE_THIRDPARTY_JSON==1
+template <class T>
+void SlvSides2d<T>::writeJson(nlohmann::json& _json) const {
+
+	slv::rw::json::writeJson(left, _json["left"]);
+	slv::rw::json::writeJson(right, _json["right"]);
+	slv::rw::json::writeJson(up, _json["up"]);
+	slv::rw::json::writeJson(bottom, _json["bottom"]);
+
+}
+
+template <class T>
+SlvStatus SlvSides2d<T>::readJson(const nlohmann::json& _json) {
+
+	SlvStatus status = slv::rw::json::readJson(left, "left", _json);
+	status += slv::rw::json::readJson(right, "right", _json);
+	status += slv::rw::json::readJson(up, "up", _json);
+	status += slv::rw::json::readJson(bottom, "bottom", _json);
+
+	return status;
+}
+#endif
+
+namespace slv {
+	/*! Parse \p _string to assign \p _sides. Reciprocal to << operator.*/
+	template <class T>
+	bool parse(const std::string& _string, SlvSides2d<T>& _sides);
+}
+
+template <class T>
+bool slv::parse(const std::string& _string, SlvSides2d<T>& _sides) {
+
+	bool l_parsing_ok = true;
+
+	std::array<T, 4> array;
+	l_parsing_ok = slv::parse(_string, array);
+	if (l_parsing_ok) {
+		_sides.left = array[0];
+		_sides.right = array[1];
+		_sides.up = array[2];
+		_sides.bottom = array[3];
+	}
+
+	return l_parsing_ok;
+}
+
+#ifndef GLOVE_DISABLE_QT
+
+/*! Widget for std::pair.*/
+class GlvSides2dWidget_base : public QWidget {
+    Q_OBJECT
+protected:
+    GlvSides2dWidget_base(QWidget* _parent = 0) : QWidget(_parent) {}
+    virtual ~GlvSides2dWidget_base() {}
+public:
+    void set_editable(bool l_editable) {
+        QWidget::setEnabled(l_editable);
+    }
+signals:
+    /*! Emitted when left is modified.*/
+    void valueChanged_left();
+    /*! Emitted when right is modified.*/
+    void valueChanged_right();
+    /*! Emitted when up is modified.*/
+    void valueChanged_up();
+    /*! Emitted when bottom is modified.*/
+    void valueChanged_bottom();
+};
+
+template <class T>
+class GlvDescribedWidget;
+
+#define _Tdata_ SlvSides2d<T>
+
+/*! Widget for SlvSides2d.*/
+template <class T>
+class GlvSides2dWidget : public GlvSides2dWidget_base {
+
+private:
+
+    GlvDescribedWidget<T>* left_widget;
+    GlvDescribedWidget<T>* right_widget;
+    GlvDescribedWidget<T>* up_widget;
+    GlvDescribedWidget<T>* bottom_widget;
+
+public:
+
+    GlvSides2dWidget(_Tdata_ _sides = _Tdata_(), QWidget* _parent = 0);
+    ~GlvSides2dWidget();
+
+    void set_sides(const _Tdata_ _sides);
+    _Tdata_ get_sides() const;
+
+};
+
+template <class T>
+GlvSides2dWidget<T>::GlvSides2dWidget(_Tdata_ _sides, QWidget* _parent) : GlvSides2dWidget_base(_parent) {
+
+    QGridLayout* layout = new QGridLayout;
+    setLayout(layout);
+
+    layout->setSpacing(4);
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    bool l_editable = true;
+
+    up_widget = new GlvDescribedWidget<T>(_sides.up, "", "Up", l_editable, _parent);
+    connect(up_widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_up()));
+    layout->addWidget(up_widget, 0, 1);
+
+    left_widget = new GlvDescribedWidget<T>(_sides.left, "", "Left", l_editable, _parent);
+    connect(left_widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_left()));
+    layout->addWidget(left_widget, 1, 0);
+
+    right_widget = new GlvDescribedWidget<T>(_sides.right, "", "Right", l_editable, _parent);
+    connect(right_widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_right()));
+    layout->addWidget(right_widget, 1, 2);
+
+    bottom_widget = new GlvDescribedWidget<T>(_sides.bottom, "", "Bottom", l_editable, _parent);
+    connect(bottom_widget, SIGNAL(valueChanged()), this, SIGNAL(valueChanged_bottom()));
+    layout->addWidget(bottom_widget, 2, 1);
+
+}
+
+template <class T>
+GlvSides2dWidget<T>::~GlvSides2dWidget() {
+
+}
+
+template <class T>
+void GlvSides2dWidget<T>::set_sides(const _Tdata_ _sides) {
+
+    left_widget->set_value(_sides.left);
+    right_widget->set_value(_sides.right);
+    up_widget->set_value(_sides.up);
+    bottom_widget->set_value(_sides.bottom);
+
+}
+
+template <class T>
+_Tdata_ GlvSides2dWidget<T>::get_sides() const {
+
+    _Tdata_ value;
+    value.left = left_widget->get_value();
+    value.right = right_widget->get_value();
+    value.up = up_widget->get_value();
+    value.bottom = bottom_widget->get_value();
+    return value;
+
+}
+
+#undef _Tdata_
+
+#define Tdata SlvSides2d<T>
+/*! GlvWidgetData specialization for template type: SlvSides2d.*/
+template <class T>
+class GlvWidgetData<Tdata> : public GlvSides2dWidget<T> {
+
+public:
+    GlvWidgetData(Tdata _sides = Tdata(), QWidget* _parent = 0) :GlvSides2dWidget<T>(_sides, _parent) {}
+    ~GlvWidgetData() {}
+
+    Tdata get_value() const {
+        return GlvSides2dWidget<T>::get_sides();
+    }
+    void set_value(const Tdata& _value) {
+        return GlvSides2dWidget<T>::set_sides(_value);
+    }
+
+};
+
+template <class T>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {
+        QObject::connect(_widget, SIGNAL(valueChanged_left()), _widget_connector, SLOT(valueChanged_slot()));
+        QObject::connect(_widget, SIGNAL(valueChanged_right()), _widget_connector, SLOT(valueChanged_slot()));
+        QObject::connect(_widget, SIGNAL(valueChanged_up()), _widget_connector, SLOT(valueChanged_slot()));
+        QObject::connect(_widget, SIGNAL(valueChanged_bottom()), _widget_connector, SLOT(valueChanged_slot()));
+    }
+};
+
+#undef Tdata
+
+#endif
+
+namespace slv {
+	/*! Parse \p _string to assign \p _map. Reciprocal to << operator.*/
+	template <class Tkey, class Tvalue>
+	bool parse(const std::string& _string, std::map<Tkey, Tvalue>& _map);
+
+    namespace {
+        template <class Tkey, class Tvalue>
+        bool parse(const std::string& _string, Tkey& _key, Tvalue& _value);
+    }
+}
+
+namespace slv {
+    namespace {
+        template <class Tkey, class Tvalue>
+        bool parse(const std::string& _string, Tkey& _key, Tvalue& _value) {
+
+            bool l_parsing_ok = true;
+
+            if (_string[0] == '{' && _string.back() == '}') {
+                std::string string = _string;
+                string.erase(string.begin());
+                string.pop_back();
+
+                std::size_t pos = slv::string::find_first_of(string, ',');
+                if (pos != std::string::npos) {
+                    std::string string_key = string.substr(0, pos);
+                    string.erase(0, pos + 1);
+                    std::string string_value = string;
+
+                    slv::parse(string_key, _key);
+                    slv::parse(string_value, _value);
+
+                } else {
+                    // Issue : map element must contain a comma
+                    l_parsing_ok = false;
+                }
+
+            } else {
+                l_parsing_ok = false;
+            }
+
+            return l_parsing_ok;
+
+        }
+    }
+}
+
+template <class Tkey, class Tvalue>
+bool slv::parse(const std::string& _string, std::map<Tkey, Tvalue>& _map) {
+
+    bool l_parsing_ok = true;
+
+    _map.clear();
+
+    Tkey key;
+    Tvalue value;
+    if (_string.front() == '[' && _string.back() == ']') {
+
+        std::string string = _string;
+        std::string sub_string;
+        std::size_t pos;
+
+        string.erase(string.begin());
+        string.pop_back();
+
+        do {
+            pos = slv::string::find_first_of(string, ',');
+
+            if (pos != 0) {
+                sub_string = string.substr(0, pos);
+
+                l_parsing_ok = parse(sub_string, key, value);
+                if (l_parsing_ok) {
+                    _map[key] = value;
+
+                    if (pos != std::string::npos) {
+                        string.erase(0, pos + 1);
+                    } else {
+                        string.clear();
+                    }
+                }
+
+            }
+
+        } while (!string.empty() && l_parsing_ok);
+
+        if (!l_parsing_ok) {
+            std::cout << "Parsing issue for type " << SlvDataName<std::map<Tkey, Tvalue>>::name() << " and for string " << _string << std::endl;
+            _map.clear();
+        }
+
+    } else {
+        // Parse a single value
+        l_parsing_ok = parse(_string, key, value);
+        if (l_parsing_ok) {
+            _map[key] = value;
+        }
+    }
+
+    return l_parsing_ok;
+}
+
+class SlvParametrization_base : virtual public SlvVirtualGetName, virtual public SlvIOS {
+
+protected:
+
+	/* Copy of the pointer of the parameters set in SlvParametrization**.
+	* Convenient to call virtual methods on all the parameters without neededing to known the parameter template type.*/
+	std::vector<const SlvParameter_base*> parameters;
+
+	/*! Whether param_init() method is called each time a parameter's value is modified.*/
+	bool l_param_init_auto;
+
+public:
+
+	/*! Separate static name of the class to parameters. ex: name@[param1,param2,param3].*/
+	glvm_staticVariable(const, char, separator, '@');
+
+protected:
+	SlvParametrization_base();
+public:
+	virtual ~SlvParametrization_base();
+
+	/*! Whether param_init() method is called each time a parameter's value is modified.
+	* Either by SlvParametrization**::operator=
+	* Or SlvParametrization**::set_***(value).
+	* Default is true.*/
+	bool is_param_init_auto() const;
+	/*! Set whether param_init() method is called each time a parameter's value is modified.
+	* Either by SlvParametrization**::operator=
+	* Or SlvParametrization**::set_***(value).
+	* Default is true.*/
+	void set_param_init_auto(bool _l_param_init_auto);
+
+	/*! Get string identification of the parametrization.*/
+	std::string get_id_str() const;
+	/*! Get a name of the instance plus string identification of the parametrization.*/
+	std::string get_full_name() const;
+
+	/*! Check parameters rules.*/
+	virtual SlvStatus check_parameters() const = 0;
+
+	/*! Check if the parametrization has rules or not.*/
+	bool has_rules() const;
+	/*! Returns false if the rules were not abided, meaning there was a modification of the parametrization.
+	* Returns true if rules are abided, meaning there was no modification of the parameterization.*/
+	virtual bool abide_rules() = 0;
+
+	/*! Process of parameters at construction.
+	* Usefull to call after a param_cast() assignment.
+	* When definition of param_init() is needed, must be reimplemented in the parametrization class inheriting from SlvParametrization.
+	* Ex: private parameter deriving from other ones.*/
+	virtual void param_init();
+
+	/*! Recursively find the parameters which name is \p _parameter_name.
+	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
+	* If false, they are excluded (but recursivity still applies).*/
+	std::vector<const SlvParameter_base*> find(std::string _parameter_name, bool _l_parametrizations) const;
+	/*! Recursively find the frist parameter which name is \p _parameter_name.
+	* If \p _l_parametrizations is true, parameters which type is a parametrization can be counted.
+	* If false, they are excluded (but recursivity still applies).
+	* Returns NULL if none found.*/
+	const SlvParameter_base* find_first(std::string _parameter_name, bool _l_parametrizations) const;
+
+	/*! Set parameter values using >> operator by providing parameter name and corresponding value as string.
+	* Returns :
+	* First of pair: the conflicts corresponding to multiple parameters with the same name. Ie: assignment ambiguity.
+	* Second of pair : parameter names that could not be found in the parametrization.*/
+	std::pair< std::map<std::string, int>, std::vector<std::string> > set_stream_values(const std::map<std::string, std::string>& _stream_values, bool _l_parametrizations);
+
+private:
+	/*! Get a vector (one element per parameter) of strings. Each string is the slv::string::to_id_str of the parameter value.
+	* The marker value is used to discriminate which parameters are being converted to string.
+	* Setting the marker value of a parameter is possible in the macro classParameter.*/
+	virtual std::vector<std::string> get_vector_id_str(unsigned int _marker = SlvParameter_base::default_marker_value()) const = 0;
+};
 
 #define EXPAND(arg) arg
 #define glvm_pv_parametrization_constructor(\
@@ -10836,6 +10891,10 @@ using typename base_class::Tpv_parameter22;\
 using typename base_class::Tpv_parameter23;\
 using typename base_class::Tpv_parameter24;
 
+#if OPTION_USE_THIRDPARTY_JSON==1
+//#include "filestream/slv_rw_json.h"
+#endif
+
 /*! Parametrization for 0 parameter.
 * All classes inheriting SlvParametrization** must have default constructor () */
 class SlvParametrization0 : public SlvParametrization_base {
@@ -10907,25 +10966,12 @@ public:
 #define glvm_pv_SlvParametrization_writeB(N) parameter##N->writeB(_output_file);
 #define glvm_pv_SlvParametrization_readB(N) const_cast<SlvParameter<T##N>*>(parameter##N)->readB(_input_file)
 #if OPTION_USE_THIRDPARTY_JSON==1
-#define glvm_pv_SlvParametrization_writeJson(N) slv::rw::json::writeJson(parameter##N->get_value(), _json[this->get_name()][parameter##N->get_name()]);
+#define glvm_pv_SlvParametrization_writeJson(N) parameter##N->writeJson(_json[this->get_name()]);
 #define glvm_pv_SlvParametrization_readJson(N)\
 if (status.get_type() != SlvStatus::statusType::critical) {\
 	nlohmann::json::const_iterator it_main = _json.find(this->get_name());\
 	if (it_main != _json.end()) {\
-		nlohmann::json::const_iterator it = it_main->find(parameter##N->get_name());\
-		SlvStatus status_parameter;\
-		if (it != it_main->end()) {\
-			T##N value = parameter##N->get_default_value();\
-			SlvStatus status_json = slv::rw::json::readJson(value, *it);\
-			if (status_json) {\
-				const_cast<SlvParameter<T##N>*>(parameter##N)->set_value(value);\
-			} else {\
-				status_parameter = SlvStatus(SlvStatus::statusType::warning, "Problem reading parameter : " + parameter##N->get_name());\
-				status_parameter.add_sub_status(status_json);\
-			}\
-		} else {\
-			status_parameter = SlvStatus(SlvStatus::statusType::warning, "Can not find parameter : " + parameter##N->get_name());\
-		}\
+		SlvStatus status_parameter = parameter##N->readJson(*it_main);\
 		if (!status_parameter) {\
 			status += SlvStatus(SlvStatus::statusType::warning, "Problem reading parametrization : " + this->get_name());\
 			status.add_sub_status(status_parameter);\
@@ -10940,6 +10986,46 @@ bool abide_rules() {\
     l_abide_rules &= const_cast<SlvParameter<T##current>*>(parameter##current)->abide_rules();\
 	return l_abide_rules;\
 }
+
+// Inspired from https://stackoverflow.com/questions/11632219/c-preprocessor-macro-specialisation-based-on-an-argument
+
+#define MACSPEC_CAT(a, ...) MACSPEC_PRIMITIVE_CAT(a, __VA_ARGS__)
+#define MACSPEC_PRIMITIVE_CAT(a, ...) a ## __VA_ARGS__
+
+#define MACSPEC_IIF(c) MACSPEC_PRIMITIVE_CAT(MACSPEC_IIF_, c)
+#define MACSPEC_IIF_0(t, ...) __VA_ARGS__
+#define MACSPEC_IIF_1(t, ...) t
+
+#define MACSPEC_COMPL(b) MACSPEC_PRIMITIVE_CAT(MACSPEC_COMPL_, b)
+#define MACSPEC_COMPL_0 1
+#define MACSPEC_COMPL_1 0
+
+#define MACSPEC_BITAND(x) MACSPEC_PRIMITIVE_CAT(MACSPEC_BITAND_, x)
+#define MACSPEC_BITAND_0(y) 0
+#define MACSPEC_BITAND_1(y) y
+
+#define MACSPEC_MSVC_VA_ARGS_WORKAROUND(define, args) define args
+#define MACSPEC_CHECK(...) MACSPEC_MSVC_VA_ARGS_WORKAROUND(MACSPEC_CHECK_N, (__VA_ARGS__, 0))
+#define MACSPEC_CHECK_N(x, n, ...) n
+#define MACSPEC_PROBE(x) x, 1,
+
+#define MACSPEC_IS_PAREN(x) MACSPEC_CHECK(MACSPEC_IS_PAREN_PROBE x)
+#define MACSPEC_IS_PAREN_PROBE(...) MACSPEC_PROBE(~)
+
+#define MACSPEC_COMPARE(a, b) MACSPEC_PRIMITIVE_COMPARE(a, b)
+#define MACSPEC_PRIMITIVE_COMPARE(a, b)\
+    MACSPEC_IIF(\
+        MACSPEC_BITAND\
+            (MACSPEC_IS_PAREN(MACSPEC_COMPARE_ ## a(())))\
+            (MACSPEC_IS_PAREN(MACSPEC_COMPARE_ ## b(())))\
+    )( \
+        MACSPEC_COMPL(MACSPEC_IS_PAREN(\
+            MACSPEC_COMPARE_ ## a(\
+                MACSPEC_COMPARE_ ## b\
+            )(())\
+        )),\
+        0\
+    )
 
 class SlvParametrization_base;
 
@@ -10994,6 +11080,11 @@ public:
     bool readB(std::ifstream& _input_file);
     void writeB(std::ofstream& _output_file) const;
 
+#if OPTION_USE_THIRDPARTY_JSON==1
+    void writeJson(nlohmann::json& _json) const;
+    SlvStatus readJson(const nlohmann::json& _json);
+#endif
+
 protected:
 
     void istream(std::istream& _is);
@@ -11025,6 +11116,14 @@ struct SlvParameterSpec {
     static void writeB(const Tparam& _parameter_value, std::ofstream& _output_file) {
         slv::rw::writeB(_parameter_value, _output_file);
     }
+#if OPTION_USE_THIRDPARTY_JSON==1
+    static void writeJson(const Tparam& _parameter_value, const std::string& _parameter_name, nlohmann::json& _json) {
+        slv::rw::json::writeJson(_parameter_value, _json[_parameter_name]);
+    }
+    static SlvStatus readJson(Tparam& _parameter_value, const std::string& _parameter_name, const nlohmann::json& _json) {
+        return slv::rw::json::readJson(_parameter_value, _parameter_name, _json);
+    }
+#endif
     static void istream(Tparam& _parameter_value, std::istream& _is) {
         _is >> _parameter_value;
     }
@@ -11047,6 +11146,45 @@ struct SlvParameterSpec {
         return NULL;
     }
 };
+
+#define Tparam std::nullptr_t
+/*! Disable parameter operations for type std::nullptr_t*/
+template <>
+struct SlvParameterSpec<Tparam> {
+    static void assign(Tparam& _parameter_value1, const Tparam& _parameter_value2, bool _l_param_only) {
+    }
+    static bool readB(Tparam& _parameter_value, std::ifstream& _input_file) {
+        return true;
+    }
+    static void writeB(const Tparam& _parameter_value, std::ofstream& _output_file) {
+    }
+#if OPTION_USE_THIRDPARTY_JSON==1
+    static void writeJson(const Tparam& _parameter_value, const std::string& _parameter_name, nlohmann::json& _json) {
+    }
+    static SlvStatus readJson(Tparam& _parameter_value, const std::string& _parameter_name, const nlohmann::json& _json) {
+        return SlvStatus();
+    }
+#endif
+    static void istream(Tparam& _parameter_value, std::istream& _is) {
+    }
+    static void ostream(const Tparam& _parameter_value, std::ostream& _os) {
+    }
+    static void parse(Tparam& _parameter_value, const std::string& _string) {
+    }
+    static bool is_equal(const Tparam& _parameter_value1, const Tparam& _parameter_value2) {
+        return true;
+    }
+    static std::vector< std::pair<std::string, std::string> > get_string_serialization(const SlvParameter<Tparam>& _parameter) {
+        return {};
+    }
+    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
+        return {};
+    }
+    static const SlvParametrization_base* parametrization_cast(const Tparam& _parameter_value) {
+        return NULL;
+    }
+};
+#undef Tparam
 
 template <class Tparam>
 std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > SlvParameterSpecSerialization<Tparam>::get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
@@ -11081,6 +11219,14 @@ struct SlvParameterSpec<Tparam, typename std::enable_if<SlvIsParametrization<Tpa
     static void writeB(const Tparam& _parameter_value, std::ofstream& _output_file) {
         slv::rw::writeB(_parameter_value.param_cast(), _output_file);// param only
     }
+#if OPTION_USE_THIRDPARTY_JSON==1
+    static void writeJson(const Tparam& _parameter_value, const std::string& _parameter_name, nlohmann::json& _json) {
+        slv::rw::json::writeJson(_parameter_value, _json[_parameter_name]);
+    }
+    static SlvStatus readJson(Tparam& _parameter_value, const std::string& _parameter_name, const nlohmann::json& _json) {
+        return slv::rw::json::readJson(_parameter_value, _parameter_name, _json);
+    }
+#endif
     static void istream(Tparam& _parameter_value, std::istream& _is) {
         _is >> _parameter_value.param_cast();
     }
@@ -11222,6 +11368,25 @@ void SlvParameter<Tparam>::writeB(std::ofstream& _output_file) const {
 
 }
 
+#if OPTION_USE_THIRDPARTY_JSON==1
+template <class Tparam>
+void SlvParameter<Tparam>::writeJson(nlohmann::json& _json) const {
+
+    SlvParameterSpec<Tparam>::writeJson(value, get_name(), _json);
+
+}
+
+template <class Tparam>
+SlvStatus SlvParameter<Tparam>::readJson(const nlohmann::json& _json) {
+
+    Tparam value_ = get_default_value();
+    SlvStatus status = SlvParameterSpec<Tparam>::readJson(value_, get_name(), _json);
+    set_value(value_);
+    return status;
+
+}
+#endif
+
 template <class Tparam>
 void SlvParameter<Tparam>::istream(std::istream& _is) {
 
@@ -11250,8 +11415,14 @@ glvm_pv_parameter6(parameter_number, class_name, class_type, parameter_name, par
 #define glvm_pv_parameter6(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value) \
 glvm_pv_parameter7(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, SlvParameter<class_type>::default_marker_value())
 
+#define TYPE_NULLPTR_T nullptr_t
+#define MACSPEC_COMPARE_nullptr_t(x) x
+#define IS_TYPE_NULLPTR_T(type) MACSPEC_COMPARE(type, TYPE_NULLPTR_T)
+
 #define glvm_pv_parameter7(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
-private:\
+MACSPEC_IIF(IS_TYPE_NULLPTR_T(class_type))(glvm_pv_parameter7_nullptr_t, glvm_pv_parameter7_general)(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)
+
+#define glvm_pv_parameter7_parameter(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
 class SlvPvClassParam_##class_name : public SlvParameter<class_type> {\
 public:\
 SlvPvClassParam_##class_name(SlvParametrization_base* _parametrization, class_type _value = default_value()):SlvParameter<class_type>(_parametrization, _value){ this->abide_rules();}\
@@ -11281,7 +11452,18 @@ std::vector< SlvParameterRuleT<class_type> > rules;\
 rules.push_back(SlvParameterRuleT<class_type>());/*default rule*/\
 return rules;}\
 glvm_staticVariable_const_get(bool, has_rules, false)\
-};\
+};
+
+#define glvm_pv_parameter7_nullptr_t(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
+private:\
+glvm_pv_parameter7_parameter(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)\
+protected:\
+typedef SlvPvClassParam_##class_name Tpv_parameter##parameter_number;\
+private:
+
+#define glvm_pv_parameter7_general(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
+private:\
+glvm_pv_parameter7_parameter(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)\
 protected:\
 typedef SlvPvClassParam_##class_name Tpv_parameter##parameter_number;\
 public:\
@@ -18848,7 +19030,7 @@ private:
 };
 
 template <class Tparam>
-GlvParameterWidget<Tparam>::GlvParameterWidget(const SlvParameter<Tparam>& _parameter, bool l_editable, QWidget* _parent) :GlvDescribedWidget<Tparam>(_parameter.get_value(), _parameter.get_name(), _parameter.get_description(), l_editable, _parent) {
+GlvParameterWidget<Tparam>::GlvParameterWidget(const SlvParameter<Tparam>& _parameter, bool l_editable, QWidget* _parent) :GlvDescribedWidget<Tparam>(_parameter.get_value(), std::is_same_v<Tparam, std::nullptr_t> ? "" : _parameter.get_name(), std::is_same_v<Tparam, std::nullptr_t> ? "" : _parameter.get_description(), l_editable, _parent) {
 
     QObject::connect(this->data_widget, SIGNAL(valueChanged()), static_cast<GlvParameterWidget_base*>(this), SLOT(valueChanged_slot()));
 
@@ -19654,6 +19836,222 @@ SlvFileExtensions GlvParametrizationSaveLoad<Tparametrization>::allowed_extensio
 
 }
 
+#endif
+
+/*! Class managing the progress signals of a loop.*/
+class SlvProgressionQt :
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	public QObject,
+#endif
+	public SlvLblName {
+
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	Q_OBJECT
+#endif
+
+private:
+
+	/*! Tracked index of progress.
+	It is important to set a safe index because it can be set to Niterations if cancel is triggered.
+	ie: Use a different index for data manipulation.*/
+	void* iterator_ptr;
+	enum IteratorType { Int, UnsignedInt, Size_t };
+	/*! Type of the iterator defined at start.*/
+	IteratorType iterator_type;
+
+	/*! Expected maximum number of iterations. Set by emit_start method.*/
+	unsigned int Niterations;
+
+	/*! Whether progression instance is used directly as an iterator
+	* true : instance is an iterator. See operator= method.
+	* false : instance may control an external iterator using a pointer.*/
+	bool l_iterating;
+	/*! Iteration value when l_iterating is true.*/
+	std::size_t iterator;
+
+	bool l_started;
+	/*! If Niterations was not provided, then there is no feedback on progress.
+	* This variable checks if progress has ended or not.*/
+	bool l_no_feedback_ended;
+
+	/*! Optional message.*/
+	glvm_GetSetVariable(std::string, message);
+
+	/*! Whether the progression has been canceled externally or not.*/
+	bool l_was_canceled;
+
+	/*! Whether this progress is being called multiple times.
+	* If true, default hiding policy on ending will avoid glitches.
+	* In this case, hiding must be managed using finish().*/
+	bool l_recurrent;
+
+public:
+
+	SlvProgressionQt(std::string _name = "", bool _l_recurrent = false);
+	SlvProgressionQt(const SlvProgressionQt& _progression);
+	~SlvProgressionQt();
+
+private:
+	/*! Reset progress status.*/
+	void clear_progress();
+
+public:
+	/*! Reset progress status.*/
+	void clear();
+
+	/*! Does nothing. Disable assigment to ensure progress variables are not mixed.*/
+	SlvProgressionQt& operator=(const SlvProgressionQt& _progression);
+
+	/*! Whether this progress is being called multiple times.
+	* If true, default hiding policy on ending will avoid glitches.
+	* In this case, hiding must be managed using finish().*/
+	void set_recurrent(bool _l_recurrent);
+	/*! Whether this progress is being called multiple times.
+	* If true, default hiding policy on ending will avoid glitches.
+	* In this case, hiding must be managed using finish().*/
+	bool is_recurrent() const;
+
+	/*! Whether the progression as reached its maximum or not: *iterator_ptr >= Niterations-1.
+	* Return true if the progression was not started yet.*/
+	bool is_over() const;
+	/*! Whether the progression is managing a iterator_ptr or not. Depends on start() strategy.*/
+	bool has_iterator_ptr() const;
+	/*! Whether progression instance is used as an iterator. See operator= method.*/
+	bool is_iterating() const;
+	/*! Whether control on progress is possible or not.*/
+	bool is_cancelable() const;
+
+	/*! Emit start signal. Progress without bar nor control on the loop (no cancel button).*/
+	void start();
+	/*! Emit start signal. Progress without control on the loop (no cancel button).
+	* Use explicit update(int _value) at the end of the loop to update progress.*/
+	void start(const unsigned int _Niterations);
+	/*! Emit start signal.
+	* Use update() at the end of the loop to update progress.
+	* \p _iterator_ptr : pointer to the iteration value. Takes control of value by setting it to \p _Niterations in case the progression is stopped.*/
+	template <class Titerator>
+	void start(Titerator* _iterator_ptr, const unsigned int _Niterations);
+private :
+	void start_pv(const unsigned int _Niterations);
+public :
+
+	/*! Emit progress by using _iterator_ptr pointer and Niterations number defined by emit_start.
+	* Return false if _iterator_ptr pointer or Niterations number is null.
+	* If _iterator_ptr reaches Niterations, then ended() is emitted.*/
+	bool update();
+	/*! Update progress by explicitly setting the progress value \p _value.
+	* To be used with start(const unsigned int _Niterations).
+	* Does not assign value to _iterator_ptr pointer.
+	* Return false if _iterator_ptr number is null.*/
+	bool update(int _value);
+	/*! Confirm manually the progress is over.
+	* To be used if started with start(), ie no progress bar nor cancel control.
+	* If the progress is already monitored by a _iterator_ptr or an iterator, is automatically called at end of loop. No need to call it explicitly.
+	* Apply iterator finish.
+	* Release iterator_ptr pointer (set to NULL).*/
+	void end();
+	/*! Implies that progress monitoring is completely over. 
+	* If _l_remove is true, will remove Qt progression from GlvProgressMgr. Doing so means the progression will need to be added again to a Qt GlvProgressMgr.
+	* Apply iterator finish.
+	* Release _terator_ptr pointer (set to NULL).
+	* ie: Same as end() with removal from GlvProgressMgr if _l_remove is true.*/
+	void finish(bool _l_remove = true);
+
+	/*! Apply cancel to tracked iterator/iterator_ptr.
+	* Ends the loop.
+	* Does not emit signals. Use end() method instead.*/
+	void cancel();
+	/*! Whether the progression has been canceled externally or not.
+	* If so, it means the algorithm that was watched probably did not go through.*/
+	bool was_canceled() const;
+
+	/*! Cast to iterator.*/
+	operator std::size_t() const;
+	/*! Initialize iterator and start progress.*/
+	SlvProgressionQt& operator=(const std::size_t _iterator);
+
+	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
+	* Leaves < operator possible on iterator index, without impacting progression.
+	* On the other hand, bitwise operation is not possible of iterator index.
+	* Use init() or start() methods as an alternative to manage Niterations with classical int iterator index.*/
+	bool operator<<(std::size_t _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<(int _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<(unsigned int _Niterations);
+
+	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
+	* Leaves < operator possible on iterator index, without impacting progression.
+	* On the other hand, bitwise operation is not possible of iterator index.
+	* Use init() or start() methods as an alternative to manage Niterations with classical int iterator index.*/
+	bool operator<<=(std::size_t _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<=(int _Niterations);
+	/*! Overload to avoid call to built-in operator and std::size_t casting.*/
+	bool operator<<=(unsigned int _Niterations);
+
+	/*! Increase iterator and update progress.*/
+	SlvProgressionQt& operator++();
+	/*! Increase iterator and update progress.*/
+	SlvProgressionQt operator++(int);
+
+private:
+
+	/*! Enforce finish by setting the iterator_ptr to finish value Niterations.
+	* The loop will end if the iterator is properly related to the iterator_ptr pointer.*/
+	void iterator_finish();
+
+	/*! iterator_ptr pointer is being checked at end of loop content.*/
+	static bool is_iterator_ptr_over(unsigned int _iterator_value, unsigned int _Niterations);
+	/*! Iterator is being checked at beginning of loop content.*/
+	static bool is_iterator_over(std::size_t _iterator, unsigned int _Niterations);
+
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+signals:
+
+	/*! Emitted when progress starts.*/
+	void started();
+	/*! Emit progress value in a range [0, 100] when progress is updated.*/
+	void updated(int _value);
+	/*! If an iterator or iterator_ptr is provided, is automatically emitted at end of loop.*/
+	void ended();
+	/*! Emitted when progress is completely over. If _l_remove is true, the progression will be removed of the progression manager (if managed by one).*/
+	void finished(bool _l_remove);
+#endif
+
+};
+
+/*! Use Qt signals.*/
+
+/*! Convenience class to embed a SlvProgressionQt in a class.
+* Typical use: to be inherited by a class which contains a method to monitor.
+* The key class is actually SlvProgressionQt, but it is convenient to encapsulate it in SlvProgression in order to not add too many inherited methods in inheriting classes.
+* Also convenient to track the get_progression() method.*/
+class SlvProgression {
+
+private:
+
+	SlvProgressionQt progression;
+
+public:
+
+	SlvProgression(std::string _name = "", bool _l_recurrent = false);
+	SlvProgression(const SlvProgression& _progression);
+	~SlvProgression();
+
+	/*! To be used. Const qualifier make the instance compliant with inherited const method.
+	In other words, the progression ignores the const qualifier of the child class instance.*/
+	SlvProgressionQt* get_progression() const;
+
+protected:
+
+	/*! Assignment operator to avoid assigning SlvProgressionQt progression.*/
+	SlvProgression& operator=(const SlvProgression& _progression);
+
+};
+
+#ifndef GLOVE_DISABLE_QT
+
 class GlvProgression;
 class SlvProgressionQt;
 class QVBoxLayout;
@@ -19847,9 +20245,10 @@ glvm_parametrization(GLOVE_APP_default_parametrization, "default");
 /*! Optional: Set application in recurrent mode. The program will be launched again upon acceptance.
 * Applies only if GLOVE_APP_THREAD_MODE is set to true.*/
 #define GLOVE_APP_RECURRENT_MODE false
+/*! Must be castable to bool. The returned boolean value accounts for the auto repeat mode to be enabled or not.*/
 #define GLOVE_APP_RECURRENT_TYPE int
-/*! Usef only if GLOVE_APP_RECURRENT_MODE is left false.*/
-static GLOVE_APP_RECURRENT_TYPE glove_recurrent_var;
+/*! Used only if GLOVE_APP_RECURRENT_MODE is left to false.*/
+static GLOVE_APP_RECURRENT_TYPE glove_recurrent_var = 0;
 
 #define glvm_pv_GLOVE_APP(Tparametrization, _l_auto_glove) \
 return GlvApp::main<Tparametrization>(argc, argv, _l_auto_glove, GLOVE_APP_THREAD_MODE, GLOVE_APP_RECURRENT_MODE, glove_recurrent_var);\
@@ -19996,12 +20395,16 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 
 		save_load_widget->load(arguments.get_glove_argument());// Load parametrization file
 
+	} else if (SlvFile(autosave_file_name).exists()) {
+
+		save_load_widget->load(autosave_file_name);
+
 	}
 
-	Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
-	SlvStatus status;
-
 	if (!arguments.is_empty()) {
+
+		Tparametrization parametrization = dialog.get_parametrization_widget()->get_parametrization();
+		SlvStatus status;
 
 		status = SlvCLI::parse(parametrization, arguments);
 
@@ -20009,14 +20412,10 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 
 		dialog.set_parametrization(parametrization);
 
-	} else if (SlvFile(autosave_file_name).exists() && arguments.get_glove_argument().empty()) {
-
-		save_load_widget->load(autosave_file_name);
-
 	}
 
 	int result;
-	if (Tparametrization::Nparameters() > 0) {
+	if (Tparametrization::Nparameters() > 0 && !(bool)_recurrent_var) {
 		result = dialog.exec();
 	} else {
 		result = QDialog::Accepted;
@@ -21369,6 +21768,11 @@ public:
 	bool readB(std::ifstream& _input_file);
 	void writeB(std::ofstream& _output_file) const;
 
+#if OPTION_USE_THIRDPARTY_JSON==1
+	void writeJson(nlohmann::json& _json) const;
+	SlvStatus readJson(const nlohmann::json& _json);
+#endif
+
 private:
 
 	void istream(std::istream& _is);
@@ -21412,12 +21816,8 @@ void SlvSize2d<T>::istream(std::istream& _is) {
 
     std::string size_str;
     _is >> size_str;
-    
-	size_t pos = size_str.find('x');
-	if (pos != std::string::npos) {
-		std::istringstream(size_str.substr(0, pos)) >> width;
-		std::istringstream(size_str.substr(pos + 1)) >> height;
-	}
+
+	slv::parse(size_str, *this);
 
 }
 
@@ -21426,6 +21826,48 @@ void SlvSize2d<T>::ostream(std::ostream& _os) const {
 
     _os << width << "x" << height;
 
+}
+
+#if OPTION_USE_THIRDPARTY_JSON==1
+template <class T>
+void SlvSize2d<T>::writeJson(nlohmann::json& _json) const {
+
+	slv::rw::json::writeJson(width, _json["width"]);
+	slv::rw::json::writeJson(height, _json["height"]);
+
+}
+
+template <class T>
+SlvStatus SlvSize2d<T>::readJson(const nlohmann::json& _json) {
+
+	SlvStatus status = slv::rw::json::readJson(width, "width", _json);
+	status += slv::rw::json::readJson(height, "height", _json);
+
+	return status;
+}
+#endif
+
+namespace slv {
+    /*! Parse \p _string to assign \p _size. Reciprocal to << operator.*/
+    template <class T>
+    bool parse(const std::string& _string, SlvSize2d<T>& _size);
+}
+
+template <class T>
+bool slv::parse(const std::string& _string, SlvSize2d<T>& _size) {
+
+    bool l_parsing_ok = true;
+
+    size_t pos = _string.find('x');
+    if (pos != std::string::npos) {
+        l_parsing_ok = slv::parse(_string.substr(0, pos), _size.width);
+        l_parsing_ok &= slv::parse(_string.substr(pos + 1), _size.height);
+    } else {
+        l_parsing_ok = false;
+		std::cout << "Parsing issue for type " << SlvDataName<SlvSize2d<T>>::name() << " and for string " << _string << std::endl;
+    }
+
+    return l_parsing_ok;
 }
 
 #ifndef GLOVE_DISABLE_QT
@@ -21517,7 +21959,7 @@ _Tdata_ GlvSize2dWidget<T>::get_size() const {
 #undef _Tdata_
 
 #define Tdata SlvSize2d<T>
-/*! GlvWidgetData specialization for template type: std::vector.*/
+/*! GlvWidgetData specialization for template type: SlvSize2d.*/
 template <class T>
 class GlvWidgetData<Tdata> : public GlvSize2dWidget<T> {
 
@@ -21557,6 +21999,101 @@ struct SlvDataName< std::vector< std::vector<T> > > {
         return name;
     }
 };
+
+/*! Convenience class to manage file writing by using automatically the name of the instance.
+* Tname_class must have the method std::string get_name().*/
+template <class Tname_class>
+class SlvWriteTextNamedT : virtual public SlvWriteText, public Tname_class {
+
+public:
+
+	SlvWriteTextNamedT(std::string _name = "") :Tname_class(_name) {}
+	~SlvWriteTextNamedT() {}
+
+	/*! Write the instance in a file named after the instance's name.
+	* \p _prefix_path can be set so that the path will be such as \p _prefix_path + get_name()*/
+	void write_text_auto(std::string _prefix_path = "", std::ios::openmode _position = std::ios::trunc) const;
+
+};
+
+template <class Tname_class>
+void SlvWriteTextNamedT<Tname_class>::write_text_auto(std::string _prefix, std::ios::openmode _position) const {
+
+	SlvWriteText::write_text(_prefix + Tname_class::get_name(), _position);
+
+}
+
+/*! Convenience class.*/
+typedef SlvWriteTextNamedT<SlvLblName> SlvWriteTextLblNamed;
+
+/*! Convenience class.*/
+typedef SlvWriteTextNamedT<SlvName> SlvWriteTextNamed;
+
+/*! Class to measure execution time.
+* At instantiation/reset, a reference time is measured and added to stack of checked times.
+* Each time get_elasped_time, get_elasped_time_last, or check_display, method is called, a new checked time is added. Check sample012 for example.*/
+class SlvTimer : public SlvName {
+
+private:
+
+	std::vector<clock_t> check_times;
+
+public:
+
+	SlvTimer(std::string _name = "");
+	~SlvTimer();
+
+	/*! Reset timer by clearing all checked times and taking current time as new reference.*/
+	void reset();
+
+	/*! Parse elapsed time since instance reference into a string.*/
+	std::string get_string() const;
+
+	/*! Get elapsed time from reference into hours, minutes, seconds, milliseconds.
+	* Each time this method is called, a check time is added.*/
+	std::vector<int> get_elasped_time();
+	/*! Get elapsed time from last check into hours, minutes, seconds, milliseconds.
+	* Each time this method is called, a check time is added.*/
+	std::vector<int> get_elasped_time_last();
+
+	/*! Measure elapsed time and display it via std::cout. \p _message is an optional display message.
+	* Each time this method is called, a check time is added.*/
+	void check_display(std::string _message = "");
+
+private:
+
+	/*! Display time \p _time.*/
+	void time_display(clock_t _time) const;
+	/*! Parse \p _time into hours, minutes, seconds, milliseconds.*/
+	std::vector<int> get_time(clock_t _time) const;
+
+};
+
+#ifndef GLOVE_DISABLE_QT
+
+#define Tdata std::nullptr_t
+/*! GlvWidgetData specialization for type: std::nullptr_t.
+* Default type to 'disable' a parameter.*/
+template <>
+class GlvWidgetData<Tdata> : public QWidget {
+public:
+    GlvWidgetData(QWidget* _parent = 0) :QWidget(_parent) {}
+    GlvWidgetData(const Tdata& _value, QWidget* _parent = 0) {}
+    ~GlvWidgetData() {}
+    void set_editable(bool l_editable) {}
+    Tdata get_value() const {
+        return nullptr;
+    }
+    void set_value(const Tdata& _value) {}
+};
+
+template <>
+struct GlvWidgetMakerConnect<Tdata> {
+    static void connect(GlvWidgetData<Tdata>* _widget, GlvWidget_base::GlvWidgetConnector* _widget_connector) {}
+};
+#undef Tdata
+
+#endif
 
 #if __cplusplus > 201402L
 
@@ -22756,6 +23293,20 @@ inline bool SlvFile::operator!=(const SlvFile& _file) const {
 
 }
 
+inline bool SlvFile::is_equivalent(const SlvFile& _file) const {
+
+    if (this->exists() && _file.exists()) {
+#if __cplusplus > 201402L
+        return std::filesystem::equivalent(get_path(), _file.get_path());
+#else
+        return false;
+#endif
+    } else {
+        return false;
+    }
+
+}
+
 inline bool SlvFile::readB(std::ifstream& _input_file) {
 
     bool l_read = slv::rw::readB(file_name, _input_file);
@@ -22794,9 +23345,6 @@ inline std::string slv::string::to_id_str(const SlvFile& _value) {
 
     return to_string(_value.get_name());
 }
-
-//const std::string end_of_file_str = "end of file";
-//const std::string slv::rw::end_of_file_str = "end of file";
 
 template <>
 inline bool slv::rw::readB<int>(int& _dat, std::ifstream& _input_file) {
@@ -22980,122 +23528,6 @@ inline void slv::rw::writeB<bool>(bool* const _dat, std::ofstream& _output_file)
 template <>
 inline void slv::rw::writeB<char>(char* const _dat, std::ofstream& _output_file) {
     _output_file.write((char*)&(*_dat), sizeof(char));
-}
-
-template <>
-inline bool slv::rw::readB<std::string>(std::string& _dat, std::ifstream& _input_file) {
-    unsigned int N;
-    bool l_read = slv::rw::readB(N, _input_file);
-    if (!l_read) N = 0;
-    _dat.resize(N);
-    for (unsigned int i = 0; i < N && l_read; i++) {
-        l_read = slv::rw::readB(_dat[i], _input_file);
-    }
-    return l_read;
-}
-
-template <>
-inline void slv::rw::writeB<std::string>(const std::string& _dat, std::ofstream& _output_file) {
-    unsigned int size = (unsigned int)_dat.size();
-    slv::rw::writeB(size, _output_file);
-    for (unsigned int i = 0; i < _dat.size(); i++) {
-        slv::rw::writeB(_dat[i], _output_file);
-    }
-}
-
-inline bool slv::rw::readB(std::vector<bool>& _vector, std::ifstream& _input_file) {
-
-    _vector.clear();
-
-    unsigned int vector_size;
-    bool l_read = slv::rw::readB(vector_size, _input_file);
-
-    std::vector<unsigned char> char_vector;
-    if (l_read) l_read = slv::rw::readB(char_vector, _input_file);
-
-    unsigned int N = 8;
-    bool l_temp;
-    unsigned int c, j, i;
-
-    i = 0;
-    for (c = 0; c < char_vector.size(); c++) {
-        for (j = 0; j < N; j++) {
-            if (i < vector_size) {
-                l_temp = char_vector[c] & (1 << j);
-                _vector.push_back(l_temp);
-            }
-            i++;
-        }
-    }
-
-    return l_read;
-}
-
-inline void slv::rw::writeB(const std::vector<bool>& _vector, std::ofstream& _output_file) {
-
-    unsigned int vector_size = (unsigned int)_vector.size();
-    slv::rw::writeB(vector_size, _output_file);
-
-    std::vector<unsigned char> char_vector;
-
-    unsigned int N = 8;
-    unsigned int c = 0;
-
-    unsigned int i, j, ipj;
-
-    for (i = 0; i < vector_size;) {
-
-        char_vector.push_back(0);
-
-        for (j = 0; j < N; j++) {
-
-            ipj = i;
-            ipj += j;
-
-            if (ipj < vector_size) {
-                char_vector[c] = char_vector[c] | (_vector[ipj] << j);
-            }
-
-        }
-        c++;
-        i += N;
-
-    }
-
-    slv::rw::writeB(char_vector, _output_file);
-
-}
-
-inline SlvLblIdentifier::SlvLblIdentifier(slv::lbl::Identifier _Id) :SlvLabeling<slv::lbl::Identifier>(_Id) {
-
-}
-
-inline SlvLblIdentifier::~SlvLblIdentifier() {
-
-}
-
-inline const slv::lbl::Identifier& SlvLblIdentifier::get_Id() const {
-	return get_label();
-}
-
-inline SlvLblName::SlvLblName(std::string _name) :SlvLabeling<std::string>(_name) {
-
-}
-
-inline SlvLblName::~SlvLblName() {
-
-}
-
-inline const std::string& SlvLblName::get_name() const {
-
-	return get_label();
-
-}
-
-inline void SlvLblName::ostream(std::ostream& _os) const {
-
-	_os << get_name();
-
 }
 
 inline SlvStatus::SlvStatus(statusType _type, std::string _message) {
@@ -24307,34 +24739,48 @@ inline void SlvCLI::Arguments::filter(const std::vector<std::string>& _arguments
 
 inline std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments) {
 
+	std::vector< std::pair<std::string, std::string> > parameter_arguments;
+	for (std::vector< std::pair<std::string, std::string> >::const_iterator it = _parameter_arguments.begin(); it != _parameter_arguments.end(); ++it) {
+		if (it->first.front() == '-') {
+			parameter_arguments.push_back(*it);
+		}
+	}
+
+	std::vector<std::string> solo_arguments;
+	for (std::vector<std::string>::const_iterator it = _solo_arguments.begin(); it != _solo_arguments.end(); ++it) {
+		if (it->front() == '-') {
+			solo_arguments.push_back(*it);
+		}
+	}
+
 	int Nfilled_parameters = 0;
-	for (int i = 0; i < _parameter_arguments.size(); i++) {
-		if (!_parameter_arguments[i].second.empty()) {
+	for (int i = 0; i < parameter_arguments.size(); i++) {
+		if (!parameter_arguments[i].second.empty()) {
 			Nfilled_parameters++;
 		}
 	}
 
-	int argc = 2 * Nfilled_parameters + (int)_solo_arguments.size() + 1;
+	int argc = 2 * Nfilled_parameters + (int)solo_arguments.size() + 1;
 	char** argv = new char* [argc];
 
 	int k_arg = 0;
-	for (int i = 0; i < _parameter_arguments.size(); i++) {
+	for (int i = 0; i < parameter_arguments.size(); i++) {
 
-		if (!_parameter_arguments[i].second.empty()) {
+		if (!parameter_arguments[i].second.empty()) {
 
-			argv[1 + k_arg] = new char[_parameter_arguments[i].first.size() + 1];
+			argv[1 + k_arg] = new char[parameter_arguments[i].first.size() + 1];
 #ifdef COMPILER_GCC
-			strcpy(argv[1 + k_arg], _parameter_arguments[i].first.c_str());
+			strcpy(argv[1 + k_arg], parameter_arguments[i].first.c_str());
 #else
-			strcpy_s(argv[1 + k_arg], _parameter_arguments[i].first.size() + 1, _parameter_arguments[i].first.c_str());
+			strcpy_s(argv[1 + k_arg], parameter_arguments[i].first.size() + 1, parameter_arguments[i].first.c_str());
 #endif
 			k_arg++;
 
-			argv[1 + k_arg] = new char[_parameter_arguments[i].second.size() + 1];
+			argv[1 + k_arg] = new char[parameter_arguments[i].second.size() + 1];
 #ifdef COMPILER_GCC
-			strcpy(argv[1 + k_arg], _parameter_arguments[i].second.c_str());
+			strcpy(argv[1 + k_arg], parameter_arguments[i].second.c_str());
 #else
-			strcpy_s(argv[1 + k_arg], _parameter_arguments[i].second.size() + 1, _parameter_arguments[i].second.c_str());
+			strcpy_s(argv[1 + k_arg], parameter_arguments[i].second.size() + 1, parameter_arguments[i].second.c_str());
 #endif
 			k_arg++;
 
@@ -24342,16 +24788,242 @@ inline std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair
 
 	}
 
-	for (int i = 0; i < _solo_arguments.size(); i++) {
-		argv[1 + 2 * Nfilled_parameters + i] = new char[_solo_arguments[i].size() + 1];
+	for (int i = 0; i < solo_arguments.size(); i++) {
+		argv[1 + 2 * Nfilled_parameters + i] = new char[solo_arguments[i].size() + 1];
 #ifdef COMPILER_GCC
-		strcpy(argv[1 + 2 * Nfilled_parameters + i], _solo_arguments[i].c_str());
+		strcpy(argv[1 + 2 * Nfilled_parameters + i], solo_arguments[i].c_str());
 #else
-		strcpy_s(argv[1 + 2 * Nfilled_parameters + i], _solo_arguments[i].size() + 1, _solo_arguments[i].c_str());
+		strcpy_s(argv[1 + 2 * Nfilled_parameters + i], solo_arguments[i].size() + 1, solo_arguments[i].c_str());
 #endif
 	}
 
 	return { argc, argv };
+
+}
+
+inline SlvLblIdentifier::SlvLblIdentifier(slv::lbl::Identifier _Id) :SlvLabeling<slv::lbl::Identifier>(_Id) {
+
+}
+
+inline SlvLblIdentifier::~SlvLblIdentifier() {
+
+}
+
+inline const slv::lbl::Identifier& SlvLblIdentifier::get_Id() const {
+	return get_label();
+}
+
+inline SlvLblName::SlvLblName(std::string _name) :SlvLabeling<std::string>(_name) {
+
+}
+
+inline SlvLblName::~SlvLblName() {
+
+}
+
+inline const std::string& SlvLblName::get_name() const {
+
+	return get_label();
+
+}
+
+inline void SlvLblName::ostream(std::ostream& _os) const {
+
+	_os << get_name();
+
+}
+
+inline SlvWriteBinary::SlvWriteBinary() {
+
+}
+
+inline SlvWriteBinary::~SlvWriteBinary() {
+
+}
+
+inline SlvStatus SlvWriteBinary::write_binary(std::string _file_path, std::ios::openmode _position) const {
+
+    SlvStatus status;
+    status = SlvFileMgr::write_binary(*this, _file_path, _position);
+
+    return status;
+}
+
+inline SlvReadBinary::SlvReadBinary() {
+
+}
+
+inline SlvReadBinary::~SlvReadBinary() {
+
+}
+
+inline SlvStatus SlvReadBinary::read_binary(std::string _file_path) {
+
+    SlvStatus status;
+    status = SlvFileMgr::read_binary(*this, _file_path);
+
+    return status;
+}
+
+inline SlvName::SlvName(std::string _name) :name(_name) {
+
+}
+
+inline SlvName::~SlvName() {
+
+}
+
+inline const std::string& SlvName::get_name() const {
+	return name;
+}
+
+inline void SlvName::set_name(const std::string& _name) {
+	name = _name;
+}
+
+inline SlvOFS::SlvOFS() {
+
+}
+
+inline SlvOFS::~SlvOFS() {
+
+}
+
+inline std::ofstream& operator<<(std::ofstream& _ofs, const SlvOFS& _OFS) {
+
+	_OFS.ofstream(_ofs);
+	return _ofs;
+
+}
+
+inline SlvWriteText::SlvWriteText() {
+
+}
+
+inline SlvWriteText::~SlvWriteText() {
+
+}
+
+inline SlvStatus SlvWriteText::write_text(std::string _file_path, std::ios::openmode _position) const {
+
+    SlvStatus status;
+    status = SlvFileMgr::write_text(*this, _file_path, _position);
+
+    return status;
+}
+
+inline SlvIFS::SlvIFS() {
+
+}
+
+inline SlvIFS::~SlvIFS() {
+
+}
+
+inline std::ifstream& operator>>(std::ifstream& _ifs, SlvIFS& _IFS) {
+
+	_IFS.ifstream(_ifs);
+	return _ifs;
+
+}
+
+inline SlvReadText::SlvReadText() {
+
+}
+
+inline SlvReadText::~SlvReadText() {
+
+}
+
+inline SlvStatus SlvReadText::read_text(std::string _file_path) {
+
+    SlvStatus status;
+    status = SlvFileMgr::read_text(*this, _file_path);
+
+    return status;
+}
+
+template <>
+inline bool slv::rw::readB<std::string>(std::string& _dat, std::ifstream& _input_file) {
+    unsigned int N;
+    bool l_read = slv::rw::readB(N, _input_file);
+    if (!l_read) N = 0;
+    _dat.resize(N);
+    for (unsigned int i = 0; i < N && l_read; i++) {
+        l_read = slv::rw::readB(_dat[i], _input_file);
+    }
+    return l_read;
+}
+
+template <>
+inline void slv::rw::writeB<std::string>(const std::string& _dat, std::ofstream& _output_file) {
+    unsigned int size = (unsigned int)_dat.size();
+    slv::rw::writeB(size, _output_file);
+    for (unsigned int i = 0; i < _dat.size(); i++) {
+        slv::rw::writeB(_dat[i], _output_file);
+    }
+}
+
+inline bool slv::rw::readB(std::vector<bool>& _vector, std::ifstream& _input_file) {
+
+    _vector.clear();
+
+    unsigned int vector_size;
+    bool l_read = slv::rw::readB(vector_size, _input_file);
+
+    std::vector<unsigned char> char_vector;
+    if (l_read) l_read = slv::rw::readB(char_vector, _input_file);
+
+    unsigned int N = 8;
+    bool l_temp;
+    unsigned int c, j, i;
+
+    i = 0;
+    for (c = 0; c < char_vector.size(); c++) {
+        for (j = 0; j < N; j++) {
+            if (i < vector_size) {
+                l_temp = char_vector[c] & (1 << j);
+                _vector.push_back(l_temp);
+            }
+            i++;
+        }
+    }
+
+    return l_read;
+}
+
+inline void slv::rw::writeB(const std::vector<bool>& _vector, std::ofstream& _output_file) {
+
+    unsigned int vector_size = (unsigned int)_vector.size();
+    slv::rw::writeB(vector_size, _output_file);
+
+    std::vector<unsigned char> char_vector;
+
+    unsigned int N = 8;
+    unsigned int c = 0;
+
+    unsigned int i, j, ipj;
+
+    for (i = 0; i < vector_size;) {
+
+        char_vector.push_back(0);
+
+        for (j = 0; j < N; j++) {
+
+            ipj = i;
+            ipj += j;
+
+            if (ipj < vector_size) {
+                char_vector[c] = char_vector[c] | (_vector[ipj] << j);
+            }
+
+        }
+        c++;
+        i += N;
+
+    }
+
+    slv::rw::writeB(char_vector, _output_file);
 
 }
 
@@ -24698,6 +25370,7 @@ inline GlvVectorWidget_base::GlvVectorWidget_base(QWidget* _parent) : QWidget(_p
     QString info;
 
     buttons_group_box = new QGroupBox(tr("Size"));
+    buttons_group_widget = buttons_group_box;
     buttons_group_box->setFlat(true);
     buttons_group_box->setCheckable(true);
     connect(buttons_group_box, SIGNAL(toggled(bool)), this, SLOT(show_vector_edit(bool)));
@@ -24809,12 +25482,12 @@ inline void GlvVectorWidget_base::set_editable(bool _l_editable) {
     QWidget::setEnabled(_l_editable);
 }
 
-inline void GlvVectorWidget_base::set_checkable(bool _l_checkable) {
+inline void GlvVectorWidget_base::set_checkable(bool _l_checkable, const QString _group_name) {
 
     vector_group_box->setCheckable(_l_checkable);
     QString title;
     if (_l_checkable) {
-        title = tr("vector");
+        title = _group_name;
     }
     vector_group_box->setTitle(title);
 
@@ -25168,612 +25841,6 @@ inline GlvWidgetData<Tdata>::~GlvWidgetData() {
 #undef Tdata
 
 #endif
-
-inline SlvIFS::SlvIFS() {
-
-}
-
-inline SlvIFS::~SlvIFS() {
-
-}
-
-inline std::ifstream& operator>>(std::ifstream& _ifs, SlvIFS& _IFS) {
-
-	_IFS.ifstream(_ifs);
-	return _ifs;
-
-}
-
-inline SlvReadText::SlvReadText() {
-
-}
-
-inline SlvReadText::~SlvReadText() {
-
-}
-
-inline SlvStatus SlvReadText::read_text(std::string _file_path) {
-
-    SlvStatus status;
-    status = SlvFileMgr::read_text(*this, _file_path);
-
-    return status;
-}
-
-inline SlvOFS::SlvOFS() {
-
-}
-
-inline SlvOFS::~SlvOFS() {
-
-}
-
-inline std::ofstream& operator<<(std::ofstream& _ofs, const SlvOFS& _OFS) {
-
-	_OFS.ofstream(_ofs);
-	return _ofs;
-
-}
-
-inline SlvWriteText::SlvWriteText() {
-
-}
-
-inline SlvWriteText::~SlvWriteText() {
-
-}
-
-inline SlvStatus SlvWriteText::write_text(std::string _file_path, std::ios::openmode _position) const {
-
-    SlvStatus status;
-    status = SlvFileMgr::write_text(*this, _file_path, _position);
-
-    return status;
-}
-
-inline SlvName::SlvName(std::string _name) :name(_name) {
-
-}
-
-inline SlvName::~SlvName() {
-
-}
-
-inline const std::string& SlvName::get_name() const {
-	return name;
-}
-
-inline void SlvName::set_name(const std::string& _name) {
-	name = _name;
-}
-
-inline SlvWriteBinary::SlvWriteBinary() {
-
-}
-
-inline SlvWriteBinary::~SlvWriteBinary() {
-
-}
-
-inline SlvStatus SlvWriteBinary::write_binary(std::string _file_path, std::ios::openmode _position) const {
-
-    SlvStatus status;
-    status = SlvFileMgr::write_binary(*this, _file_path, _position);
-
-    return status;
-}
-
-inline SlvReadBinary::SlvReadBinary() {
-
-}
-
-inline SlvReadBinary::~SlvReadBinary() {
-
-}
-
-inline SlvStatus SlvReadBinary::read_binary(std::string _file_path) {
-
-    SlvStatus status;
-    status = SlvFileMgr::read_binary(*this, _file_path);
-
-    return status;
-}
-
-//#include "slv_string.h"
-
-inline SlvTimer::SlvTimer(std::string _name) :SlvName(_name) {
-
-    reset();
-}
-
-inline SlvTimer::~SlvTimer() {
-
-}
-
-inline void SlvTimer::reset() {
-
-    check_times.clear();
-    check_times.push_back(clock());//start time
-}
-
-inline void SlvTimer::check_display(std::string _message) {
-
-    check_times.push_back(clock());
-
-    std::cout << "(SlvTimer " << name << ", " << _message << ")" << std::endl;
-    std::cout << "last check: ";
-    time_display(check_times.back() - check_times[check_times.size() - 2]);
-    std::cout << " ago " << std::endl;
-    std::cout << "from start: ";
-    time_display(check_times.back() - check_times.front());
-    std::cout << std::endl;
-
-}
-
-inline std::string SlvTimer::get_string() const {
-
-    std::string time;
-    std::vector<int> time_vector = get_time(clock() - check_times[0]);
-    if (time_vector[0] > 0) {
-        time = slv::string::to_string(time_vector[0]) + " h ";
-    }
-    if (time_vector[1] > 0 || time_vector[0] > 0) {
-        time += slv::string::to_string(time_vector[1]) + " min ";
-    }
-    if (time_vector[2] > 0 || time_vector[1] > 0 || time_vector[0] > 0) {
-        time += slv::string::to_string(time_vector[2]) + " s ";
-    }
-    if (time_vector[3] > 0 || time_vector[2] > 0 || time_vector[1] > 0 || time_vector[0] > 0) {
-        time += slv::string::to_string(time_vector[3]) + " ms ";
-    }
-
-    return time;
-}
-
-inline std::vector<int> SlvTimer::get_elasped_time() {
-
-    check_times.push_back(clock());
-
-    return get_time(check_times.back() - check_times[0]);
-
-}
-
-inline std::vector<int> SlvTimer::get_elasped_time_last() {
-
-    check_times.push_back(clock());
-
-    return get_time(check_times.back() - check_times.end()[-2]);
-
-}
-
-inline void SlvTimer::time_display(clock_t _time) const {
-
-    std::vector<int> time_vector = get_time(_time);
-    std::cout << time_vector[0] << " h " << time_vector[1] << " min " << time_vector[2] << " s " << time_vector[3] << " ms";
-
-}
-
-inline std::vector<int> SlvTimer::get_time(clock_t _time) const {
-
-    std::vector<int> time_vector;
-
-    double time = double(_time) / CLOCKS_PER_SEC;
-
-    long int time_int = (long int)time;
-    int n_milliseconds = int((time - double(time_int)) * 1000);
-
-    int n_hours, n_minutes, n_seconds;
-
-    n_hours = (time_int - time_int % 3600) / 3600;
-    time_vector.push_back(n_hours);
-    time_int -= n_hours * 3600;
-    n_minutes = (time_int - time_int % 60) / 60;
-    time_vector.push_back(n_minutes);
-    time_int -= n_minutes * 60;
-    n_seconds = (time_int - time_int % 1) / 1;
-    time_vector.push_back(n_seconds);
-
-    time_vector.push_back(n_milliseconds);
-
-    return time_vector;
-}
-
-#define get_iterator_ptr_value \
-iterator_type == IteratorType::Int ? *static_cast<int*>(iterator_ptr) : (\
-iterator_type == IteratorType::UnsignedInt ? *static_cast<unsigned int*>(iterator_ptr) : (\
-iterator_type == IteratorType::Size_t ? *static_cast<std::size_t*>(iterator_ptr) : (\
-0)))
-#define assign_iterator_ptr_value(value) \
-iterator_type == IteratorType::Int ? *static_cast<int*>(iterator_ptr) = value : (\
-iterator_type == IteratorType::UnsignedInt ? *static_cast<unsigned int*>(iterator_ptr) = value : (\
-iterator_type == IteratorType::Size_t ? *static_cast<std::size_t*>(iterator_ptr) = value : (\
-0)))
-
-inline SlvProgressionQt::SlvProgressionQt(std::string _name, bool _l_recurrent) :SlvLblName(_name), l_recurrent(_l_recurrent) {
-
-	clear();
-}
-
-inline SlvProgressionQt::SlvProgressionQt(const SlvProgressionQt& _progression) : SlvProgressionQt(_progression.get_name(), _progression.is_recurrent()) {
-
-}
-
-inline SlvProgressionQt::~SlvProgressionQt() {
-
-	iterator_finish();
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit finished(true);
-#endif
-
-}
-
-inline void SlvProgressionQt::clear() {
-
-	clear_progress();
-	message.clear();
-
-}
-
-inline void SlvProgressionQt::clear_progress() {
-
-	iterator_ptr = NULL;
-	l_iterating = false;
-	l_was_canceled = false;
-
-	iterator = 0;
-	Niterations = 0;
-	l_started = false;
-	l_no_feedback_ended = false;
-
-}
-
-inline SlvProgressionQt& SlvProgressionQt::operator=(const SlvProgressionQt& _progression) {
-
-	return *this;
-
-}
-
-inline void SlvProgressionQt::set_recurrent(bool _l_recurrent) {
-
-	l_recurrent = _l_recurrent;
-
-}
-
-inline bool SlvProgressionQt::is_recurrent() const {
-
-	return l_recurrent;
-
-}
-
-inline bool SlvProgressionQt::is_over() const {
-
-	if (l_started) {
-		if (iterator_ptr) {
-			return is_iterator_ptr_over((unsigned int)(get_iterator_ptr_value), Niterations);
-		} else if (l_iterating) {
-			return is_iterator_over(iterator, Niterations);
-		} else {
-			return l_no_feedback_ended;
-		}
-	} else {
-		return true;
-	}
-
-}
-
-inline bool SlvProgressionQt::has_iterator_ptr() const {
-
-	return iterator_ptr;
-
-}
-
-inline bool SlvProgressionQt::is_iterating() const {
-
-	return l_iterating;
-
-}
-
-inline bool SlvProgressionQt::is_cancelable() const {
-
-	return Niterations;
-
-}
-
-inline bool SlvProgressionQt::is_iterator_ptr_over(unsigned int _iterator_value, unsigned int _Niterations) {
-
-	return _iterator_value >= _Niterations - 1;
-
-}
-
-inline bool SlvProgressionQt::is_iterator_over(std::size_t _iterator, unsigned int _Niterations) {
-
-	return _iterator >= _Niterations;
-
-}
-
-inline void SlvProgressionQt::start() {
-
-	clear_progress();
-	l_started = true;
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit started();
-#endif
-
-}
-
-inline void SlvProgressionQt::start(const unsigned int _Niterations) {
-
-	clear_progress();
-
-	start_pv(_Niterations);
-
-}
-
-template <>
-inline void SlvProgressionQt::start(int* _iterator_ptr, const unsigned int _Niterations) {
-
-	iterator_type = IteratorType::Int;
-
-	clear_progress();
-
-	iterator_ptr = _iterator_ptr;
-	
-	start_pv(_Niterations);
-
-}
-
-template <>
-inline void SlvProgressionQt::start(unsigned int* _iterator_ptr, const unsigned int _Niterations) {
-
-	iterator_type = IteratorType::UnsignedInt;
-
-	clear_progress();
-
-	iterator_ptr = _iterator_ptr;
-	
-	start_pv(_Niterations);
-
-}
-
-template <>
-inline void SlvProgressionQt::start(std::size_t* _iterator_ptr, const unsigned int _Niterations) {
-
-	iterator_type = IteratorType::Size_t;
-
-	clear_progress();
-
-	iterator_ptr = _iterator_ptr;
-	
-	start_pv(_Niterations);
-
-}
-
-inline void SlvProgressionQt::start_pv(const unsigned int _Niterations) {
-
-	l_started = true;
-	Niterations = _Niterations;
-
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit started();
-#endif
-
-}
-
-inline bool SlvProgressionQt::update() {
-
-	if (Niterations) {
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-		int value = -1;
-		if (iterator_ptr) {
-			value = int(100 * (get_iterator_ptr_value + 1) / Niterations);
-		} else if (l_iterating) {
-			value = int(100 * (iterator) / Niterations);
-		}
-		if (value >= 0) {
-			emit updated(value);
-			if (is_over()) {
-				end();
-			}
-			return true;
-		} else {
-			return false;
-		}
-#endif
-	} else {
-		return false;
-	}
-
-}
-
-inline bool SlvProgressionQt::update(int _value) {
-
-	if (Niterations) {
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-		int value = 100 * (_value + 1) / Niterations;
-		if (value >= 0) {
-			emit updated(value);
-			if (is_iterator_ptr_over(_value, Niterations)) {
-				end();
-			}
-			return true;
-		} else {
-			return false;
-		}
-#endif
-	} else {
-		return false;
-	}
-
-}
-
-inline void SlvProgressionQt::end() {
-
-	l_started = false;
-
-	iterator_finish();
-	if (!is_cancelable()) {
-		l_no_feedback_ended = true;
-	}
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit ended();
-#endif
-
-	iterator_ptr = NULL;
-	l_iterating = false;
-	Niterations = 0;
-
-}
-
-inline void SlvProgressionQt::finish(bool _l_remove) {
-
-	iterator_finish();
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit finished(_l_remove);
-#endif
-
-	clear();
-
-}
-
-inline void SlvProgressionQt::cancel() {
-
-	iterator_finish();
-	l_was_canceled = true;
-
-}
-
-inline bool SlvProgressionQt::was_canceled() const {
-
-	return l_was_canceled;
-
-}
-
-inline void SlvProgressionQt::iterator_finish() {
-
-	/*! Triggers end of loop. If finished is called when the iterator has not reach Niterations yet, then it sets l_stopped = true. Means the progression has been stopped before then end.*/
-	if (iterator_ptr) {
-		if (get_iterator_ptr_value != Niterations) {
-			assign_iterator_ptr_value(Niterations);
-		}
-	} else if (l_iterating) {
-		if (iterator != Niterations) {
-			iterator = Niterations;
-		}
-	}
-
-}
-
-inline SlvProgressionQt::operator std::size_t() const {
-
-	return iterator;
-
-}
-
-inline SlvProgressionQt& SlvProgressionQt::operator=(const std::size_t _iterator) {
-
-	clear_progress();
-
-	l_started = true;
-
-	iterator = _iterator;
-	l_iterating = true;
-
-#if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit started();
-#endif
-	return *this;
-}
-
-inline bool SlvProgressionQt::operator<<(std::size_t _Niterations) {
-
-	if (l_iterating) {
-		Niterations = (unsigned int)_Niterations;
-		return iterator < _Niterations;
-	} else {
-		return false;
-	}
-
-}
-
-inline bool SlvProgressionQt::operator<<(int _Niterations) {
-
-	return *this << std::size_t(_Niterations);
-
-}
-
-inline bool SlvProgressionQt::operator<<(unsigned int _Niterations) {
-
-	return *this << std::size_t(_Niterations);
-
-}
-
-inline bool SlvProgressionQt::operator<<=(std::size_t _Niterations) {
-
-	if (l_iterating) {
-		Niterations = (unsigned int)(_Niterations - 1);
-		return iterator <= _Niterations;
-	} else {
-		return false;
-	}
-
-}
-
-inline bool SlvProgressionQt::operator<<=(int _Niterations) {
-
-	return *this <<= std::size_t(_Niterations);
-
-}
-
-inline bool SlvProgressionQt::operator<<=(unsigned int _Niterations) {
-
-	return *this <<= std::size_t(_Niterations);
-
-}
-
-inline SlvProgressionQt& SlvProgressionQt::operator++() {
-
-	if (l_iterating) {
-		++iterator;
-		update();
-	}
-	return *this;
-}
-
-inline SlvProgressionQt SlvProgressionQt::operator++(int) {
-
-	if (l_iterating) {
-		iterator++;
-		update();
-	}
-	SlvProgressionQt progression = *this;
-	return progression;
-}
-
-inline SlvProgression::SlvProgression(std::string _name, bool _l_recurrent): progression(_name) {
-
-	progression.set_recurrent(_l_recurrent);
-
-}
-
-inline SlvProgression::SlvProgression(const SlvProgression& _progression) {
-
-	*this = _progression;
-}
-
-inline SlvProgression::~SlvProgression() {
-
-}
-
-inline SlvProgressionQt* SlvProgression::get_progression() const {
-
-	return const_cast<SlvProgressionQt*>(&progression);
-
-}
-
-inline SlvProgression& SlvProgression::operator=(const SlvProgression& _progression) {
-
-	return *this;
-}
 
 inline SlvParametrization_base::SlvParametrization_base() {
 
@@ -27158,6 +27225,407 @@ inline void glv::flag::INFO(std::string warning_message, QWidget* _parent) {
 
 }
 
+#endif
+
+#define get_iterator_ptr_value \
+iterator_type == IteratorType::Int ? *static_cast<int*>(iterator_ptr) : (\
+iterator_type == IteratorType::UnsignedInt ? *static_cast<unsigned int*>(iterator_ptr) : (\
+iterator_type == IteratorType::Size_t ? *static_cast<std::size_t*>(iterator_ptr) : (\
+0)))
+#define assign_iterator_ptr_value(value) \
+iterator_type == IteratorType::Int ? *static_cast<int*>(iterator_ptr) = value : (\
+iterator_type == IteratorType::UnsignedInt ? *static_cast<unsigned int*>(iterator_ptr) = value : (\
+iterator_type == IteratorType::Size_t ? *static_cast<std::size_t*>(iterator_ptr) = value : (\
+0)))
+
+inline SlvProgressionQt::SlvProgressionQt(std::string _name, bool _l_recurrent) :SlvLblName(_name), l_recurrent(_l_recurrent) {
+
+	clear();
+}
+
+inline SlvProgressionQt::SlvProgressionQt(const SlvProgressionQt& _progression) : SlvProgressionQt(_progression.get_name(), _progression.is_recurrent()) {
+
+}
+
+inline SlvProgressionQt::~SlvProgressionQt() {
+
+	iterator_finish();
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit finished(true);
+#endif
+
+}
+
+inline void SlvProgressionQt::clear() {
+
+	clear_progress();
+	message.clear();
+
+}
+
+inline void SlvProgressionQt::clear_progress() {
+
+	iterator_ptr = NULL;
+	l_iterating = false;
+	l_was_canceled = false;
+
+	iterator = 0;
+	Niterations = 0;
+	l_started = false;
+	l_no_feedback_ended = false;
+
+}
+
+inline SlvProgressionQt& SlvProgressionQt::operator=(const SlvProgressionQt& _progression) {
+
+	return *this;
+
+}
+
+inline void SlvProgressionQt::set_recurrent(bool _l_recurrent) {
+
+	l_recurrent = _l_recurrent;
+
+}
+
+inline bool SlvProgressionQt::is_recurrent() const {
+
+	return l_recurrent;
+
+}
+
+inline bool SlvProgressionQt::is_over() const {
+
+	if (l_started) {
+		if (iterator_ptr) {
+			return is_iterator_ptr_over((unsigned int)(get_iterator_ptr_value), Niterations);
+		} else if (l_iterating) {
+			return is_iterator_over(iterator, Niterations);
+		} else {
+			return l_no_feedback_ended;
+		}
+	} else {
+		return true;
+	}
+
+}
+
+inline bool SlvProgressionQt::has_iterator_ptr() const {
+
+	return iterator_ptr;
+
+}
+
+inline bool SlvProgressionQt::is_iterating() const {
+
+	return l_iterating;
+
+}
+
+inline bool SlvProgressionQt::is_cancelable() const {
+
+	return Niterations;
+
+}
+
+inline bool SlvProgressionQt::is_iterator_ptr_over(unsigned int _iterator_value, unsigned int _Niterations) {
+
+	return _iterator_value >= _Niterations - 1;
+
+}
+
+inline bool SlvProgressionQt::is_iterator_over(std::size_t _iterator, unsigned int _Niterations) {
+
+	return _iterator >= _Niterations;
+
+}
+
+inline void SlvProgressionQt::start() {
+
+	clear_progress();
+	l_started = true;
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit started();
+#endif
+
+}
+
+inline void SlvProgressionQt::start(const unsigned int _Niterations) {
+
+	clear_progress();
+
+	start_pv(_Niterations);
+
+}
+
+template <>
+inline void SlvProgressionQt::start(int* _iterator_ptr, const unsigned int _Niterations) {
+
+	iterator_type = IteratorType::Int;
+
+	clear_progress();
+
+	iterator_ptr = _iterator_ptr;
+	
+	start_pv(_Niterations);
+
+}
+
+template <>
+inline void SlvProgressionQt::start(unsigned int* _iterator_ptr, const unsigned int _Niterations) {
+
+	iterator_type = IteratorType::UnsignedInt;
+
+	clear_progress();
+
+	iterator_ptr = _iterator_ptr;
+	
+	start_pv(_Niterations);
+
+}
+
+template <>
+inline void SlvProgressionQt::start(std::size_t* _iterator_ptr, const unsigned int _Niterations) {
+
+	iterator_type = IteratorType::Size_t;
+
+	clear_progress();
+
+	iterator_ptr = _iterator_ptr;
+	
+	start_pv(_Niterations);
+
+}
+
+inline void SlvProgressionQt::start_pv(const unsigned int _Niterations) {
+
+	l_started = true;
+	Niterations = _Niterations;
+
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit started();
+#endif
+
+}
+
+inline bool SlvProgressionQt::update() {
+
+	if (Niterations) {
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+		int value = -1;
+		if (iterator_ptr) {
+			value = int(100 * (get_iterator_ptr_value + 1) / Niterations);
+		} else if (l_iterating) {
+			value = int(100 * (iterator) / Niterations);
+		}
+		if (value >= 0) {
+			emit updated(value);
+			if (is_over()) {
+				end();
+			}
+			return true;
+		} else {
+			return false;
+		}
+#endif
+	} else {
+		return false;
+	}
+
+}
+
+inline bool SlvProgressionQt::update(int _value) {
+
+	if (Niterations) {
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+		int value = 100 * (_value + 1) / Niterations;
+		if (value >= 0) {
+			emit updated(value);
+			if (is_iterator_ptr_over(_value, Niterations)) {
+				end();
+			}
+			return true;
+		} else {
+			return false;
+		}
+#endif
+	} else {
+		return false;
+	}
+
+}
+
+inline void SlvProgressionQt::end() {
+
+	l_started = false;
+
+	iterator_finish();
+	if (!is_cancelable()) {
+		l_no_feedback_ended = true;
+	}
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit ended();
+#endif
+
+	iterator_ptr = NULL;
+	l_iterating = false;
+	Niterations = 0;
+
+}
+
+inline void SlvProgressionQt::finish(bool _l_remove) {
+
+	iterator_finish();
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit finished(_l_remove);
+#endif
+
+	clear();
+
+}
+
+inline void SlvProgressionQt::cancel() {
+
+	iterator_finish();
+	l_was_canceled = true;
+
+}
+
+inline bool SlvProgressionQt::was_canceled() const {
+
+	return l_was_canceled;
+
+}
+
+inline void SlvProgressionQt::iterator_finish() {
+
+	/*! Triggers end of loop. If finished is called when the iterator has not reach Niterations yet, then it sets l_stopped = true. Means the progression has been stopped before then end.*/
+	if (iterator_ptr) {
+		if (get_iterator_ptr_value != Niterations) {
+			assign_iterator_ptr_value(Niterations);
+		}
+	} else if (l_iterating) {
+		if (iterator != Niterations) {
+			iterator = Niterations;
+		}
+	}
+
+}
+
+inline SlvProgressionQt::operator std::size_t() const {
+
+	return iterator;
+
+}
+
+inline SlvProgressionQt& SlvProgressionQt::operator=(const std::size_t _iterator) {
+
+	clear_progress();
+
+	l_started = true;
+
+	iterator = _iterator;
+	l_iterating = true;
+
+#if OPTION_ENABLE_SLV_QT_PROGRESS==1
+	emit started();
+#endif
+	return *this;
+}
+
+inline bool SlvProgressionQt::operator<<(std::size_t _Niterations) {
+
+	if (l_iterating) {
+		Niterations = (unsigned int)_Niterations;
+		return iterator < _Niterations;
+	} else {
+		return false;
+	}
+
+}
+
+inline bool SlvProgressionQt::operator<<(int _Niterations) {
+
+	return *this << std::size_t(_Niterations);
+
+}
+
+inline bool SlvProgressionQt::operator<<(unsigned int _Niterations) {
+
+	return *this << std::size_t(_Niterations);
+
+}
+
+inline bool SlvProgressionQt::operator<<=(std::size_t _Niterations) {
+
+	if (l_iterating) {
+		Niterations = (unsigned int)(_Niterations - 1);
+		return iterator <= _Niterations;
+	} else {
+		return false;
+	}
+
+}
+
+inline bool SlvProgressionQt::operator<<=(int _Niterations) {
+
+	return *this <<= std::size_t(_Niterations);
+
+}
+
+inline bool SlvProgressionQt::operator<<=(unsigned int _Niterations) {
+
+	return *this <<= std::size_t(_Niterations);
+
+}
+
+inline SlvProgressionQt& SlvProgressionQt::operator++() {
+
+	if (l_iterating) {
+		++iterator;
+		update();
+	}
+	return *this;
+}
+
+inline SlvProgressionQt SlvProgressionQt::operator++(int) {
+
+	if (l_iterating) {
+		iterator++;
+		update();
+	}
+	SlvProgressionQt progression = *this;
+	return progression;
+}
+
+inline SlvProgression::SlvProgression(std::string _name, bool _l_recurrent): progression(_name) {
+
+	progression.set_recurrent(_l_recurrent);
+
+}
+
+inline SlvProgression::SlvProgression(const SlvProgression& _progression) {
+
+	*this = _progression;
+}
+
+inline SlvProgression::~SlvProgression() {
+
+}
+
+inline SlvProgressionQt* SlvProgression::get_progression() const {
+
+	return const_cast<SlvProgressionQt*>(&progression);
+
+}
+
+inline SlvProgression& SlvProgression::operator=(const SlvProgression& _progression) {
+
+	return *this;
+}
+
+#ifndef GLOVE_DISABLE_QT
+
 inline GlvProgressMgr::GlvProgressMgr(QWidget* _parent) :QWidget(_parent) {
 
     m_layout = new QVBoxLayout;
@@ -27557,6 +28025,105 @@ inline const SlvParametrization_base* GlvParamListDialog_base::get_parametrizati
 }
 
 #endif
+
+//#include "slv_string.h"
+
+inline SlvTimer::SlvTimer(std::string _name) :SlvName(_name) {
+
+    reset();
+}
+
+inline SlvTimer::~SlvTimer() {
+
+}
+
+inline void SlvTimer::reset() {
+
+    check_times.clear();
+    check_times.push_back(clock());//start time
+}
+
+inline void SlvTimer::check_display(std::string _message) {
+
+    check_times.push_back(clock());
+
+    std::cout << "(SlvTimer " << name << ", " << _message << ")" << std::endl;
+    std::cout << "last check: ";
+    time_display(check_times.back() - check_times[check_times.size() - 2]);
+    std::cout << " ago " << std::endl;
+    std::cout << "from start: ";
+    time_display(check_times.back() - check_times.front());
+    std::cout << std::endl;
+
+}
+
+inline std::string SlvTimer::get_string() const {
+
+    std::string time;
+    std::vector<int> time_vector = get_time(clock() - check_times[0]);
+    if (time_vector[0] > 0) {
+        time = slv::string::to_string(time_vector[0]) + " h ";
+    }
+    if (time_vector[1] > 0 || time_vector[0] > 0) {
+        time += slv::string::to_string(time_vector[1]) + " min ";
+    }
+    if (time_vector[2] > 0 || time_vector[1] > 0 || time_vector[0] > 0) {
+        time += slv::string::to_string(time_vector[2]) + " s ";
+    }
+    if (time_vector[3] > 0 || time_vector[2] > 0 || time_vector[1] > 0 || time_vector[0] > 0) {
+        time += slv::string::to_string(time_vector[3]) + " ms ";
+    }
+
+    return time;
+}
+
+inline std::vector<int> SlvTimer::get_elasped_time() {
+
+    check_times.push_back(clock());
+
+    return get_time(check_times.back() - check_times[0]);
+
+}
+
+inline std::vector<int> SlvTimer::get_elasped_time_last() {
+
+    check_times.push_back(clock());
+
+    return get_time(check_times.back() - check_times.end()[-2]);
+
+}
+
+inline void SlvTimer::time_display(clock_t _time) const {
+
+    std::vector<int> time_vector = get_time(_time);
+    std::cout << time_vector[0] << " h " << time_vector[1] << " min " << time_vector[2] << " s " << time_vector[3] << " ms";
+
+}
+
+inline std::vector<int> SlvTimer::get_time(clock_t _time) const {
+
+    std::vector<int> time_vector;
+
+    double time = double(_time) / CLOCKS_PER_SEC;
+
+    long int time_int = (long int)time;
+    int n_milliseconds = int((time - double(time_int)) * 1000);
+
+    int n_hours, n_minutes, n_seconds;
+
+    n_hours = (time_int - time_int % 3600) / 3600;
+    time_vector.push_back(n_hours);
+    time_int -= n_hours * 3600;
+    n_minutes = (time_int - time_int % 60) / 60;
+    time_vector.push_back(n_minutes);
+    time_int -= n_minutes * 60;
+    n_seconds = (time_int - time_int % 1) / 1;
+    time_vector.push_back(n_seconds);
+
+    time_vector.push_back(n_milliseconds);
+
+    return time_vector;
+}
 
 #if __cplusplus > 201402L
 
