@@ -16,8 +16,9 @@ var searchData=
   ['layout_5fitems_13',['layout_items',['../class_glv_map_widget__base.html#a823b414f33637c74601a49dcd18555da',1,'GlvMapWidget_base::layout_items()'],['../class_glv_vector_widget__base.html#af815cfd48c33ebccc59a4d312b1d044c',1,'GlvVectorWidget_base::layout_items()']]],
   ['layout_5ftype_14',['layout_type',['../class_glv_parameters_widget__base.html#a2c11f70ec80ea40caa02d46218b1ac5b',1,'GlvParametersWidget_base']]],
   ['layouttype_15',['LayoutType',['../class_glv_parameters_widget__base.html#a703b7f11a9b165ef85fbb7688762cfed',1,'GlvParametersWidget_base']]],
-  ['list_5flayout_16',['list_layout',['../class_glv_list_dialog__base.html#ab6ab4fcfcabf049374128cf6facfb86f',1,'GlvListDialog_base']]],
-  ['list_5fname_5fwidget_17',['list_name_widget',['../class_glv_list_dialog__base.html#af98d31340b741826d09c5acd5796d5ae',1,'GlvListDialog_base']]],
-  ['load_18',['load',['../class_glv_parametrization_save_load.html#aa2d1b711d1206e0beff5a5e9fe7a5cb8',1,'GlvParametrizationSaveLoad::load()'],['../class_glv_widget_save_load.html#abc8983315bef4914bf8330429e1e25bc',1,'GlvWidgetSaveLoad::load()'],['../class_glv_widget_save_load__base.html#a4ca5229bcf59154bfdd26ad1566c4bbf',1,'GlvWidgetSaveLoad_base::load()']]],
-  ['loop_5fdisplay_19',['loop_display',['../namespaceslv_1_1flag.html#aa453649768f06af3c0941d6151a58cfe',1,'slv::flag']]]
+  ['left_16',['left',['../class_slv_sides2d.html#a4b5b2cf92a8fc00ab68db5d67772cd78',1,'SlvSides2d']]],
+  ['list_5flayout_17',['list_layout',['../class_glv_list_dialog__base.html#ab6ab4fcfcabf049374128cf6facfb86f',1,'GlvListDialog_base']]],
+  ['list_5fname_5fwidget_18',['list_name_widget',['../class_glv_list_dialog__base.html#af98d31340b741826d09c5acd5796d5ae',1,'GlvListDialog_base']]],
+  ['load_19',['load',['../class_glv_parametrization_save_load.html#aa2d1b711d1206e0beff5a5e9fe7a5cb8',1,'GlvParametrizationSaveLoad::load()'],['../class_glv_widget_save_load.html#abc8983315bef4914bf8330429e1e25bc',1,'GlvWidgetSaveLoad::load()'],['../class_glv_widget_save_load__base.html#a4ca5229bcf59154bfdd26ad1566c4bbf',1,'GlvWidgetSaveLoad_base::load()']]],
+  ['loop_5fdisplay_20',['loop_display',['../namespaceslv_1_1flag.html#aa453649768f06af3c0941d6151a58cfe',1,'slv::flag']]]
 ];

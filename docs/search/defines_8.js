@@ -1,5 +1,25 @@
 var searchData=
 [
-  ['mydebug1_0',['MYDEBUG1',['../_slv_macros_8h.html#a728d7644f1cfd77ca80f870e1b5b61a2',1,'SlvMacros.h']]],
-  ['mydebug2_1',['MYDEBUG2',['../_slv_macros_8h.html#a0e7735c264020c60077e35a1579b3286',1,'SlvMacros.h']]]
+  ['macspec_5fbitand_0',['MACSPEC_BITAND',['../_slv_macro_specialize_8h.html#ac6c503dd0f9ae5013d577b39d0307713',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fbitand_5f0_1',['MACSPEC_BITAND_0',['../_slv_macro_specialize_8h.html#a0cb5799950d0f6b5efb8fa0fd9b24e3c',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fbitand_5f1_2',['MACSPEC_BITAND_1',['../_slv_macro_specialize_8h.html#a33ba17da2777db8c1d611ad19c2dce67',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fcat_3',['MACSPEC_CAT',['../_slv_macro_specialize_8h.html#a0c96c4241b541ac244aea94b6658cd50',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fcheck_4',['MACSPEC_CHECK',['../_slv_macro_specialize_8h.html#a394dbadf34ecc4a000f9a087b20c1007',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fcheck_5fn_5',['MACSPEC_CHECK_N',['../_slv_macro_specialize_8h.html#a1d7b6373c6881cdc4292d052dc68853a',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fcompare_6',['MACSPEC_COMPARE',['../_slv_macro_specialize_8h.html#af40d1827f280c1f1df62dc61b79fb3b0',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fcompare_5fnullptr_5ft_7',['MACSPEC_COMPARE_nullptr_t',['../_slv_parameter_8h.html#a5aee975ee94371b8c289c45625fc97c8',1,'SlvParameter.h']]],
+  ['macspec_5fcompl_8',['MACSPEC_COMPL',['../_slv_macro_specialize_8h.html#a184f207317d7466cd26e402a01d3bc2a',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fcompl_5f0_9',['MACSPEC_COMPL_0',['../_slv_macro_specialize_8h.html#acd13780fd33a1a161127d4d9585a25ef',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fcompl_5f1_10',['MACSPEC_COMPL_1',['../_slv_macro_specialize_8h.html#a573b52ce383b8e20379d14a09b799ca2',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fiif_11',['MACSPEC_IIF',['../_slv_macro_specialize_8h.html#ac4f5135a310a1fd1e5cd8149f2378874',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fiif_5f0_12',['MACSPEC_IIF_0',['../_slv_macro_specialize_8h.html#ae19dfb21cbee81bea4ca16d1d01c94fa',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fiif_5f1_13',['MACSPEC_IIF_1',['../_slv_macro_specialize_8h.html#ad51b028d9e9be3f4c6b421c0ed9ec356',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fis_5fparen_14',['MACSPEC_IS_PAREN',['../_slv_macro_specialize_8h.html#aaf6766ab51d3ba8a0bd8bc5127def25a',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fis_5fparen_5fprobe_15',['MACSPEC_IS_PAREN_PROBE',['../_slv_macro_specialize_8h.html#aedd303936405c116a5d83b5014ead0d0',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fmsvc_5fva_5fargs_5fworkaround_16',['MACSPEC_MSVC_VA_ARGS_WORKAROUND',['../_slv_macro_specialize_8h.html#a45c85fbfe4e087a9e60bb0d75aa779a9',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fprimitive_5fcat_17',['MACSPEC_PRIMITIVE_CAT',['../_slv_macro_specialize_8h.html#ac7252294d913a0a156a8084fdc521139',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fprimitive_5fcompare_18',['MACSPEC_PRIMITIVE_COMPARE',['../_slv_macro_specialize_8h.html#ae293e67e4f0b440fe7b6f44653436e07',1,'SlvMacroSpecialize.h']]],
+  ['macspec_5fprobe_19',['MACSPEC_PROBE',['../_slv_macro_specialize_8h.html#a4b8f58c7f866044ac305d62108333929',1,'SlvMacroSpecialize.h']]],
+  ['mydebug1_20',['MYDEBUG1',['../_slv_macros_8h.html#a728d7644f1cfd77ca80f870e1b5b61a2',1,'SlvMacros.h']]],
+  ['mydebug2_21',['MYDEBUG2',['../_slv_macros_8h.html#a0e7735c264020c60077e35a1579b3286',1,'SlvMacros.h']]]
 ];

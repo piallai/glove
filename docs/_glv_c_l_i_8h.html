@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.6</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.7</span>
    </div>
   </td>
  </tr>
@@ -154,7 +154,7 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a62b36613ba5fbefa8317cbb46906c111"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a62b36613ba5fbefa8317cbb46906c111">glove_recurrent_var</a></td></tr>
+<tr class="memitem:a62b36613ba5fbefa8317cbb46906c111"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a62b36613ba5fbefa8317cbb46906c111">glove_recurrent_var</a> = 0</td></tr>
 <tr class="separator:a62b36613ba5fbefa8317cbb46906c111"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
@@ -341,6 +341,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Must be castable to bool. The returned boolean value accounts for the auto repeat mode to be enabled or not. </p>
 
 </div>
 </div>
@@ -457,8 +458,8 @@ Variables</h2></td></tr>
 <div class="ttc" id="a_glv_c_l_i_8h_html_a09f83b808347da987b9da975714173c7"><div class="ttname"><a href="_glv_c_l_i_8h.html#a09f83b808347da987b9da975714173c7">glv_cli_main</a></div><div class="ttdeci">int glv_cli_main(int argc, char *argv[], bool _l_gloved, const Tparametrization &amp;_parametrization, bool _l_recurrent, Trecurrent &amp;_recurrent_var)</div></div>
 <div class="ttc" id="a_glv_c_l_i_8h_html_a424b3db2a3832771a876c60bb32e9e41"><div class="ttname"><a href="_glv_c_l_i_8h.html#a424b3db2a3832771a876c60bb32e9e41">GLOVE_APP_RECURRENT_MODE</a></div><div class="ttdeci">#define GLOVE_APP_RECURRENT_MODE</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:120</div></div>
 <div class="ttc" id="a_glv_c_l_i_8h_html_a446abd0bda54d05aa72486859aa3df27"><div class="ttname"><a href="_glv_c_l_i_8h.html#a446abd0bda54d05aa72486859aa3df27">GLOVE_APP_THREAD_MODE</a></div><div class="ttdeci">#define GLOVE_APP_THREAD_MODE</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:116</div></div>
-<div class="ttc" id="a_glv_c_l_i_8h_html_a62b36613ba5fbefa8317cbb46906c111"><div class="ttname"><a href="_glv_c_l_i_8h.html#a62b36613ba5fbefa8317cbb46906c111">glove_recurrent_var</a></div><div class="ttdeci">static int glove_recurrent_var</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:123</div></div>
-<div class="ttc" id="a_glv_c_l_i_8h_html_a9107187acb838d3d8ca92b7411b46305"><div class="ttname"><a href="_glv_c_l_i_8h.html#a9107187acb838d3d8ca92b7411b46305">GLOVE_APP_RECURRENT_TYPE</a></div><div class="ttdeci">#define GLOVE_APP_RECURRENT_TYPE</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:121</div></div>
+<div class="ttc" id="a_glv_c_l_i_8h_html_a62b36613ba5fbefa8317cbb46906c111"><div class="ttname"><a href="_glv_c_l_i_8h.html#a62b36613ba5fbefa8317cbb46906c111">glove_recurrent_var</a></div><div class="ttdeci">static int glove_recurrent_var</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:124</div></div>
+<div class="ttc" id="a_glv_c_l_i_8h_html_a9107187acb838d3d8ca92b7411b46305"><div class="ttname"><a href="_glv_c_l_i_8h.html#a9107187acb838d3d8ca92b7411b46305">GLOVE_APP_RECURRENT_TYPE</a></div><div class="ttdeci">#define GLOVE_APP_RECURRENT_TYPE</div><div class="ttdef"><b>Definition:</b> GlvCLI.h:122</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -736,7 +737,7 @@ template&lt;class Tparametrization , class Trecurrent &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int glove_recurrent_var</td>
+          <td class="memname">int glove_recurrent_var = 0</td>
         </tr>
       </table>
   </td>
@@ -745,7 +746,7 @@ template&lt;class Tparametrization , class Trecurrent &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Usef only if GLOVE_APP_RECURRENT_MODE is left false. </p>
+<p>Used only if GLOVE_APP_RECURRENT_MODE is left to false. </p>
 
 </div>
 </div>

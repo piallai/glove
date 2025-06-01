@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.6</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.7</span>
    </div>
   </td>
  </tr>
@@ -88,6 +88,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="slv__parse_8h_source.html">misc/slv_parse.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_slv_is_parametrization_8h_source.html">SlvIsParametrization.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_slv_parametrization__base_8h_source.html">SlvParametrization_base.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_slv_macro_specialize_8h_source.html">SlvMacroSpecialize.h</a>&quot;</code><br />
 </div>
 <p><a href="_slv_parameter_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -99,6 +100,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_slv_parameter_spec.html">SlvParameterSpec&lt; Tparam, typename &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_slv_parameter_spec_3_01std_1_1nullptr__t_01_4.html">SlvParameterSpec&lt; std::nullptr_t &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_slv_parameter_spec_serialization_3_01bool_01_4.html">SlvParameterSpecSerialization&lt; bool &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_slv_parameter_spec_3_01_tparam_00_01typename_01std_1_1enable__if_3_01_slv_is_parametrizatad70758acd6680b495588c8bba862946.html">SlvParameterSpec&lt; Tparam, typename std::enable_if&lt; SlvIsParametrization&lt; Tparam &gt;::value &gt;::type &gt;</a></td></tr>
@@ -106,6 +109,8 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
+<tr class="memitem:a7adfa28796575f85ed8e06607299a8c8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#a7adfa28796575f85ed8e06607299a8c8">Tparam</a>&#160;&#160;&#160;std::nullptr_t</td></tr>
+<tr class="separator:a7adfa28796575f85ed8e06607299a8c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab6b49fb37bf927735a95e29479bd8950"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#ab6b49fb37bf927735a95e29479bd8950">glvm_pv_get_macro_parameter</a>(_1,  _2,  _3,  _4,  _5,  _6,  _7,  macro, ...)&#160;&#160;&#160;macro</td></tr>
 <tr class="separator:ab6b49fb37bf927735a95e29479bd8950"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6b1aaf1771e00c667579983f47cded6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#ad6b1aaf1771e00c667579983f47cded6">glvm_parameter</a>(...)&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a5b8637b5731207983d4e1d3559abaf64">EXPAND</a>( <a class="el" href="_slv_parameter_8h.html#ab6b49fb37bf927735a95e29479bd8950">glvm_pv_get_macro_parameter</a>(__VA_ARGS__, <a class="el" href="_slv_parameter_8h.html#a66ca81ed3fc86727515d8e0ea198c731">glvm_pv_parameter7</a>, <a class="el" href="_slv_parameter_8h.html#acae78e39f82541c2ab6e9ca18c050eba">glvm_pv_parameter6</a>, <a class="el" href="_slv_parameter_8h.html#aa38aeb0e717f56c34fae53b2832ab649">glvm_pv_parameter5</a>, <a class="el" href="_slv_parameter_8h.html#abf7e1dcd3091d8f8c0331ce417d853e7">glvm_pv_parameter4</a>)(__VA_ARGS__) )</td></tr>
@@ -116,8 +121,20 @@ Macros</h2></td></tr>
 <tr class="separator:aa38aeb0e717f56c34fae53b2832ab649"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acae78e39f82541c2ab6e9ca18c050eba"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#acae78e39f82541c2ab6e9ca18c050eba">glvm_pv_parameter6</a>(parameter_number,  class_name,  class_type,  parameter_name,  parameter_description,  _default_value)&#160;&#160;&#160;<a class="el" href="_slv_parameter_8h.html#a66ca81ed3fc86727515d8e0ea198c731">glvm_pv_parameter7</a>(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, <a class="el" href="class_slv_parameter.html">SlvParameter</a>&lt;class_type&gt;::default_marker_value())</td></tr>
 <tr class="separator:acae78e39f82541c2ab6e9ca18c050eba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66ca81ed3fc86727515d8e0ea198c731"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#a66ca81ed3fc86727515d8e0ea198c731">glvm_pv_parameter7</a>(parameter_number,  class_name,  class_type,  parameter_name,  parameter_description,  _default_value,  marker_value)</td></tr>
+<tr class="memitem:aa02f0d7390af64f887d6653d68ed75d7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#aa02f0d7390af64f887d6653d68ed75d7">TYPE_NULLPTR_T</a>&#160;&#160;&#160;nullptr_t</td></tr>
+<tr class="separator:aa02f0d7390af64f887d6653d68ed75d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5aee975ee94371b8c289c45625fc97c8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#a5aee975ee94371b8c289c45625fc97c8">MACSPEC_COMPARE_nullptr_t</a>(x)&#160;&#160;&#160;x</td></tr>
+<tr class="separator:a5aee975ee94371b8c289c45625fc97c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad21a171efd5c4ad8d9441422479b010f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#ad21a171efd5c4ad8d9441422479b010f">IS_TYPE_NULLPTR_T</a>(type)&#160;&#160;&#160;<a class="el" href="_slv_macro_specialize_8h.html#af40d1827f280c1f1df62dc61b79fb3b0">MACSPEC_COMPARE</a>(type, <a class="el" href="_slv_parameter_8h.html#aa02f0d7390af64f887d6653d68ed75d7">TYPE_NULLPTR_T</a>)</td></tr>
+<tr class="separator:ad21a171efd5c4ad8d9441422479b010f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66ca81ed3fc86727515d8e0ea198c731"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#a66ca81ed3fc86727515d8e0ea198c731">glvm_pv_parameter7</a>(parameter_number,  class_name,  class_type,  parameter_name,  parameter_description,  _default_value,  marker_value)&#160;&#160;&#160;<a class="el" href="_slv_macro_specialize_8h.html#ac4f5135a310a1fd1e5cd8149f2378874">MACSPEC_IIF</a>(<a class="el" href="_slv_parameter_8h.html#ad21a171efd5c4ad8d9441422479b010f">IS_TYPE_NULLPTR_T</a>(class_type))(<a class="el" href="_slv_parameter_8h.html#a9ebf3b27524bb1d8f445e7f45b4ace12">glvm_pv_parameter7_nullptr_t</a>, <a class="el" href="_slv_parameter_8h.html#aa886652de53a855d54b96bdbeaffff3a">glvm_pv_parameter7_general</a>)(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)</td></tr>
 <tr class="separator:a66ca81ed3fc86727515d8e0ea198c731"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a644b9dfb9a038095d128783122f3fc98"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#a644b9dfb9a038095d128783122f3fc98">glvm_pv_parameter7_parameter</a>(parameter_number,  class_name,  class_type,  parameter_name,  parameter_description,  _default_value,  marker_value)</td></tr>
+<tr class="separator:a644b9dfb9a038095d128783122f3fc98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ebf3b27524bb1d8f445e7f45b4ace12"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#a9ebf3b27524bb1d8f445e7f45b4ace12">glvm_pv_parameter7_nullptr_t</a>(parameter_number,  class_name,  class_type,  parameter_name,  parameter_description,  _default_value,  marker_value)</td></tr>
+<tr class="separator:a9ebf3b27524bb1d8f445e7f45b4ace12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa886652de53a855d54b96bdbeaffff3a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#aa886652de53a855d54b96bdbeaffff3a">glvm_pv_parameter7_general</a>(parameter_number,  class_name,  class_type,  parameter_name,  parameter_description,  _default_value,  marker_value)</td></tr>
+<tr class="separator:aa886652de53a855d54b96bdbeaffff3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2ebfcae11f36691950a1a39e63c4219"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#ad2ebfcae11f36691950a1a39e63c4219">glvm_pv_get_macro_parameter_ruled</a>(_1,  _2,  _3,  _4,  _5,  _6,  _7,  macro, ...)&#160;&#160;&#160;macro</td></tr>
 <tr class="separator:ad2ebfcae11f36691950a1a39e63c4219"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a258f4d1091730d793c2ca14bb698b67c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_slv_parameter_8h.html#a258f4d1091730d793c2ca14bb698b67c">glvm_parameter_ruled</a>(...)&#160;&#160;&#160;<a class="el" href="_glv_c_l_i_8h.html#a5b8637b5731207983d4e1d3559abaf64">EXPAND</a>( <a class="el" href="_slv_parameter_8h.html#ad2ebfcae11f36691950a1a39e63c4219">glvm_pv_get_macro_parameter_ruled</a>(__VA_ARGS__, <a class="el" href="_slv_parameter_8h.html#ac1f1b28b8b6c526ec67919ce0e37d7c4">glvm_pv_parameter_ruled7</a>, <a class="el" href="_slv_parameter_8h.html#ae9e9ea5f6d61016d7e0db5481dd7f747">glvm_pv_parameter_ruled6</a>, <a class="el" href="_slv_parameter_8h.html#a66eea48c8aec3976616ab25bb4c91736">glvm_pv_parameter_ruled5</a>, <a class="el" href="_slv_parameter_8h.html#a19556bb93da017124247f98ed8dc74d8">glvm_pv_parameter_ruled4</a>)(__VA_ARGS__) )</td></tr>
@@ -588,11 +605,236 @@ Macros</h2></td></tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td>
+          <td></td><td>&#160;&#160;&#160;<a class="el" href="_slv_macro_specialize_8h.html#ac4f5135a310a1fd1e5cd8149f2378874">MACSPEC_IIF</a>(<a class="el" href="_slv_parameter_8h.html#ad21a171efd5c4ad8d9441422479b010f">IS_TYPE_NULLPTR_T</a>(class_type))(<a class="el" href="_slv_parameter_8h.html#a9ebf3b27524bb1d8f445e7f45b4ace12">glvm_pv_parameter7_nullptr_t</a>, <a class="el" href="_slv_parameter_8h.html#aa886652de53a855d54b96bdbeaffff3a">glvm_pv_parameter7_general</a>)(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
+</div>
+</div>
+<a id="aa886652de53a855d54b96bdbeaffff3a" name="aa886652de53a855d54b96bdbeaffff3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa886652de53a855d54b96bdbeaffff3a">&#9670;&#160;</a></span>glvm_pv_parameter7_general</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define glvm_pv_parameter7_general</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">parameter_number, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">class_name, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">class_type, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">parameter_name, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">parameter_description, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">_default_value, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">marker_value&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keyword">private</span>:\</div>
+<div class="line">glvm_pv_parameter7_parameter(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)\</div>
+<div class="line"><span class="keyword">protected</span>:\</div>
+<div class="line"><span class="keyword">typedef</span> SlvPvClassParam_##class_name Tpv_parameter##parameter_number;\</div>
+<div class="line"><span class="keyword">public</span>:\</div>
+<div class="line"><span class="keyword">const</span> class_type&amp; get_##class_name()<span class="keyword"> const </span>{<span class="keywordflow">return</span> this-&gt;get_parameter##parameter_number().get_value();}\</div>
+<div class="line"><span class="keywordtype">void</span> set_##class_name(<span class="keyword">const</span> class_type&amp; _class_name, <span class="keywordtype">bool</span> _l_param_only = <span class="keyword">true</span>) {\</div>
+<div class="line">this-&gt;set_parameter##parameter_number##_value(_class_name, _l_param_only);\</div>
+<div class="line">}\</div>
+<div class="line"><span class="keyword">static</span> <span class="keyword">const</span> std::string&amp; get_##class_name##_pname() { <span class="keywordflow">return</span> SlvPvClassParam_##class_name::name(); }\</div>
+<div class="line"><span class="keyword">private</span>:</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a9ebf3b27524bb1d8f445e7f45b4ace12" name="a9ebf3b27524bb1d8f445e7f45b4ace12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ebf3b27524bb1d8f445e7f45b4ace12">&#9670;&#160;</a></span>glvm_pv_parameter7_nullptr_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define glvm_pv_parameter7_nullptr_t</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">parameter_number, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">class_name, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">class_type, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">parameter_name, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">parameter_description, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">_default_value, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">marker_value&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keyword">private</span>:\</div>
+<div class="line">glvm_pv_parameter7_parameter(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)\</div>
+<div class="line"><span class="keyword">protected</span>:\</div>
+<div class="line"><span class="keyword">typedef</span> SlvPvClassParam_##class_name Tpv_parameter##parameter_number;\</div>
+<div class="line"><span class="keyword">private</span>:</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a644b9dfb9a038095d128783122f3fc98" name="a644b9dfb9a038095d128783122f3fc98"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a644b9dfb9a038095d128783122f3fc98">&#9670;&#160;</a></span>glvm_pv_parameter7_parameter</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define glvm_pv_parameter7_parameter</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">parameter_number, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">class_name, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">class_type, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">parameter_name, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">parameter_description, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">_default_value, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">marker_value&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keyword">class </span>SlvPvClassParam_##class_name : <span class="keyword">public</span> <a class="code hl_class" href="class_slv_parameter.html">SlvParameter</a>&lt;class_type&gt; {\</div>
+<div class="line"><span class="keyword">public</span>:\</div>
+<div class="line">SlvPvClassParam_##class_name(<a class="code hl_class" href="class_slv_parametrization__base.html">SlvParametrization_base</a>* _parametrization, class_type _value = default_value()):<a class="code hl_class" href="class_slv_parameter.html">SlvParameter</a>&lt;class_type&gt;(_parametrization, _value){ this-&gt;abide_rules();}\</div>
+<div class="line">~SlvPvClassParam_##class_name(){}\</div>
+<div class="line"><span class="keyword">virtual</span> SlvPvClassParam_##class_name* clone(<a class="code hl_class" href="class_slv_parametrization__base.html">SlvParametrization_base</a>* _parametrization)<span class="keyword"> const </span>{\</div>
+<div class="line">SlvPvClassParam_##class_name* clone_parameter = <span class="keyword">new</span> SlvPvClassParam_##class_name(*<span class="keyword">this</span>);\</div>
+<div class="line">clone_parameter-&gt;parametrization = _parametrization;\</div>
+<div class="line"><span class="keywordflow">return</span> clone_parameter;\</div>
+<div class="line">}\</div>
+<div class="line">glvm_staticVariable_const_get(std::string, name, parameter_name)\</div>
+<div class="line">glvm_staticVariable_const_get(std::string, description, parameter_description)\</div>
+<div class="line">glvm_staticVariable_const_get(class_type, default_value, _default_value)\</div>
+<div class="line">glvm_staticVariable_const_get(std::vector&lt; <a class="code hl_class" href="class_slv_parameter_rule_t.html">SlvParameterRuleT&lt;class_type&gt;</a> &gt;, rules, create_rules());\</div>
+<div class="line"><span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> get_Nrules()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)rules().size(); }\</div>
+<div class="line">glvm_staticVariable_const_get(<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>, marker, marker_value)\</div>
+<div class="line"><span class="keyword">typedef</span> class_type <a class="code hl_define" href="_glv_parameter_rule_abiding__spec__bool_8h.html#a7adfa28796575f85ed8e06607299a8c8">Tparam</a>;\</div>
+<div class="line"><span class="keyword">private</span>:\</div>
+<div class="line"><span class="keywordtype">void</span> set_stream_value(<span class="keyword">const</span> std::string&amp; _string, <span class="keywordtype">bool</span> _l_param_only) {\</div>
+<div class="line">class_type value_tmp(default_value()); <a class="code hl_function" href="struct_slv_parameter_spec.html#a869d164e5c0b5ad729369b9d376a725c">SlvParameterSpec&lt;class_type&gt;::parse</a>(value_tmp, _string);\</div>
+<div class="line">this-&gt;set_value(value_tmp, _l_param_only);\</div>
+<div class="line">}\</div>
+<div class="line">std::string get_stream_value(<span class="keywordtype">bool</span> _l_param_only)<span class="keyword"> const </span>{\</div>
+<div class="line">std::ostringstream oss; oss &lt;&lt; this-&gt;get_value(); <span class="keywordflow">return</span> oss.str();\</div>
+<div class="line">}\</div>
+<div class="line"><span class="keyword">static</span> std::vector&lt; SlvParameterRuleT&lt;class_type&gt; &gt; create_rules() {\</div>
+<div class="line">std::vector&lt; SlvParameterRuleT&lt;class_type&gt; &gt; rules;\</div>
+<div class="line">rules.push_back(<a class="code hl_class" href="class_slv_parameter_rule_t.html">SlvParameterRuleT&lt;class_type&gt;</a>());<span class="comment">/*default rule*/</span>\</div>
+<div class="line"><span class="keywordflow">return</span> rules;}\</div>
+<div class="line">glvm_staticVariable_const_get(<span class="keywordtype">bool</span>, has_rules, <span class="keyword">false</span>)\</div>
+<div class="line">};</div>
+<div class="ttc" id="a_glv_parameter_rule_abiding__spec__bool_8h_html_a7adfa28796575f85ed8e06607299a8c8"><div class="ttname"><a href="_glv_parameter_rule_abiding__spec__bool_8h.html#a7adfa28796575f85ed8e06607299a8c8">Tparam</a></div><div class="ttdeci">#define Tparam</div><div class="ttdef"><b>Definition:</b> GlvParameterRuleAbiding_spec_bool.h:22</div></div>
+<div class="ttc" id="aclass_slv_parameter_html"><div class="ttname"><a href="class_slv_parameter.html">SlvParameter</a></div><div class="ttdef"><b>Definition:</b> SlvParameter.h:31</div></div>
+<div class="ttc" id="aclass_slv_parameter_rule_t_html"><div class="ttname"><a href="class_slv_parameter_rule_t.html">SlvParameterRuleT</a></div><div class="ttdef"><b>Definition:</b> SlvParameterRuleT.h:35</div></div>
+<div class="ttc" id="aclass_slv_parametrization__base_html"><div class="ttname"><a href="class_slv_parametrization__base.html">SlvParametrization_base</a></div><div class="ttdef"><b>Definition:</b> SlvParametrization_base.h:26</div></div>
+<div class="ttc" id="astruct_slv_parameter_spec_html_a869d164e5c0b5ad729369b9d376a725c"><div class="ttname"><a href="struct_slv_parameter_spec.html#a869d164e5c0b5ad729369b9d376a725c">SlvParameterSpec::parse</a></div><div class="ttdeci">static void parse(Tparam &amp;_parameter_value, const std::string &amp;_string)</div><div class="ttdef"><b>Definition:</b> SlvParameter.h:135</div></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a19556bb93da017124247f98ed8dc74d8" name="a19556bb93da017124247f98ed8dc74d8"></a>
@@ -785,6 +1027,70 @@ Macros</h2></td></tr>
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad21a171efd5c4ad8d9441422479b010f" name="ad21a171efd5c4ad8d9441422479b010f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad21a171efd5c4ad8d9441422479b010f">&#9670;&#160;</a></span>IS_TYPE_NULLPTR_T</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IS_TYPE_NULLPTR_T</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">type</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="_slv_macro_specialize_8h.html#af40d1827f280c1f1df62dc61b79fb3b0">MACSPEC_COMPARE</a>(type, <a class="el" href="_slv_parameter_8h.html#aa02f0d7390af64f887d6653d68ed75d7">TYPE_NULLPTR_T</a>)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5aee975ee94371b8c289c45625fc97c8" name="a5aee975ee94371b8c289c45625fc97c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5aee975ee94371b8c289c45625fc97c8">&#9670;&#160;</a></span>MACSPEC_COMPARE_nullptr_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MACSPEC_COMPARE_nullptr_t</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">x</td><td>)</td>
+          <td>&#160;&#160;&#160;x</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7adfa28796575f85ed8e06607299a8c8" name="a7adfa28796575f85ed8e06607299a8c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7adfa28796575f85ed8e06607299a8c8">&#9670;&#160;</a></span>Tparam</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define Tparam&#160;&#160;&#160;std::nullptr_t</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa02f0d7390af64f887d6653d68ed75d7" name="aa02f0d7390af64f887d6653d68ed75d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa02f0d7390af64f887d6653d68ed75d7">&#9670;&#160;</a></span>TYPE_NULLPTR_T</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define TYPE_NULLPTR_T&#160;&#160;&#160;nullptr_t</td>
         </tr>
       </table>
 </div><div class="memdoc">

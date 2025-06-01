@@ -15,6 +15,7 @@ var searchData=
   ['layout_12',['layout',['../class_glv_described_widget__base.html#ab0f2f98877fd6845e7ad1698e57c1208',1,'GlvDescribedWidget_base::layout()'],['../class_glv_list_dialog__base.html#aa05d3a61289ff4e2463d13b493f46573',1,'GlvListDialog_base::layout()'],['../class_glv_map_widget_item__base.html#a4cb43d52b07dc67ec9d6b594330d4d16',1,'GlvMapWidgetItem_base::layout()'],['../class_glv_vector_widget_item__base.html#a7dbc0fdccfa16c76cf97b42bd54e2747',1,'GlvVectorWidgetItem_base::layout()'],['../class_glv_widget__base.html#a770854d32778c2a0d48e9d0fa4bc93e7',1,'GlvWidget_base::layout()']]],
   ['layout_5fitems_13',['layout_items',['../class_glv_map_widget__base.html#a823b414f33637c74601a49dcd18555da',1,'GlvMapWidget_base::layout_items()'],['../class_glv_vector_widget__base.html#af815cfd48c33ebccc59a4d312b1d044c',1,'GlvVectorWidget_base::layout_items()']]],
   ['layout_5ftype_14',['layout_type',['../class_glv_parameters_widget__base.html#a2c11f70ec80ea40caa02d46218b1ac5b',1,'GlvParametersWidget_base']]],
-  ['list_5flayout_15',['list_layout',['../class_glv_list_dialog__base.html#ab6ab4fcfcabf049374128cf6facfb86f',1,'GlvListDialog_base']]],
-  ['list_5fname_5fwidget_16',['list_name_widget',['../class_glv_list_dialog__base.html#af98d31340b741826d09c5acd5796d5ae',1,'GlvListDialog_base']]]
+  ['left_15',['left',['../class_slv_sides2d.html#a4b5b2cf92a8fc00ab68db5d67772cd78',1,'SlvSides2d']]],
+  ['list_5flayout_16',['list_layout',['../class_glv_list_dialog__base.html#ab6ab4fcfcabf049374128cf6facfb86f',1,'GlvListDialog_base']]],
+  ['list_5fname_5fwidget_17',['list_name_widget',['../class_glv_list_dialog__base.html#af98d31340b741826d09c5acd5796d5ae',1,'GlvListDialog_base']]]
 ];
