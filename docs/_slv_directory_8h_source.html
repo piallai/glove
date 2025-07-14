@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.7</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.8</span>
    </div>
   </td>
  </tr>
@@ -115,32 +115,34 @@ $(function() {
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keyword">const</span> std::string&amp; <a class="code hl_function" href="class_slv_directory.html#a46cdef85f6591e5d5dc685b088b21bbb">get_path</a>() <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_slv_directory.html#ad1786fca42fcf30adcb1ff47f57a72fa">is_relative</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_slv_directory.html#a41ed48c1081c3f813285cdcadc2533b7">exists</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_slv_directory.html#ab0a8a403cb657312b96fd84f0dd79243">operator==</a>(<span class="keyword">const</span> <a class="code hl_class" href="class_slv_directory.html">SlvDirectory</a>&amp; _directory) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_slv_directory.html#a6014f8e7af615c02e8f1f80529e82fd8">operator!=</a>(<span class="keyword">const</span> <a class="code hl_class" href="class_slv_directory.html">SlvDirectory</a>&amp; _directory) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_slv_directory.html#ad547a2f651bfd022a15a29ac03f59805">readB</a>(std::ifstream&amp; _input_file);</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_slv_directory.html#aeab77a0ac8a3218ad9ca15fa93e2946a">writeB</a>(std::ofstream&amp; _output_file) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_slv_directory.html#ae3d4df9ba176709d017f78a86000a4ba">is_current</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_slv_directory.html#a41ed48c1081c3f813285cdcadc2533b7">exists</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_slv_directory.html#ab0a8a403cb657312b96fd84f0dd79243">operator==</a>(<span class="keyword">const</span> <a class="code hl_class" href="class_slv_directory.html">SlvDirectory</a>&amp; _directory) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_slv_directory.html#a6014f8e7af615c02e8f1f80529e82fd8">operator!=</a>(<span class="keyword">const</span> <a class="code hl_class" href="class_slv_directory.html">SlvDirectory</a>&amp; _directory) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_slv_directory.html#ad547a2f651bfd022a15a29ac03f59805">readB</a>(std::ifstream&amp; _input_file);</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_slv_directory.html#aeab77a0ac8a3218ad9ca15fa93e2946a">writeB</a>(std::ofstream&amp; _output_file) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordtype">void</span> istream(std::istream&amp; _is);</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">void</span> ostream(std::ostream&amp; _os) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>};</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keywordtype">void</span> istream(std::istream&amp; _is);</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordtype">void</span> ostream(std::ostream&amp; _os) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>};</div>
 <div class="ttc" id="a_slv_i_o_s_8h_html"><div class="ttname"><a href="_slv_i_o_s_8h.html">SlvIOS.h</a></div></div>
 <div class="ttc" id="aclass_slv_directory_html"><div class="ttname"><a href="class_slv_directory.html">SlvDirectory</a></div><div class="ttdef"><b>Definition:</b> SlvDirectory.h:23</div></div>
 <div class="ttc" id="aclass_slv_directory_html_a348b0e0ccae1d1ed56aa47e467f5ab07"><div class="ttname"><a href="class_slv_directory.html#a348b0e0ccae1d1ed56aa47e467f5ab07">SlvDirectory::~SlvDirectory</a></div><div class="ttdeci">~SlvDirectory()</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:46</div></div>
-<div class="ttc" id="aclass_slv_directory_html_a41ed48c1081c3f813285cdcadc2533b7"><div class="ttname"><a href="class_slv_directory.html#a41ed48c1081c3f813285cdcadc2533b7">SlvDirectory::exists</a></div><div class="ttdeci">bool exists() const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:58</div></div>
+<div class="ttc" id="aclass_slv_directory_html_a41ed48c1081c3f813285cdcadc2533b7"><div class="ttname"><a href="class_slv_directory.html#a41ed48c1081c3f813285cdcadc2533b7">SlvDirectory::exists</a></div><div class="ttdeci">bool exists() const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:62</div></div>
 <div class="ttc" id="aclass_slv_directory_html_a46cdef85f6591e5d5dc685b088b21bbb"><div class="ttname"><a href="class_slv_directory.html#a46cdef85f6591e5d5dc685b088b21bbb">SlvDirectory::get_path</a></div><div class="ttdeci">const std::string &amp; get_path() const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:50</div></div>
-<div class="ttc" id="aclass_slv_directory_html_a6014f8e7af615c02e8f1f80529e82fd8"><div class="ttname"><a href="class_slv_directory.html#a6014f8e7af615c02e8f1f80529e82fd8">SlvDirectory::operator!=</a></div><div class="ttdeci">bool operator!=(const SlvDirectory &amp;_directory) const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:82</div></div>
+<div class="ttc" id="aclass_slv_directory_html_a6014f8e7af615c02e8f1f80529e82fd8"><div class="ttname"><a href="class_slv_directory.html#a6014f8e7af615c02e8f1f80529e82fd8">SlvDirectory::operator!=</a></div><div class="ttdeci">bool operator!=(const SlvDirectory &amp;_directory) const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:86</div></div>
 <div class="ttc" id="aclass_slv_directory_html_a762b2e907a1828c8d2b333bef9f28c12"><div class="ttname"><a href="class_slv_directory.html#a762b2e907a1828c8d2b333bef9f28c12">SlvDirectory::SlvDirectory</a></div><div class="ttdeci">SlvDirectory()</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:28</div></div>
-<div class="ttc" id="aclass_slv_directory_html_ab0a8a403cb657312b96fd84f0dd79243"><div class="ttname"><a href="class_slv_directory.html#ab0a8a403cb657312b96fd84f0dd79243">SlvDirectory::operator==</a></div><div class="ttdeci">bool operator==(const SlvDirectory &amp;_directory) const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:75</div></div>
+<div class="ttc" id="aclass_slv_directory_html_ab0a8a403cb657312b96fd84f0dd79243"><div class="ttname"><a href="class_slv_directory.html#ab0a8a403cb657312b96fd84f0dd79243">SlvDirectory::operator==</a></div><div class="ttdeci">bool operator==(const SlvDirectory &amp;_directory) const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:79</div></div>
 <div class="ttc" id="aclass_slv_directory_html_ad1786fca42fcf30adcb1ff47f57a72fa"><div class="ttname"><a href="class_slv_directory.html#ad1786fca42fcf30adcb1ff47f57a72fa">SlvDirectory::is_relative</a></div><div class="ttdeci">bool is_relative() const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:54</div></div>
-<div class="ttc" id="aclass_slv_directory_html_ad547a2f651bfd022a15a29ac03f59805"><div class="ttname"><a href="class_slv_directory.html#ad547a2f651bfd022a15a29ac03f59805">SlvDirectory::readB</a></div><div class="ttdeci">bool readB(std::ifstream &amp;_input_file)</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:102</div></div>
-<div class="ttc" id="aclass_slv_directory_html_aeab77a0ac8a3218ad9ca15fa93e2946a"><div class="ttname"><a href="class_slv_directory.html#aeab77a0ac8a3218ad9ca15fa93e2946a">SlvDirectory::writeB</a></div><div class="ttdeci">void writeB(std::ofstream &amp;_output_file) const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:110</div></div>
+<div class="ttc" id="aclass_slv_directory_html_ad547a2f651bfd022a15a29ac03f59805"><div class="ttname"><a href="class_slv_directory.html#ad547a2f651bfd022a15a29ac03f59805">SlvDirectory::readB</a></div><div class="ttdeci">bool readB(std::ifstream &amp;_input_file)</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:106</div></div>
+<div class="ttc" id="aclass_slv_directory_html_ae3d4df9ba176709d017f78a86000a4ba"><div class="ttname"><a href="class_slv_directory.html#ae3d4df9ba176709d017f78a86000a4ba">SlvDirectory::is_current</a></div><div class="ttdeci">bool is_current() const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:58</div></div>
+<div class="ttc" id="aclass_slv_directory_html_aeab77a0ac8a3218ad9ca15fa93e2946a"><div class="ttname"><a href="class_slv_directory.html#aeab77a0ac8a3218ad9ca15fa93e2946a">SlvDirectory::writeB</a></div><div class="ttdeci">void writeB(std::ofstream &amp;_output_file) const</div><div class="ttdef"><b>Definition:</b> SlvDirectory.cpp:114</div></div>
 <div class="ttc" id="aclass_slv_i_o_s_html"><div class="ttname"><a href="class_slv_i_o_s.html">SlvIOS</a></div><div class="ttdef"><b>Definition:</b> SlvIOS.h:24</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
