@@ -47,5 +47,6 @@ inline bool slv::parse(const std::string& _string, std::string& _value) {
 	return true;
 }
 
+#include "misc/spec/slv_parse_spec_FP.h"
 #include "misc/spec/slv_parse_spec_std_vector.h"
 #include "misc/spec/slv_parse_spec_std_map.h"

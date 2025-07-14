@@ -92,7 +92,19 @@ void SlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 	for (int i = 1; i < _argc; i++) {
 		bool l_parameter = false;
 		if (_argv[i][0] == '-') {
-			if (i < _argc - 1 && (_argv[i + 1][0] != '-' || (_argv[i + 1][0] == '-' && std::isdigit(_argv[i + 1][1])))) {
+
+			bool l_value = i < _argc - 1;
+			if (l_value) {
+				bool l_value2 = _argv[i + 1][0] != '-';// if front of next argument has no '-'
+				bool l_value_dash = _argv[i + 1][0] == '-';// if front of next argument is '-', then check for value
+				bool l_value_number = false;
+				if (l_value_dash) {
+					l_value_number = (std::isdigit(_argv[i + 1][1]) || (std::strcmp(_argv[i + 1], "-inf") == 0));
+				}
+				l_value &= (l_value2 || (l_value_dash && l_value_number));
+			}
+
+			if (l_value) {
 
 				if (std::strcmp(_argv[i], "-glove")) {
 					parameter_arguments[_argv[i]].push_back(_argv[i + 1]);

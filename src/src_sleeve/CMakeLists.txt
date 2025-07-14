@@ -108,6 +108,7 @@ set(FILESTREAM_SOURCES
 	
 	filestream/slv_rw_json.h
 	filestream/spec/slv_rw_json_spec_std_nullptr_t.h
+	filestream/spec/slv_rw_json_spec_FP.h
 )
 
 set(IO_SOURCES
@@ -162,6 +163,7 @@ set(MISC_SOURCES
 	misc/spec/SlvDataName_spec_SlvPool.h
 	misc/spec/SlvDataName_spec_All.h
 	misc/slv_parse.h
+	misc/spec/slv_parse_spec_FP.h
 	misc/spec/slv_parse_spec_std_vector.h
 	misc/spec/slv_parse_spec_std_map.h
 	misc/spec/slv_parse_spec_std_array.h

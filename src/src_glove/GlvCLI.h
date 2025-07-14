@@ -319,7 +319,7 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 		save_load_widget->save(autosave_file_name);
 
 		SlvDirectory directory(ParamOutput<Tparametrization>::get_path(dialog.get_parametrization()));
-		if (directory.exists()) {
+		if (directory.exists() && !directory.is_current()) {// do not save again if the directory is current
 			save_load_widget->save(SlvFile(directory, autosave_file_name).get_path());
 		}
 

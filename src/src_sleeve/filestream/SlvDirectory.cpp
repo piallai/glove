@@ -55,6 +55,10 @@ bool SlvDirectory::is_relative() const {
     return l_relative;
 }
 
+bool SlvDirectory::is_current() const {
+    return is_relative() && path == "./";
+}
+
 bool SlvDirectory::exists() const {
 
 #if __cplusplus > 201402L

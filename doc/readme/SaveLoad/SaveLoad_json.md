@@ -173,7 +173,7 @@ More details and examples can be found in [sample009_2.cpp](/src/src_samples/src
 
 ##### Remark 1
 
-Save/load of parametrization using *json* requires all the involved types (recursively) to be managed. If one type does not have both read and write possibilities (*i.e.* a full line of the list above), the the *.json* option of the Save/Load buttons will be disabled.
+Save/load of parametrization using *json* requires all the involved types (recursively) to be managed. If one type does not have both read and write possibilities (*i.e.* a full line of the list above), the *.json* option of the Save/Load buttons will be disabled.
 
 ##### Remark 2
 

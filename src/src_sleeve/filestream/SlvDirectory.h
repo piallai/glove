@@ -42,6 +42,8 @@ public:
     const std::string& get_path() const;
     /*! Whether the directory's path is relative or not.*/
     bool is_relative() const;
+    /*! Whether the directory's path correspond to the current working directory: ie "./". Means the directory is relative.*/
+    bool is_current() const;
 
     /*! Return true if the directory exists.*/
     bool exists() const;

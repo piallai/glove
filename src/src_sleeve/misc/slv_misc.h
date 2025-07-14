@@ -31,20 +31,24 @@ namespace slv {
 template <class T>
 unsigned int slv::misc::get_Ndecimals(const T& _value, bool _l_round_floating_point_arithmetic_error) {
 
-    unsigned int count = 0;
-    T value = std::abs(_value);
-    value = value - int(value);
-    // Floating point arithmetic error
-    T fpae = T(100) * std::numeric_limits<T>::epsilon();
-    T tolerance = fpae;
-    T error(0);// initalization value is not used
-    if (_l_round_floating_point_arithmetic_error) error = std::abs(T(1) - value);
-    while (value > tolerance && (!_l_round_floating_point_arithmetic_error || error > fpae)) {
-        value *= T(10);
-        ++count;
+    if (std::isfinite(_value)) {
+        unsigned int count = 0;
+        T value = std::abs(_value);
         value = value - int(value);
+        // Floating point arithmetic error
+        T fpae = T(100) * std::numeric_limits<T>::epsilon();
+        T tolerance = fpae;
+        T error(0);// initalization value is not used
         if (_l_round_floating_point_arithmetic_error) error = std::abs(T(1) - value);
-    }
+        while (value > tolerance && (!_l_round_floating_point_arithmetic_error || error > fpae)) {
+            value *= T(10);
+            ++count;
+            value = value - int(value);
+            if (_l_round_floating_point_arithmetic_error) error = std::abs(T(1) - value);
+        }
 
-    return count;
+        return count;
+    } else {
+        return std::numeric_limits<int>::infinity();
+    }
 }

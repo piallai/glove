@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	{	// Core program. This program is supposed to be a glove adaptation of an already existing program.
-		// Glove modifications are indicated with the the character %.
+		// Glove modifications are indicated with the character %.
 
 		int N1, N2, N3;
 		bool l_args_valid = true;

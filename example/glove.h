@@ -21,7 +21,7 @@
 
 #define GLOVE_VERSION_MAJOR 0
 #define GLOVE_VERSION_MINOR 7
-#define GLOVE_VERSION_PATCH 7
+#define GLOVE_VERSION_PATCH 8
 
 #ifndef GLOVE_DISABLE_QT
 #define OPTION_ENABLE_SLV_QT_PROGRESS 1
@@ -52,6 +52,7 @@
 #include <cstring>
 #include <string>
 #include <fstream>
+#include <type_traits>
 #if !defined(GLOVE_PV_SINGLE_HEADER) || OPTION_USE_BOOST==1
 #include <boost/container/vector.hpp>
 #endif
@@ -70,7 +71,6 @@
 #include <map>
 #include <vector>
 #include <typeinfo>
-#include <type_traits>
 #include <time.h>
 #include <istream>
 #include <ostream>
@@ -571,6 +571,8 @@ public:
     const std::string& get_path() const;
     /*! Whether the directory's path is relative or not.*/
     bool is_relative() const;
+    /*! Whether the directory's path correspond to the current working directory: ie "./". Means the directory is relative.*/
+    bool is_current() const;
 
     /*! Return true if the directory exists.*/
     bool exists() const;
@@ -8246,7 +8248,7 @@ namespace slv {
                 template <class Tdat>
                 struct is_write_specialized<Tdat, decltype(slv::rw::json::writeJson_spec<Tdat>(std::declval<const Tdat&>(), std::declval<nlohmann::json&>()), void())> : std::true_type {};
             
-                /*! Use json library IO or not.*/
+                /*! Use json library IO, or not if specialized.*/
                 template <class Tdat, typename = void>
                 struct JsonRW {
                     static void writeJson(const Tdat& _value, nlohmann::json& _json) {
@@ -8704,6 +8706,45 @@ namespace slv {
     }
 }
 
+namespace slv {
+    namespace rw {
+        namespace json {
+            namespace typemgr {
+                template <class Tdat>
+                struct JsonRW<Tdat, typename std::enable_if<std::is_floating_point<Tdat>::value>::type> {
+                    static void writeJson(const Tdat& _value, nlohmann::json& _json) {
+                        if (std::isfinite(_value)) {
+                            _json = _value;
+                        } else {
+                            Tdat value;
+                            if (_value > Tdat(0)) {
+                                value = std::numeric_limits<Tdat>::max();
+                            } else {
+                                value = std::numeric_limits<Tdat>::lowest();
+                            }
+                            _json = value;
+                        }
+                    }
+                    static SlvStatus readJson(Tdat& _value, const nlohmann::json& _json) {
+                        SlvStatus status;
+                        try {
+                            _value = _json.get<Tdat>();
+                            if (_value == std::numeric_limits<Tdat>::max()) {
+                                _value = INFINITY;
+                            } else if (_value == std::numeric_limits<Tdat>::lowest()) {
+                                _value = -INFINITY;
+                            }
+                        } catch (std::exception) {
+                            status = SlvStatus(SlvStatus::statusType::critical, "Can not read type " + SlvDataName<Tdat>::name());
+                        }
+                        return status;
+                    }
+                };
+            }
+        }
+    }
+}
+
 // For slv::rw::json::ReadWrite::l_valid. But does nothing.
 // Usefull for parameter of type std::nullptr_t.
 // slv::rw::json::ReadWrite<Tparametrization>::l_valid is true if one of the parameters is of type std::nullptr_t
@@ -8745,6 +8786,38 @@ inline bool slv::parse(const std::string& _string, std::string& _value) {
 	_value = _string;
 
 	return true;
+}
+
+namespace slv {
+    bool parse(const std::string& _string, float& _value);
+    bool parse(const std::string& _string, double& _value);
+    bool parse(const std::string& _string, long double& _value);
+    namespace {//private
+        template <class T>
+        bool parseFP(const std::string& _string, T& _value) {
+            if (_string == "inf") {
+                _value = INFINITY;
+            } else if (_string == "-inf") {
+                _value = -INFINITY;
+            } else {
+                std::istringstream iss(_string);
+                iss >> _value;
+            }
+            return true;
+        }
+    }
+}
+
+inline bool slv::parse(const std::string& _string, float& _value) {
+    return parseFP(_string, _value);
+}
+
+inline bool slv::parse(const std::string& _string, double& _value) {
+    return parseFP(_string, _value);
+}
+
+inline bool slv::parse(const std::string& _string, long double& _value) {
+    return parseFP(_string, _value);
 }
 
 namespace slv {
@@ -20426,7 +20499,7 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 		save_load_widget->save(autosave_file_name);
 
 		SlvDirectory directory(ParamOutput<Tparametrization>::get_path(dialog.get_parametrization()));
-		if (directory.exists()) {
+		if (directory.exists() && !directory.is_current()) {// do not save again if the directory is current
 			save_load_widget->save(SlvFile(directory, autosave_file_name).get_path());
 		}
 
@@ -22503,22 +22576,26 @@ namespace slv {
 template <class T>
 unsigned int slv::misc::get_Ndecimals(const T& _value, bool _l_round_floating_point_arithmetic_error) {
 
-    unsigned int count = 0;
-    T value = std::abs(_value);
-    value = value - int(value);
-    // Floating point arithmetic error
-    T fpae = T(100) * std::numeric_limits<T>::epsilon();
-    T tolerance = fpae;
-    T error(0);// initalization value is not used
-    if (_l_round_floating_point_arithmetic_error) error = std::abs(T(1) - value);
-    while (value > tolerance && (!_l_round_floating_point_arithmetic_error || error > fpae)) {
-        value *= T(10);
-        ++count;
+    if (std::isfinite(_value)) {
+        unsigned int count = 0;
+        T value = std::abs(_value);
         value = value - int(value);
+        // Floating point arithmetic error
+        T fpae = T(100) * std::numeric_limits<T>::epsilon();
+        T tolerance = fpae;
+        T error(0);// initalization value is not used
         if (_l_round_floating_point_arithmetic_error) error = std::abs(T(1) - value);
-    }
+        while (value > tolerance && (!_l_round_floating_point_arithmetic_error || error > fpae)) {
+            value *= T(10);
+            ++count;
+            value = value - int(value);
+            if (_l_round_floating_point_arithmetic_error) error = std::abs(T(1) - value);
+        }
 
-    return count;
+        return count;
+    } else {
+        return std::numeric_limits<int>::infinity();
+    }
 }
 
 #ifndef GLOVE_DISABLE_QT
@@ -22871,6 +22948,10 @@ inline const std::string& SlvDirectory::get_path() const {
 
 inline bool SlvDirectory::is_relative() const {
     return l_relative;
+}
+
+inline bool SlvDirectory::is_current() const {
+    return is_relative() && path == "./";
 }
 
 inline bool SlvDirectory::exists() const {
@@ -24375,13 +24456,15 @@ inline void GlvWidgetData<Tdata>::set_value(const Tdata& _value) {
 #define Tdata float
 inline GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QDoubleSpinBox(_parent) {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-    setMaximum(std::numeric_limits<float>::max());
-    setMinimum(std::numeric_limits<float>::lowest());
+    setMaximum(std::numeric_limits<float>::infinity());
+    setMinimum(-std::numeric_limits<float>::infinity());
 }
 inline GlvWidgetData<Tdata>::GlvWidgetData(const Tdata& _value, QWidget* _parent) : GlvWidgetData(_parent) {
     unsigned int Ndecimals = slv::misc::get_Ndecimals(_value);
     Ndecimals = std::max((unsigned int)2, Ndecimals);
-    setDecimals(Ndecimals);
+    if (Ndecimals != std::numeric_limits<int>::infinity()) {
+        setDecimals(Ndecimals);
+    }
     set_value(_value);
 }
 inline GlvWidgetData<Tdata>::~GlvWidgetData() {
@@ -24401,13 +24484,15 @@ inline void GlvWidgetData<Tdata>::set_value(const Tdata& _value) {
 #define Tdata double
 inline GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QDoubleSpinBox(_parent) {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-    setMaximum(std::numeric_limits<double>::max());
-    setMinimum(std::numeric_limits<double>::lowest());
+    setMaximum(std::numeric_limits<double>::infinity());
+    setMinimum(-std::numeric_limits<double>::infinity());
 }
 inline GlvWidgetData<Tdata>::GlvWidgetData(const Tdata& _value, QWidget* _parent) : GlvWidgetData(_parent) {
     unsigned int Ndecimals = slv::misc::get_Ndecimals(_value);
     Ndecimals = std::max((unsigned int)2, Ndecimals);
-    setDecimals(Ndecimals);
+    if (Ndecimals != std::numeric_limits<int>::infinity()) {
+        setDecimals(Ndecimals);
+    }
     set_value(_value);
 }
 inline GlvWidgetData<Tdata>::~GlvWidgetData() {
@@ -24691,7 +24776,19 @@ inline void SlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 	for (int i = 1; i < _argc; i++) {
 		bool l_parameter = false;
 		if (_argv[i][0] == '-') {
-			if (i < _argc - 1 && (_argv[i + 1][0] != '-' || (_argv[i + 1][0] == '-' && std::isdigit(_argv[i + 1][1])))) {
+
+			bool l_value = i < _argc - 1;
+			if (l_value) {
+				bool l_value2 = _argv[i + 1][0] != '-';// if front of next argument has no '-'
+				bool l_value_dash = _argv[i + 1][0] == '-';// if front of next argument is '-', then check for value
+				bool l_value_number = false;
+				if (l_value_dash) {
+					l_value_number = (std::isdigit(_argv[i + 1][1]) || (std::strcmp(_argv[i + 1], "-inf") == 0));
+				}
+				l_value &= (l_value2 || (l_value_dash && l_value_number));
+			}
+
+			if (l_value) {
 
 				if (std::strcmp(_argv[i], "-glove")) {
 					parameter_arguments[_argv[i]].push_back(_argv[i + 1]);

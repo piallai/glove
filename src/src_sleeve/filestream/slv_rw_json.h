@@ -45,7 +45,7 @@ namespace slv {
                 template <class Tdat>
                 struct is_write_specialized<Tdat, decltype(slv::rw::json::writeJson_spec<Tdat>(std::declval<const Tdat&>(), std::declval<nlohmann::json&>()), void())> : std::true_type {};
             
-                /*! Use json library IO or not.*/
+                /*! Use json library IO, or not if specialized.*/
                 template <class Tdat, typename = void>
                 struct JsonRW {
                     static void writeJson(const Tdat& _value, nlohmann::json& _json) {
@@ -516,5 +516,6 @@ namespace slv {
 }
 
 #include "filestream/spec/slv_rw_json_spec_std_nullptr_t.h"
+#include "filestream/spec/slv_rw_json_spec_FP.h"
 
 #endif
