@@ -107,9 +107,10 @@ namespace slv {
                 if (it != _json.end()) {
                     Tdat value;
                     SlvStatus status_json = slv::rw::json::readJson(value, *it);
-                    if (status_json) {
+                    if (status_json.get_type() != SlvStatus::statusType::critical) {
                         _value = value;
-                    } else {
+                    }
+                    if (!status_json) {
                         status = SlvStatus(SlvStatus::statusType::warning, "Problem reading json : " + _name);
                         status.add_sub_status(status_json);
                     }

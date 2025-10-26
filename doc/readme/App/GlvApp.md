@@ -26,6 +26,12 @@ Without relying on Qt, a simple parsing of a 'main' parametrization can be done.
 
 An example detailing how to use all the features managed by a Glove application can be found [here](/doc/readme/App/GlvApp_full.md).
 
+## Json parametrization
+
+The parametrization can be defined at the project generation stage. It means that the coding of the parametrization does not have to be done in the sources. A json file is in charge of configuring the parametrization.
+
+An example can be found [here](/doc/readme/App/CLI/CLI_GUI_json.md).
+
 ## Base macros
 
 The <code>GLOVE_APP</code> macro transforms a program into a GUI application. To be used at the very beginning of the main.

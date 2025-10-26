@@ -1,0 +1,50 @@
+{
+    "Parametrization": {
+		"-bar": {
+			"var_name": "bar",
+			"type": "int",
+			"description": "bar description",
+			"value": 4
+		},
+		"-foo": {
+			"var_name": "foo",
+			"type": "float",
+			"description": "foo description",
+			"value": 77.77
+		},
+		"-file": {
+			"var_name": "file",
+			"type": "SlvFile",
+			"description": "file description",
+			"value": "/path/path/"
+		},
+		"Advanced": {
+			"description": "Advanced description",
+			"ConfigType": {
+				"-k": {
+					"var_name": "kernel",
+					"type": "bool",
+					"description": "kernel description",
+					"value": true
+				},
+				"-b": {
+					"var_name": "bound",
+					"type": "double",
+					"description": "bound description",
+					"value": 0.002
+				},
+				"Subadvanced": {
+					"description": "Subadvanced description",
+					"ConfigType2": {
+						"-c": {
+							"var_name": "contour",
+							"type": "double",
+							"description": "contour description",
+							"value": 0.004
+						}
+					}
+				}
+			}
+		}
+	}
+}

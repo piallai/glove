@@ -421,7 +421,7 @@ int GlvApp::main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_threaded,
 		Tparametrization parametrization;
 
 #if OPTION_USE_THIRDPARTY_JSON==1
-		if (SlvCLI::find_json_file(_argc, _argv)) {
+		if (SlvCLI::find_json_file(_argc, _argv) >= 0) {
 
 			std::ifstream file_stream_input;
 			std::string file_name = _argv[SlvCLI::find_json_file(_argc, _argv)];

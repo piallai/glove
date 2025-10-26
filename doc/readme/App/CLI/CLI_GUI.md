@@ -58,7 +58,7 @@ The program can now be executed either as it was before (CLI), or using the Glov
 ./main -glove
 ```
 
-![sample015](../../images/samples/sample015.png)
+![sample015](../../../images/samples/sample015.png)
 
 If accepted, the dialog widget will proceed the program with the entered values, so that <code>argc</code> and <code>argv</code> now correspond to the dialog's input.
 
@@ -85,7 +85,7 @@ Example, preloading some parameters:
 ./main -glove -I /path/path -O /path/output_path -k 17 -size 128x64 -enable -extra1 -extra2 12
 ```
 
-![sample015-1](../../images/samples/sample015-1.png)
+![sample015-1](../../../images/samples/sample015-1.png)
 
 If accepted:
 
@@ -162,9 +162,11 @@ To reset to default parameters, the autosaved parameters file can be removed.
 If the <code>-glove</code> cli argument is not provided, it is also possible to use a parameters file as input the same way.
 However, autosaved parameters are not being loaded by default.
 Example:
+
 ```cpp
 ./main
 ```
+
 will not load *CLI_parameters.json*, unlike <code>./main -glove</code> which will.
 
 #### Parameter as output path

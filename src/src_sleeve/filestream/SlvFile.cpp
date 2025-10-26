@@ -28,7 +28,7 @@
 #include "SlvMacros.h"
 
 SlvFile::SlvFile() {
-
+    io_mode = IO::Any;
 }
 
 SlvFile::SlvFile(const std::string& _path, IO _io_mode, std::string _description)
