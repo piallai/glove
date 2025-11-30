@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.9</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.10</span>
    </div>
   </td>
  </tr>
@@ -73,6 +73,7 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_slv_parametrization__base-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">SlvParametrization_base Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
@@ -189,6 +190,11 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a0e8237204c8c596a574fed6c6b9d109b inherit pro_methods_class_slv_o_s"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_o_s.html#a0e8237204c8c596a574fed6c6b9d109b">ostream</a> (std::ostream &amp;_os) const =0</td></tr>
 <tr class="separator:a0e8237204c8c596a574fed6c6b9d109b inherit pro_methods_class_slv_o_s"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
+Static Protected Member Functions</h2></td></tr>
+<tr class="memitem:a26b145a8215eba8542e072d13bc939bc"><td class="memItemLeft" align="right" valign="top">static const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_parametrization__base.html#a26b145a8215eba8542e072d13bc939bc">alias_delimiter</a> ()</td></tr>
+<tr class="separator:a26b145a8215eba8542e072d13bc939bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a0a426ccce8d252e88364f2dcc9811cf6"><td class="memItemLeft" align="right" valign="top">std::vector&lt; const <a class="el" href="class_slv_parameter__base.html">SlvParameter_base</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_slv_parametrization__base.html#a0a426ccce8d252e88364f2dcc9811cf6">parameters</a></td></tr>
@@ -273,6 +279,32 @@ Protected Attributes</h2></td></tr>
 <p>Returns false if the rules were not abided, meaning there was a modification of the parametrization. Returns true if rules are abided, meaning there was no modification of the parameterization. </p>
 
 <p>Implemented in <a class="el" href="class_slv_parametrization0.html#acbbe98d97d06e7235075f1ce8dbf17ff">SlvParametrization0</a>.</p>
+
+</div>
+</div>
+<a id="a26b145a8215eba8542e072d13bc939bc" name="a26b145a8215eba8542e072d13bc939bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26b145a8215eba8542e072d13bc939bc">&#9670;&#160;</a></span>alias_delimiter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static const std::string &amp; SlvParametrization_base::alias_delimiter </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>String used to separate the name of the parameter from its alias: name@alias. </p>
 
 </div>
 </div>
@@ -530,7 +562,7 @@ Protected Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set parameter values using &gt;&gt; operator by providing parameter name and corresponding value as string. Returns : First of pair: the conflicts corresponding to multiple parameters with the same name. Ie: assignment ambiguity. Second of pair : parameter names that could not be found in the parametrization. </p>
+<p>Set parameter values using &gt;&gt; operator by providing parameter name and corresponding value as string. If <code>_l_parametrizations</code> is true, parameters which type is a parametrization can be assigned a value. Returns : First of pair: the conflicts corresponding to multiple parameters with the same name. Ie: assignment ambiguity. Second of pair : parameter names that could not be found in the parametrization. </p>
 
 </div>
 </div>

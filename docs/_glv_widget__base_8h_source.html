@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.9</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.10</span>
    </div>
   </td>
  </tr>
@@ -124,29 +124,30 @@ $(function() {
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    std::vector&lt;QWidget*&gt;::iterator <a class="code hl_function" href="class_glv_widget__base.html#ace1f8298b11ec41d96cd42b76c1cd30d">delete_optional_widget</a>(QWidget* _widget);</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_glv_widget__base.html#a512d285289c6e6fb9c8954b431cd3c9e">delete_optional_widgets</a>();</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    QWidget* <a class="code hl_function" href="class_glv_widget__base.html#a5a0b7c5c7264f5d8be78f350a2cb77f9">get_data_widget</a>() <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_glv_widget__base.html#a2557267613a521a320c85b83dc491582">set_save_load_widget</a>(<a class="code hl_class" href="class_glv_widget_save_load__base.html">GlvWidgetSaveLoad_base</a>* _save_load_widget);</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_glv_widget__base.html#a4e0703901182df7f55045ebf1cb16208">resizeEvent</a>(QResizeEvent* _resize_event);</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_glv_widget__base.html#a475ce970da88e89ff360871c251d35a8">set_widget</a>();</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_glv_widget__base.html#a2557267613a521a320c85b83dc491582">set_save_load_widget</a>(<a class="code hl_class" href="class_glv_widget_save_load__base.html">GlvWidgetSaveLoad_base</a>* _save_load_widget);</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_glv_widget__base.html#a4e0703901182df7f55045ebf1cb16208">resizeEvent</a>(QResizeEvent* _resize_event);</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_glv_widget__base.html#a475ce970da88e89ff360871c251d35a8">set_widget</a>();</div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keywordtype">void</span> add_optional_widget(QWidget* _widget);</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keyword">template</span> &lt;<span class="keyword">class</span> Tvalue&gt;</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="class_glv_widget__base.html#a55db752f37a5559dff4376bf9994e1f1">   70</a></span>    <span class="keyword">friend</span> <span class="keyword">struct </span><a class="code hl_struct" href="struct_glv_widget_maker.html">GlvWidgetMaker</a>;</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno"><a class="line" href="class_glv_widget__base.html#a35705e4671cd6caa359d1e2ba71f8732">   73</a></span>    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code hl_class" href="class_glv_widget_save_load.html">GlvWidgetSaveLoad</a>;</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>signals:</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="class_glv_widget__base.html#a09fe17f6164f226a592e464dd98e4224">   77</a></span>    <span class="keywordtype">void</span> <a class="code hl_signal" href="class_glv_widget__base.html#a09fe17f6164f226a592e464dd98e4224">valueChanged</a>();</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno"><a class="line" href="class_glv_widget__base.html#a8492a0f419d1578c487fd6f75eb21e9c">   79</a></span>    <span class="keywordtype">void</span> <a class="code hl_signal" href="class_glv_widget__base.html#a8492a0f419d1578c487fd6f75eb21e9c">sizeChanged</a>();</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>};</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keywordtype">void</span> add_optional_widget(QWidget* _widget);</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keyword">template</span> &lt;<span class="keyword">class</span> Tvalue&gt;</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno"><a class="line" href="class_glv_widget__base.html#a55db752f37a5559dff4376bf9994e1f1">   72</a></span>    <span class="keyword">friend</span> <span class="keyword">struct </span><a class="code hl_struct" href="struct_glv_widget_maker.html">GlvWidgetMaker</a>;</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="class_glv_widget__base.html#a35705e4671cd6caa359d1e2ba71f8732">   75</a></span>    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code hl_class" href="class_glv_widget_save_load.html">GlvWidgetSaveLoad</a>;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>signals:</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno"><a class="line" href="class_glv_widget__base.html#a09fe17f6164f226a592e464dd98e4224">   79</a></span>    <span class="keywordtype">void</span> <a class="code hl_signal" href="class_glv_widget__base.html#a09fe17f6164f226a592e464dd98e4224">valueChanged</a>();</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno"><a class="line" href="class_glv_widget__base.html#a8492a0f419d1578c487fd6f75eb21e9c">   81</a></span>    <span class="keywordtype">void</span> <a class="code hl_signal" href="class_glv_widget__base.html#a8492a0f419d1578c487fd6f75eb21e9c">sizeChanged</a>();</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>};</div>
 <div class="ttc" id="a_glv_save_load_8h_html"><div class="ttname"><a href="_glv_save_load_8h.html">GlvSaveLoad.h</a></div></div>
 <div class="ttc" id="aclass_glv_save_load_html"><div class="ttname"><a href="class_glv_save_load.html">GlvSaveLoad</a></div><div class="ttdef"><b>Definition:</b> GlvSaveLoad.h:22</div></div>
 <div class="ttc" id="aclass_glv_widget__base_1_1_glv_widget_connector_html"><div class="ttname"><a href="class_glv_widget__base_1_1_glv_widget_connector.html">GlvWidget_base::GlvWidgetConnector</a></div><div class="ttdef"><b>Definition:</b> GlvWidgetConnector.h:37</div></div>
@@ -155,8 +156,9 @@ $(function() {
 <div class="ttc" id="aclass_glv_widget__base_html_a2557267613a521a320c85b83dc491582"><div class="ttname"><a href="class_glv_widget__base.html#a2557267613a521a320c85b83dc491582">GlvWidget_base::set_save_load_widget</a></div><div class="ttdeci">void set_save_load_widget(GlvWidgetSaveLoad_base *_save_load_widget)</div><div class="ttdef"><b>Definition:</b> GlvWidget_base.cpp:46</div></div>
 <div class="ttc" id="aclass_glv_widget__base_html_a34db25fd6aa34e884974efdac69c4f64"><div class="ttname"><a href="class_glv_widget__base.html#a34db25fd6aa34e884974efdac69c4f64">GlvWidget_base::connector</a></div><div class="ttdeci">GlvWidgetConnector * connector</div><div class="ttdef"><b>Definition:</b> GlvWidget_base.h:40</div></div>
 <div class="ttc" id="aclass_glv_widget__base_html_a475ce970da88e89ff360871c251d35a8"><div class="ttname"><a href="class_glv_widget__base.html#a475ce970da88e89ff360871c251d35a8">GlvWidget_base::set_widget</a></div><div class="ttdeci">void set_widget()</div><div class="ttdef"><b>Definition:</b> GlvWidget_base.cpp:40</div></div>
-<div class="ttc" id="aclass_glv_widget__base_html_a4e0703901182df7f55045ebf1cb16208"><div class="ttname"><a href="class_glv_widget__base.html#a4e0703901182df7f55045ebf1cb16208">GlvWidget_base::resizeEvent</a></div><div class="ttdeci">void resizeEvent(QResizeEvent *_resize_event)</div><div class="ttdef"><b>Definition:</b> GlvWidget_base.cpp:91</div></div>
+<div class="ttc" id="aclass_glv_widget__base_html_a4e0703901182df7f55045ebf1cb16208"><div class="ttname"><a href="class_glv_widget__base.html#a4e0703901182df7f55045ebf1cb16208">GlvWidget_base::resizeEvent</a></div><div class="ttdeci">void resizeEvent(QResizeEvent *_resize_event)</div><div class="ttdef"><b>Definition:</b> GlvWidget_base.cpp:97</div></div>
 <div class="ttc" id="aclass_glv_widget__base_html_a512d285289c6e6fb9c8954b431cd3c9e"><div class="ttname"><a href="class_glv_widget__base.html#a512d285289c6e6fb9c8954b431cd3c9e">GlvWidget_base::delete_optional_widgets</a></div><div class="ttdeci">void delete_optional_widgets()</div><div class="ttdef"><b>Definition:</b> GlvWidget_base.cpp:83</div></div>
+<div class="ttc" id="aclass_glv_widget__base_html_a5a0b7c5c7264f5d8be78f350a2cb77f9"><div class="ttname"><a href="class_glv_widget__base.html#a5a0b7c5c7264f5d8be78f350a2cb77f9">GlvWidget_base::get_data_widget</a></div><div class="ttdeci">QWidget * get_data_widget() const</div><div class="ttdef"><b>Definition:</b> GlvWidget_base.cpp:91</div></div>
 <div class="ttc" id="aclass_glv_widget__base_html_a61c3af7b0f546aa5fb22950f11b943ae"><div class="ttname"><a href="class_glv_widget__base.html#a61c3af7b0f546aa5fb22950f11b943ae">GlvWidget_base::~GlvWidget_base</a></div><div class="ttdeci">virtual ~GlvWidget_base()</div><div class="ttdef"><b>Definition:</b> GlvWidget_base.cpp:35</div></div>
 <div class="ttc" id="aclass_glv_widget__base_html_a770854d32778c2a0d48e9d0fa4bc93e7"><div class="ttname"><a href="class_glv_widget__base.html#a770854d32778c2a0d48e9d0fa4bc93e7">GlvWidget_base::layout</a></div><div class="ttdeci">QHBoxLayout * layout</div><div class="ttdef"><b>Definition:</b> GlvWidget_base.h:39</div></div>
 <div class="ttc" id="aclass_glv_widget__base_html_a8492a0f419d1578c487fd6f75eb21e9c"><div class="ttname"><a href="class_glv_widget__base.html#a8492a0f419d1578c487fd6f75eb21e9c">GlvWidget_base::sizeChanged</a></div><div class="ttdeci">void sizeChanged()</div></div>

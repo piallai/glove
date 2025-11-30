@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.9</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.10</span>
    </div>
   </td>
  </tr>
@@ -71,6 +71,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#signals">Signals</a> &#124;
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_glv_described_widget__base-members.html">List of all members</a>  </div>
@@ -97,12 +98,23 @@ Signals</h2></td></tr>
 <tr class="memitem:aa684653f67d9ea134615e9eb25288fe5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_described_widget__base.html#aa684653f67d9ea134615e9eb25288fe5">valueChanged</a> ()</td></tr>
 <tr class="separator:aa684653f67d9ea134615e9eb25288fe5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:a95182fd0d075a05d35dcd4c186ad1619"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_described_widget__base.html#a95182fd0d075a05d35dcd4c186ad1619">get_data_name</a> () const</td></tr>
+<tr class="separator:a95182fd0d075a05d35dcd4c186ad1619"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48056c270b1e1afcdc7186ff401496a7"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_described_widget__base.html#a48056c270b1e1afcdc7186ff401496a7">get_data_alias</a> () const</td></tr>
+<tr class="separator:a48056c270b1e1afcdc7186ff401496a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab21a0b9d0e8f7c3271a2aa713ec7b34"><td class="memItemLeft" align="right" valign="top">virtual QWidget *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_described_widget__base.html#aab21a0b9d0e8f7c3271a2aa713ec7b34">get_data_widget</a> () const =0</td></tr>
+<tr class="separator:aab21a0b9d0e8f7c3271a2aa713ec7b34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a86c7ed817d7057f8e7bf5870e2a4d4c1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_described_widget__base.html#a86c7ed817d7057f8e7bf5870e2a4d4c1">GlvDescribedWidget_base</a> (const std::string &amp;_data_name)</td></tr>
 <tr class="separator:a86c7ed817d7057f8e7bf5870e2a4d4c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a789dbf95157d538dac935ca24f631aed"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_described_widget__base.html#a789dbf95157d538dac935ca24f631aed">~GlvDescribedWidget_base</a> ()</td></tr>
 <tr class="separator:a789dbf95157d538dac935ca24f631aed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee61bd7eee4ff52d65db3114eb6f974a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_described_widget__base.html#aee61bd7eee4ff52d65db3114eb6f974a">set_alias</a> (const std::string &amp;_alias)</td></tr>
+<tr class="separator:aee61bd7eee4ff52d65db3114eb6f974a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31d0a353aa8f1f9b6ebb74289fdf637f"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_described_widget__base.html#a31d0a353aa8f1f9b6ebb74289fdf637f">enable_data_type_info</a> (bool _l_enable)=0</td></tr>
 <tr class="separator:a31d0a353aa8f1f9b6ebb74289fdf637f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a816590c12843f00e1cdfd0b9246a7c21"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_described_widget__base.html#a816590c12843f00e1cdfd0b9246a7c21">set_data_widget</a> (QWidget *_data_widget, const QString &amp;_optional_text_str)</td></tr>
@@ -207,6 +219,68 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a48056c270b1e1afcdc7186ff401496a7" name="a48056c270b1e1afcdc7186ff401496a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48056c270b1e1afcdc7186ff401496a7">&#9670;&#160;</a></span>get_data_alias()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string GlvDescribedWidget_base::get_data_alias </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get the secondary name of the data. </p>
+
+</div>
+</div>
+<a id="a95182fd0d075a05d35dcd4c186ad1619" name="a95182fd0d075a05d35dcd4c186ad1619"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95182fd0d075a05d35dcd4c186ad1619">&#9670;&#160;</a></span>get_data_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string &amp; GlvDescribedWidget_base::get_data_name </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get the name of the data. </p>
+
+</div>
+</div>
+<a id="aab21a0b9d0e8f7c3271a2aa713ec7b34" name="aab21a0b9d0e8f7c3271a2aa713ec7b34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab21a0b9d0e8f7c3271a2aa713ec7b34">&#9670;&#160;</a></span>get_data_widget()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual QWidget * GlvDescribedWidget_base::get_data_widget </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the data widget. Is a <a class="el" href="class_glv_widget_data.html">GlvWidgetData</a> in general. </p>
+
+</div>
+</div>
 <a id="a36c204c0261c1634bae1cbbf23cc649a" name="a36c204c0261c1634bae1cbbf23cc649a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a36c204c0261c1634bae1cbbf23cc649a">&#9670;&#160;</a></span>reclaim_widgets_ownership()</h2>
 
@@ -231,6 +305,33 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p><code>_data_widget</code> is is added to the instance layout. In case it was set in the layout of <a class="el" href="class_glv_parameters_widget.html">GlvParametersWidget</a> (grid). </p>
+
+</div>
+</div>
+<a id="aee61bd7eee4ff52d65db3114eb6f974a" name="aee61bd7eee4ff52d65db3114eb6f974a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee61bd7eee4ff52d65db3114eb6f974a">&#9670;&#160;</a></span>set_alias()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GlvDescribedWidget_base::set_alias </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>_alias</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Alias related to name (ie: secondary name). </p>
 
 </div>
 </div>
