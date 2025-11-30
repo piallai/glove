@@ -19,11 +19,37 @@
 #include "SlvMacros.h"
 #include "slv_vector.h"
 #include <cstring>
+#include "slv_string.h"
 
 SlvCLI::Arguments::Arguments(int _argc, char* _argv[]) {
 
 	parse(_argc, _argv);
 
+}
+
+SlvCLI::Arguments::Arguments(const std::string& _args, std::vector<std::string> _arg_names, std::vector<std::string> _solo_arg_names) {
+
+	parse(_args, _arg_names, _solo_arg_names);
+
+}
+
+SlvStatus SlvCLI::Arguments::get_status() const {
+
+	return status;
+
+}
+
+std::vector<std::string> SlvCLI::Arguments::get_arguments_name() const {
+
+	std::vector<std::string> arguments_name;
+	for (auto it = parameter_arguments.begin(); it != parameter_arguments.end(); ++it) {
+		arguments_name.push_back(it->first);
+	}
+	for (auto it = solo_arguments.begin(); it != solo_arguments.end(); ++it) {
+		arguments_name.push_back(*it);
+	}
+
+	return arguments_name;
 }
 
 bool SlvCLI::has_glove(int _argc, char* _argv[]) {
@@ -86,6 +112,8 @@ const std::string& SlvCLI::Arguments::get_glove_argument() const {
 
 void SlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 
+	status = SlvStatus();
+
 	parameter_arguments.clear();
 	solo_arguments.clear();
 
@@ -126,6 +154,69 @@ void SlvCLI::Arguments::parse(int _argc, char* _argv[]) {
 
 }
 
+void SlvCLI::aggregate_quotes(std::vector<std::string>& _args, bool _l_remove_quotes) {
+
+	for (auto it = _args.begin(); it != _args.end(); ++it) {
+		if (it->front() == '\"') {
+			std::string sum;
+			auto it2 = it;
+			bool l_found_end = false;
+			while (!l_found_end && it2 != _args.end()) {
+				if (!sum.empty()) sum += " ";
+				sum += *it2;
+				l_found_end = (it2->back() == '\"');
+				++it2;
+			}
+			if (l_found_end) {
+
+				if (_l_remove_quotes) {
+					sum.erase(sum.begin());
+					sum.erase(std::prev(sum.end()));
+				}
+
+				it = _args.erase(it, it2);
+				it = _args.insert(it, sum);
+			}
+		}
+	}
+
+}
+
+void SlvCLI::Arguments::parse(const std::string& _args, std::vector<std::string> _arg_names, std::vector<std::string> _solo_arg_names) {
+
+	status = SlvStatus();
+
+	// If the argument names are not provided, then the arguments are implicitly considered to be alternatively: name/value
+	bool l_consecutive_arguments = (_arg_names.empty() && _solo_arg_names.empty());
+
+	bool l_conflict = false;
+	for (auto it = _arg_names.begin(); it != _arg_names.end(); ++it) {
+		if (slv::vector::find(*it, _solo_arg_names)) {
+			if (_args.find(*it) != std::string::npos) {// if the conflicting parameter is involved in the arguments
+				status += SlvStatus(SlvStatus::statusType::warning, "Parameter " + *it + " is both a value and an activation (boolean).");
+				l_conflict = true;
+			}
+		}
+	}
+
+	if (!l_conflict) {
+		std::vector<std::string> args = slv::string::read_datas_line<std::string>(_args, " ");
+
+		aggregate_quotes(args, true);
+
+		for (auto it = args.begin(); it != args.end(); ++it) {
+			if (l_consecutive_arguments || slv::vector::find(*it, _arg_names)) {
+				if (std::next(it) != args.end()) {
+					parameter_arguments[*it].push_back(*++it);
+				} // else: problem with arguments. l_consecutive_arguments likely to be false instead of true.
+			} else if (slv::vector::find(*it, _solo_arg_names)) {
+				solo_arguments.push_back(*it);
+			}
+		}
+	}
+
+}
+
 void SlvCLI::Arguments::filter(const std::vector<std::string>& _arguments_remaining) {
 
 	for (Tparameters::const_iterator it = parameter_arguments.begin(); it != parameter_arguments.end();) {
@@ -150,18 +241,18 @@ void SlvCLI::Arguments::filter(const std::vector<std::string>& _arguments_remain
 
 }
 
-std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments) {
+std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair<std::string, std::string> >& _parameter_arguments, const std::vector<std::string>& _solo_arguments, bool _l_CLI_mode) {
 
 	std::vector< std::pair<std::string, std::string> > parameter_arguments;
 	for (std::vector< std::pair<std::string, std::string> >::const_iterator it = _parameter_arguments.begin(); it != _parameter_arguments.end(); ++it) {
-		if (it->first.front() == '-') {
+		if (it->first.front() == '-' || !_l_CLI_mode) {
 			parameter_arguments.push_back(*it);
 		}
 	}
 
 	std::vector<std::string> solo_arguments;
 	for (std::vector<std::string>::const_iterator it = _solo_arguments.begin(); it != _solo_arguments.end(); ++it) {
-		if (it->front() == '-') {
+		if (it->front() == '-' || !_l_CLI_mode) {
 			solo_arguments.push_back(*it);
 		}
 	}

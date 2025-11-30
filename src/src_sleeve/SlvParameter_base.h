@@ -44,6 +44,7 @@ public:
 
 	/*! Get parameter name.*/
 	virtual const std::string& get_name() const = 0;
+	virtual const std::string& get_alias() const = 0;
 	/*! Get parameter description.*/
 	virtual const std::string& get_description() const = 0;
 	/*! Get parameter marker.*/

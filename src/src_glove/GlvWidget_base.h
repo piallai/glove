@@ -50,6 +50,8 @@ public:
     std::vector<QWidget*>::iterator delete_optional_widget(QWidget* _widget);
     /*! Remove and delete all optional widgets.*/
     void delete_optional_widgets();
+    /*! Get the data widget. Is a GlvWidgetData in general.*/
+    QWidget* get_data_widget() const;
 
 protected:
 

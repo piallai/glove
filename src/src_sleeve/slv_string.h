@@ -141,7 +141,10 @@ T slv::string::read_data_line(std::string& _string_line, const std::string _sepa
 
     std::string data_string = extract_str_up_to(_string_line, _separator);
     T data = string_to_value<T>(data_string);
-    _string_line.erase(0, data_string.size() + _separator.size());
+    _string_line.erase(0, data_string.size());
+    while (_string_line.substr(0, _separator.size()) == _separator) {
+        _string_line.erase(0, _separator.size());
+    }
     return data;
 
 }

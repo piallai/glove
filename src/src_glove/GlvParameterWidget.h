@@ -66,6 +66,8 @@ private:
 
 };
 
+#include <QLabel>
+
 template <class Tparam>
 GlvParameterWidget<Tparam>::GlvParameterWidget(const SlvParameter<Tparam>& _parameter, bool l_editable, QWidget* _parent) :GlvDescribedWidget<Tparam>(_parameter.get_value(), std::is_same_v<Tparam, std::nullptr_t> ? "" : _parameter.get_name(), std::is_same_v<Tparam, std::nullptr_t> ? "" : _parameter.get_description(), l_editable, _parent) {
 
@@ -74,6 +76,8 @@ GlvParameterWidget<Tparam>::GlvParameterWidget(const SlvParameter<Tparam>& _para
     abide_rules(_parameter);
 
     GlvDescribedWidget<Tparam>::append_tool_tip(get_rules_description(_parameter));
+
+    GlvDescribedWidget_base::set_alias(_parameter.get_alias());
 
 }
 

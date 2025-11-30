@@ -58,9 +58,8 @@ public:
 	/*! Get string serialization of the parametrization. Each vector element contains a parameter name and the corresponding parameter value as string using operator <<.
 	* Parameters of nested parametrizations are simply added. Ie: there is no record of intermediate parametrizations.*/
 	std::vector< std::pair<std::string, std::string> > get_string_serialization(unsigned int _marker = SlvParameter_base::default_marker_value()) const;
-	/*! Same as get_string_serialization, but bool parameters are treated appart.
-	* If bool parameter is true, the parameter name is added to the second vector, if false it is not.*/
-	std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > get_string_serialization_bool(unsigned int _marker = SlvParameter_base::default_marker_value()) const;
+	/*! Same as get_string_serialization, but bool parameters are treated appart.*/
+	std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > get_string_serialization_bool(unsigned int _marker = SlvParameter_base::default_marker_value()) const;
 protected:
 	void ostream(std::ostream& _os) const;
 	void istream_rec(std::istream& _is);

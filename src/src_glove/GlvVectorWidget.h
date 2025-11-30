@@ -104,7 +104,7 @@ void GlvVectorWidget<T>::set_value(const _Tdata_& _vector) {
         }
         widgets.resize(_vector.size());
         resize_spinbox->setValue((int)widgets.size());
-        
+        insert_spinbox->setMaximum((int)widgets.size());
     }
 
     if (_vector.empty()) {// If no vector item exists, then the vector is indicated as fully displayed for reading convenience
@@ -143,6 +143,7 @@ void GlvVectorWidget<T>::pushValue(T _value) {
         }
 
         resize_spinbox->setValue((int)widgets.size());
+        insert_spinbox->setMaximum((int)widgets.size());
     }
 }
 
@@ -152,8 +153,8 @@ void GlvVectorWidget<T>::insertValue(const unsigned int i) {
     if (widgets.size() < Nelements_max) {
 
         unsigned int j = i;
-        if (j >= (unsigned int)widgets.size()) {
-            j = (unsigned int)widgets.size() - 1;
+        if (j > (unsigned int)widgets.size()) {
+            j = (unsigned int)widgets.size();
         }
         GlvVectorWidgetItem<T>* widget = new GlvVectorWidgetItem<T>(T(), j, this);
         layout_items->insertWidget(j, widget);
@@ -169,6 +170,7 @@ void GlvVectorWidget<T>::insertValue(const unsigned int i) {
             button_push->setEnabled(false);
             button_insert->setEnabled(false);
             resize_spinbox->setValue((int)widgets.size());
+            insert_spinbox->setMaximum((int)widgets.size());
         }
 
     }
@@ -188,6 +190,7 @@ void GlvVectorWidget<T>::resizeVector(const unsigned int i) {
         button_push->setEnabled(!l_max);
         button_insert->setEnabled(!l_max);
         resize_spinbox->setValue((int)widgets.size());
+        insert_spinbox->setMaximum((int)widgets.size());
     }
 
     if (widgets.empty()) {
@@ -220,7 +223,7 @@ void GlvVectorWidget<T>::popValue() {
         }
 
         resize_spinbox->setValue((int)widgets.size());
-
+        insert_spinbox->setMaximum((int)widgets.size());
     }
 
 }

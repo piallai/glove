@@ -69,7 +69,7 @@ std::vector<const SlvParameter_base*> SlvParametrization_base::find(std::string 
 
 		const SlvParametrization_base* parametrization_cast = (*it)->parametrization_cast();
 
-		if ((_l_parametrizations || !parametrization_cast) && (*it)->get_name() == _parameter_name) {
+		if ((_l_parametrizations || !parametrization_cast) && ((*it)->get_name() == _parameter_name || (!(*it)->get_alias().empty() && (*it)->get_alias() == _parameter_name))) {
 
 			parameters_found.push_back(*it);
 

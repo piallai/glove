@@ -122,6 +122,7 @@ SET(GLOVE_SOURCES
 	GlvParametersWidget_base.cpp
     GlvParametersWidget.h
     GlvParametersWidget_specs.h
+    GlvParametersParserConfigDialog.h
     GlvParametrizationWidget.h
 
     GlvParametrizationDialog_base.h

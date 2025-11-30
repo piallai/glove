@@ -160,6 +160,7 @@ int main(int argc, char *argv[]) {
 
 	GlvParametrizationDialog<ClassB>* parametrization_classB = new GlvParametrizationDialog<ClassB>();
 	GlvParametrizationSaveLoad<ClassB>* save_load_widget = new GlvParametrizationSaveLoad<ClassB>(parametrization_classB->get_parametrization_widget());
+	parametrization_classB->get_parametrization_widget()->set_options_enabled(true);
 
 	int result = parametrization_classB->exec();
 

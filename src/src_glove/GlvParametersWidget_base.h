@@ -24,6 +24,8 @@ template <class Tparam>
 class GlvParameterWidget;
 #include "GlvSaveLoad.h"
 #include "SlvMacrosDeclarations.h"
+class QPushButton;
+#include "SlvStatus.h"
 
 /*! Widget managing the parameters of classes SlvParametrization**.*/
 class GlvParametersWidget_base : public QGroupBox, public GlvSaveLoad {
@@ -45,6 +47,10 @@ private :
 	* If false (default), the widget can still be resized up to the last height before parameters size reduction.
 	* i.e.: Update height hint to fit to parameters widget.*/
 	bool l_adapt_max_height;
+	/*! Button to access line input to enter arguments.*/
+	QPushButton* parse_arguments_button;
+	/*! Widget containing find and parse features.*/
+	QWidget* options_widget;
 public:
 	enum LayoutType { Vertical, Grid };
 protected:
@@ -53,6 +59,10 @@ protected:
 	QGridLayout* grid_layout;
 	QVBoxLayout* main_layout;
 	QWidget* parameters_widget;
+	/*! CLI arguments.*/
+	std::string CLI_arguments_line;
+	/*! Parameter names parsed from the CLI argument line.*/
+	std::vector<std::string> CLI_parameters;
 
 	GlvParametersWidget_base();
 	virtual ~GlvParametersWidget_base();
@@ -82,6 +92,8 @@ public:
 	* If false (default), the widget can still be resized up to the last height before parameters size reduction.
 	* i.e.: Update height hint to fit to parameters widget.*/
 	void set_adapt_max_height(bool _l_adapt);
+	/*! Enable options: find and parse. Default is hidden.*/
+	void set_options_enabled(bool _l_enabled);
 
 protected:
 	/*! Add the parameter widget to the parameters.*/
@@ -104,9 +116,18 @@ private:
 	/*! Get number of parameters.*/
 	virtual int get_Nparameters() const = 0;
 	bool eventFilter(QObject* object, QEvent* _event);
+	/*! \p _l_explicit_bool_arg : whether bool argument must be defined with 0/1 value.*/
+	virtual SlvStatus parse_arguments(const std::string& _arguments, const bool _l_explicit_bool_arg, const bool _l_reset_default) = 0;
+	/*! Show only the parameters which name contains \p _filter. The other parameters are 'filtered'. Return true if all the parameters are filtered (ie: hidden).
+	* \p _l_exact_match : if true, filtering applies only when filter matches the parameter name. If false, filter applies on any parameter name containg \p _filter.
+	* \p _l_set_visible_only : if true, parameters can only be set to visible, not to hidden.*/
+	bool filter_parameters(std::string _filter, bool _l_exact_match, bool _l_set_visible_only);
 private slots:
 	/*! Show parameters or not.*/
 	void show_parameters(bool _l_show);
+	void parse_arguments();
+	/*! Show only the parameters which name contains \p _filter. The other parameters are 'filtered'. Return true if all the parameters are filtered (ie: hidden).*/
+	bool filter_parameters(QString _filter);
 signals:
 	/*! Emitted when the parameter named \p _parameter_name has changed.*/
 	void parameterChanged(std::string _parameter_name);

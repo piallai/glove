@@ -280,6 +280,7 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 	}
 
 	GlvParametrizationDialog<Tparametrization> dialog;
+	dialog.get_parametrization_widget()->set_options_enabled(true);
 	GlvParametrizationSaveLoad<Tparametrization>* save_load_widget = new GlvParametrizationSaveLoad<Tparametrization>(dialog.get_parametrization_widget());
 
 	SlvCLI::Arguments arguments(_argc, _argv);
@@ -328,11 +329,17 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_threaded, Interface
 			parameter_arguments.push_back({ it->first, it->second[0] });
 		}
 
-		std::vector<std::string> solo_arguments = dialog.get_parametrization().get_string_serialization_bool().second;
-		slv::vector::add(solo_arguments, arguments.get_solo_arguments());
+		std::vector< std::pair<std::string, bool> > solo_arguments = dialog.get_parametrization().get_string_serialization_bool().second;
+		std::vector<std::string> solo_arguments_active;
+		for (auto it = solo_arguments.begin(); it != solo_arguments.end(); ++it) {
+			if (it->second) {
+				solo_arguments_active.push_back(it->first);
+			}
+		}
+		slv::vector::add(solo_arguments_active, arguments.get_solo_arguments());
 
 
-		std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(parameter_arguments, solo_arguments);
+		std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(parameter_arguments, solo_arguments_active);
 		cli_arguments.second[0] = _argv[0];
 
 		if (_l_threaded) {

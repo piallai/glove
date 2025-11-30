@@ -49,6 +49,6 @@ unsigned int slv::misc::get_Ndecimals(const T& _value, bool _l_round_floating_po
 
         return count;
     } else {
-        return std::numeric_limits<int>::infinity();
+        return std::numeric_limits<unsigned int>::max();
     }
 }

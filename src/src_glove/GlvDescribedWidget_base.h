@@ -27,6 +27,15 @@ class GlvDescribedWidget_base : public QWidget {
 
     Q_OBJECT
 
+public :
+
+    /*! Get the name of the data.*/
+    const std::string& get_data_name() const;
+    /*! Get the secondary name of the data.*/
+    std::string get_data_alias() const;
+    /*! Get the data widget. Is a GlvWidgetData in general.*/
+    virtual QWidget* get_data_widget() const = 0;
+
 protected:
 
     QGridLayout* layout;
@@ -37,6 +46,9 @@ protected:
 
     GlvDescribedWidget_base(const std::string& _data_name);
     virtual ~GlvDescribedWidget_base();
+
+    /*! Alias related to name (ie: secondary name).*/
+    void set_alias(const std::string& _alias);
 
     /*! Manage display of data type in 'WhatsThis'*/
     virtual void enable_data_type_info(bool _l_enable) = 0;

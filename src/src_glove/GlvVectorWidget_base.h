@@ -35,7 +35,7 @@ private:
     QWidget* pushpop_widget;
     QWidget* insert_widget;
     QWidget* resize_widget;
-    QSpinBox* insert_spinbox;
+    
     QGroupBox* vector_group_box;
 
 protected:
@@ -49,6 +49,7 @@ protected:
     QPushButton* button_pop;
     QPushButton* button_insert;
     QSpinBox* resize_spinbox;
+    QSpinBox* insert_spinbox;
 
     GlvVectorWidget_base(QWidget* _parent = 0);
     virtual ~GlvVectorWidget_base();

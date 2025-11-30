@@ -42,6 +42,30 @@ GlvDescribedWidget_base::~GlvDescribedWidget_base() {
 
 }
 
+void GlvDescribedWidget_base::set_alias(const std::string& _alias) {
+
+	if (data_name_label && !_alias.empty()) {
+		data_name_label->setToolTip(glv::toQString(_alias));
+	}
+
+}
+
+const std::string& GlvDescribedWidget_base::get_data_name() const {
+
+	return data_name;
+
+}
+
+std::string GlvDescribedWidget_base::get_data_alias() const {
+
+	if (data_name_label) {
+		return data_name_label->toolTip().toStdString();
+	} else {
+		return std::string();
+	}
+
+}
+
 void GlvDescribedWidget_base::set_data_widget(QWidget* _data_widget, const QString& _optional_text_str) {
 
 	layout->addWidget(_data_widget, 1, 0);

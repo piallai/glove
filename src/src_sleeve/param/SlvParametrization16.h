@@ -106,7 +106,8 @@ public:
 	}
 
 	/*! Get string serialization of the parametrization. Each vector element contains a parameter name and the corresponding parameter value as string using operator <<.
-	* Parameters of nested parametrizations are simply added. Ie: there is no record of intermediate parametrizations.*/
+	* Parameters of nested parametrizations are simply added. Ie: there is no record of intermediate parametrizations.
+	* Parameters alias are also added (same as names), if they exist.*/
 	std::vector< std::pair<std::string, std::string> > get_string_serialization(unsigned int _marker = SlvParameter_base::default_marker_value()) const {
 		std::vector< std::pair<std::string, std::string> > serialization = Tparametrization_lower::get_string_serialization(_marker);
 		if (_marker == parameter16->get_marker()) {
@@ -117,10 +118,10 @@ public:
 
 	/*! Same as get_string_serialization, but bool parameters are treated appart.
 	* If bool parameter is true, the parameter name is added to the second vector, if false it is not.*/
-	std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > get_string_serialization_bool(unsigned int _marker = SlvParameter_base::default_marker_value()) const {
-		std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > serialization = Tparametrization_lower::get_string_serialization_bool(_marker);
+	std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > get_string_serialization_bool(unsigned int _marker = SlvParameter_base::default_marker_value()) const {
+		std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > serialization = Tparametrization_lower::get_string_serialization_bool(_marker);
 		if (_marker == parameter16->get_marker()) {
-			std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > serialization_parameter = SlvParameterSpec<T16>::get_string_serialization_bool(*parameter16);
+			std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > serialization_parameter = SlvParameterSpec<T16>::get_string_serialization_bool(*parameter16);
 			slv::vector::add(serialization.first, serialization_parameter.first);
 			slv::vector::add(serialization.second, serialization_parameter.second);
 		}

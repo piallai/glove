@@ -88,6 +88,12 @@ void GlvWidget_base::delete_optional_widgets() {
 
 }
 
+QWidget* GlvWidget_base::get_data_widget() const {
+
+    return data_widget;
+
+}
+
 void GlvWidget_base::resizeEvent(QResizeEvent* _resize_event) {
 
     emit sizeChanged();

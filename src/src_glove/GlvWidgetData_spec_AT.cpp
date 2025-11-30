@@ -80,7 +80,7 @@ GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QDoubleSpinBox(_parent) {
 GlvWidgetData<Tdata>::GlvWidgetData(const Tdata& _value, QWidget* _parent) : GlvWidgetData(_parent) {
     unsigned int Ndecimals = slv::misc::get_Ndecimals(_value);
     Ndecimals = std::max((unsigned int)2, Ndecimals);
-    if (Ndecimals != std::numeric_limits<int>::infinity()) {
+    if (Ndecimals != std::numeric_limits<unsigned int>::max()) {
         setDecimals(Ndecimals);
     }
     set_value(_value);
@@ -108,7 +108,7 @@ GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QDoubleSpinBox(_parent) {
 GlvWidgetData<Tdata>::GlvWidgetData(const Tdata& _value, QWidget* _parent) : GlvWidgetData(_parent) {
     unsigned int Ndecimals = slv::misc::get_Ndecimals(_value);
     Ndecimals = std::max((unsigned int)2, Ndecimals);
-    if (Ndecimals != std::numeric_limits<int>::infinity()) {
+    if (Ndecimals != std::numeric_limits<unsigned int>::max()) {
         setDecimals(Ndecimals);
     }
     set_value(_value);
@@ -129,7 +129,7 @@ void GlvWidgetData<Tdata>::set_value(const Tdata& _value) {
 #undef Tdata
 #define Tdata bool
 GlvWidgetData<Tdata>::GlvWidgetData(QWidget* _parent) :QCheckBox(_parent) {
-
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 }
 GlvWidgetData<Tdata>::GlvWidgetData(const Tdata& _value, QWidget* _parent) : GlvWidgetData(_parent) {
     set_value(_value);

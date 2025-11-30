@@ -34,6 +34,9 @@ protected:
 	/*! Whether param_init() method is called each time a parameter's value is modified.*/
 	bool l_param_init_auto;
 
+	/*! String used to separate the name of the parameter from its alias: name@alias.*/
+	glvm_staticVariable(const, std::string, alias_delimiter, "@");
+
 public:
 
 	/*! Separate static name of the class to parameters. ex: name@[param1,param2,param3].*/
@@ -86,6 +89,7 @@ public:
 	const SlvParameter_base* find_first(std::string _parameter_name, bool _l_parametrizations) const;
 
 	/*! Set parameter values using >> operator by providing parameter name and corresponding value as string.
+	* If \p _l_parametrizations is true, parameters which type is a parametrization can be assigned a value.
 	* Returns :
 	* First of pair: the conflicts corresponding to multiple parameters with the same name. Ie: assignment ambiguity.
 	* Second of pair : parameter names that could not be found in the parametrization.*/

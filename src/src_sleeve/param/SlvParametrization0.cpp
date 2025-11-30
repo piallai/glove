@@ -68,8 +68,8 @@ std::vector< std::pair<std::string, std::string> > SlvParametrization0::get_stri
 	return serialization;
 }
 
-std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > SlvParametrization0::get_string_serialization_bool(unsigned int _marker) const {
-	std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > serialization;
+std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > SlvParametrization0::get_string_serialization_bool(unsigned int _marker) const {
+	std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > serialization;
 	return serialization;
 }
 

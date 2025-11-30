@@ -59,6 +59,10 @@ protected:
     /*! Append text on a new line to widget tool tip.*/
     void append_tool_tip(const std::string& _string);
 
+private:
+    /*! Get the data widget. Is a GlvWidgetData in general.*/
+    QWidget* get_data_widget() const;
+
 };
 
 #include "GlvWidget.h"
@@ -138,4 +142,9 @@ void GlvDescribedWidget<Tdata>::append_tool_tip(const std::string& _string) {
         data_widget->setToolTip(string);
     }
 
+}
+
+template <class Tdata>
+QWidget* GlvDescribedWidget<Tdata>::get_data_widget() const {
+    return data_widget->get_data_widget();
 }

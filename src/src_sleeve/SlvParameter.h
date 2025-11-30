@@ -100,7 +100,7 @@ private:
 
 template <class Tparam>
 struct SlvParameterSpecSerialization {
-    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > get_string_serialization_bool(const SlvParameter<Tparam>& _parameter);
+    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > get_string_serialization_bool(const SlvParameter<Tparam>& _parameter);
 };
 
 template <>
@@ -139,9 +139,14 @@ struct SlvParameterSpec {
         return _parameter_value1 == _parameter_value2;
     }
     static std::vector< std::pair<std::string, std::string> > get_string_serialization(const SlvParameter<Tparam>& _parameter) {
-        return { {_parameter.get_name(), slv::string::to_string(_parameter.get_value())} };
+        std::vector< std::pair<std::string, std::string> > serialization;
+        serialization.push_back({ _parameter.get_name(), slv::string::to_string(_parameter.get_value()) });
+        if (!_parameter.get_alias().empty()) {
+            serialization.push_back({ _parameter.get_alias(), slv::string::to_string(_parameter.get_value()) });
+        }
+        return serialization;
     }
-    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
+    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
         return SlvParameterSpecSerialization<Tparam>::get_string_serialization_bool(_parameter);
     }
     static const SlvParametrization_base* parametrization_cast(const Tparam& _parameter_value) {
@@ -179,7 +184,7 @@ struct SlvParameterSpec<Tparam> {
     static std::vector< std::pair<std::string, std::string> > get_string_serialization(const SlvParameter<Tparam>& _parameter) {
         return {};
     }
-    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
+    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
         return {};
     }
     static const SlvParametrization_base* parametrization_cast(const Tparam& _parameter_value) {
@@ -189,16 +194,17 @@ struct SlvParameterSpec<Tparam> {
 #undef Tparam
 
 template <class Tparam>
-std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > SlvParameterSpecSerialization<Tparam>::get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
+std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > SlvParameterSpecSerialization<Tparam>::get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
     return { { SlvParameterSpec<Tparam>::get_string_serialization(_parameter) }, {} };
 }
 
 template <>
 struct SlvParameterSpecSerialization<bool> {
-    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > get_string_serialization_bool(const SlvParameter<bool>& _parameter) {
-        std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > serialization;
-        if (_parameter.get_value()) {
-            serialization.second.push_back(_parameter.get_name());
+    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > get_string_serialization_bool(const SlvParameter<bool>& _parameter) {
+        std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > serialization;
+        serialization.second.push_back({ _parameter.get_name(), _parameter.get_value()});
+        if (!_parameter.get_alias().empty()) {
+            serialization.second.push_back({ _parameter.get_name(), _parameter.get_value() });
         }
         return serialization;
     }
@@ -245,7 +251,7 @@ struct SlvParameterSpec<Tparam, typename std::enable_if<SlvIsParametrization<Tpa
     static std::vector< std::pair<std::string, std::string> > get_string_serialization(const SlvParameter<Tparam>& _parameter) {
         return _parameter.get_value().param_cast().get_string_serialization();
     }
-    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector<std::string> > get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
+    static std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > get_string_serialization_bool(const SlvParameter<Tparam>& _parameter) {
         return _parameter.get_value().param_cast().get_string_serialization_bool();
     }
     static const SlvParametrization_base* parametrization_cast(const Tparam& _parameter_value) {
@@ -426,26 +432,40 @@ glvm_pv_parameter7(parameter_number, class_name, class_type, parameter_name, par
 #define MACSPEC_COMPARE_nullptr_t(x) x
 #define IS_TYPE_NULLPTR_T(type) MACSPEC_COMPARE(type, TYPE_NULLPTR_T)
 
-#define glvm_pv_parameter7(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
-MACSPEC_IIF(IS_TYPE_NULLPTR_T(class_type))(glvm_pv_parameter7_nullptr_t, glvm_pv_parameter7_general)(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)
+// glvm_pv_parameter_core are common to unruled and ruled parameters
 
-#define glvm_pv_parameter7_parameter(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
+#define glvm_pv_parameter_core1(class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
+private:\
 class SlvPvClassParam_##class_name : public SlvParameter<class_type> {\
 public:\
-SlvPvClassParam_##class_name(SlvParametrization_base* _parametrization, class_type _value = default_value()):SlvParameter<class_type>(_parametrization, _value){ this->abide_rules();}\
+SlvPvClassParam_##class_name(SlvParametrization_base* _parametrization, class_type _value = default_value()):SlvParameter<class_type>(_parametrization, _value){}\
 ~SlvPvClassParam_##class_name(){}\
 virtual SlvPvClassParam_##class_name* clone(SlvParametrization_base* _parametrization) const {\
 SlvPvClassParam_##class_name* clone_parameter = new SlvPvClassParam_##class_name(*this);\
 clone_parameter->parametrization = _parametrization;\
 return clone_parameter;\
 }\
-glvm_staticVariable_const_get(std::string, name, parameter_name)\
+private:\
+    static std::string parse_parameter_alias_name(const std::string _name) {\
+        std::string name = _name;\
+        size_t pos = _name.find(SlvParametrization_base::alias_delimiter());\
+        if (pos != std::string::npos) {\
+            name = _name.substr(0, pos);\
+            alias() = _name.substr(pos + SlvParametrization_base::alias_delimiter().size());\
+        }\
+        return name;\
+}\
+glvm_staticVariable(, std::string, alias, )\
+const std::string& get_alias() const { return alias(); }\
+glvm_staticVariable_const_get(std::string, name, parse_parameter_alias_name(parameter_name))\
 glvm_staticVariable_const_get(std::string, description, parameter_description)\
 glvm_staticVariable_const_get(class_type, default_value, _default_value)\
-glvm_staticVariable_const_get(std::vector< SlvParameterRuleT<class_type> >, rules, create_rules());\
+glvm_staticVariable_const_get(std::vector< SlvParameterRuleT<class_type> >, rules, create_rules())\
 unsigned int get_Nrules() const { return (unsigned int)rules().size(); }\
 glvm_staticVariable_const_get(unsigned int, marker, marker_value)\
-typedef class_type Tparam;\
+typedef class_type Tparam;
+
+#define glvm_pv_parameter_core2(class_type) \
 private:\
 void set_stream_value(const std::string& _string, bool _l_param_only) {\
 class_type value_tmp(default_value()); SlvParameterSpec<class_type>::parse(value_tmp, _string);\
@@ -456,9 +476,16 @@ std::ostringstream oss; oss << this->get_value(); return oss.str();\
 }\
 static std::vector< SlvParameterRuleT<class_type> > create_rules() {\
 std::vector< SlvParameterRuleT<class_type> > rules;\
+
+#define glvm_pv_parameter7(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
+MACSPEC_IIF(IS_TYPE_NULLPTR_T(class_type))(glvm_pv_parameter7_nullptr_t, glvm_pv_parameter7_general)(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)
+
+#define glvm_pv_parameter7_parameter(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
+glvm_pv_parameter_core1(class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)\
+glvm_staticVariable_const_get(bool, has_rules, false)\
+glvm_pv_parameter_core2(class_type)\
 rules.push_back(SlvParameterRuleT<class_type>());/*default rule*/\
 return rules;}\
-glvm_staticVariable_const_get(bool, has_rules, false)\
 };
 
 #define glvm_pv_parameter7_nullptr_t(parameter_number, class_name, class_type, parameter_name, parameter_description, _default_value, marker_value) \
@@ -516,34 +543,9 @@ SlvStatus status = this->get_parameter##parameter_number().check_rules();\
 if (!status) { set_##class_name##_unruled(value_tmp, _l_param_only); }\
 return status;\
 ;}\
-private:\
-class SlvPvClassParam_##class_name : public SlvParameter<class_type> {\
-public:\
-SlvPvClassParam_##class_name(SlvParametrization_base* _parametrization, class_type _value = default_value()):SlvParameter<class_type>(_parametrization, _value){}\
-~SlvPvClassParam_##class_name(){}\
-virtual SlvPvClassParam_##class_name* clone(SlvParametrization_base* _parametrization) const {\
-SlvPvClassParam_##class_name* clone_parameter = new SlvPvClassParam_##class_name(*this);\
-clone_parameter->parametrization = _parametrization;\
-return clone_parameter;\
-}\
-glvm_staticVariable_const_get(std::string, name, parameter_name)\
-glvm_staticVariable_const_get(std::string, description, parameter_description)\
-glvm_staticVariable_const_get(class_type, default_value, _default_value)\
-glvm_staticVariable_const_get(std::vector< SlvParameterRuleT<class_type> >, rules, create_rules())\
-unsigned int get_Nrules() const { return (unsigned int)rules().size(); }\
-glvm_staticVariable_const_get(unsigned int, marker, marker_value)\
-typedef class_type Tparam;\
+glvm_pv_parameter_core1(class_name, class_type, parameter_name, parameter_description, _default_value, marker_value)\
 glvm_staticVariable_const_get(bool, has_rules, rules().size() > 1)\
-private:\
-void set_stream_value(const std::string& _string, bool _l_param_only) {\
-class_type value_tmp(default_value()); SlvParameterSpec<class_type>::parse(value_tmp, _string);\
-this->set_value(value_tmp, _l_param_only);\
-}\
-std::string get_stream_value(bool _l_param_only) const {\
-std::ostringstream oss; oss << this->get_value(); return oss.str();\
-}\
-static std::vector< SlvParameterRuleT<class_type> > create_rules() {\
-std::vector< SlvParameterRuleT<class_type> > rules;\
+glvm_pv_parameter_core2(class_type)\
 rules.push_back(SlvParameterRuleT<Tparam>());
 
 #define glvm_parameter_add_rule(rule_type, rule_value) \
