@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.10</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.11</span>
    </div>
   </td>
  </tr>
@@ -104,31 +104,35 @@ $(function() {
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keyword">namespace </span>{<span class="comment">//private</span></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>        <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>        <span class="keywordtype">bool</span> parseFP(<span class="keyword">const</span> std::string&amp; _string, T&amp; _value) {</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>            <span class="keywordflow">if</span> (_string == <span class="stringliteral">&quot;inf&quot;</span>) {</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>                _value = INFINITY;</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>            } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (_string == <span class="stringliteral">&quot;-inf&quot;</span>) {</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>                _value = -INFINITY;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>            } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>                std::istringstream iss(_string);</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>                iss &gt;&gt; _value;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>            }</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        }</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    }</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>}</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="namespaceslv.html#ae20eeee1f48e4fb3bca4877523f7d7b2">   42</a></span><span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceslv.html#a9dd87a23f8731f3ba4168ad6d1f675f6">slv::parse</a>(<span class="keyword">const</span> std::string&amp; _string, <span class="keywordtype">float</span>&amp; _value) {</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keywordflow">return</span> parseFP(_string, _value);</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>            <span class="keywordflow">if</span> (!_string.empty()) {</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>                <span class="keywordflow">if</span> (_string == <span class="stringliteral">&quot;inf&quot;</span>) {</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>                    _value = INFINITY;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>                } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (_string == <span class="stringliteral">&quot;-inf&quot;</span>) {</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>                    _value = -INFINITY;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>                } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>                    std::istringstream iss(_string);</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>                    iss &gt;&gt; _value;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>                }</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>            } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>            }</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>        }</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    }</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>}</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno"><a class="line" href="namespaceslv.html#ae91fc97d16f9b6662406bc6e8cc2ddb6">   46</a></span><span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceslv.html#a9dd87a23f8731f3ba4168ad6d1f675f6">slv::parse</a>(<span class="keyword">const</span> std::string&amp; _string, <span class="keywordtype">double</span>&amp; _value) {</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno"><a class="line" href="namespaceslv.html#ae20eeee1f48e4fb3bca4877523f7d7b2">   46</a></span><span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceslv.html#a9dd87a23f8731f3ba4168ad6d1f675f6">slv::parse</a>(<span class="keyword">const</span> std::string&amp; _string, <span class="keywordtype">float</span>&amp; _value) {</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordflow">return</span> parseFP(_string, _value);</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>}</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="namespaceslv.html#a36e9ac96feb98034b7f4d8cf33541066">   50</a></span><span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceslv.html#a9dd87a23f8731f3ba4168ad6d1f675f6">slv::parse</a>(<span class="keyword">const</span> std::string&amp; _string, <span class="keywordtype">long</span> <span class="keywordtype">double</span>&amp; _value) {</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="namespaceslv.html#ae91fc97d16f9b6662406bc6e8cc2ddb6">   50</a></span><span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceslv.html#a9dd87a23f8731f3ba4168ad6d1f675f6">slv::parse</a>(<span class="keyword">const</span> std::string&amp; _string, <span class="keywordtype">double</span>&amp; _value) {</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keywordflow">return</span> parseFP(_string, _value);</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>}</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="namespaceslv.html#a36e9ac96feb98034b7f4d8cf33541066">   54</a></span><span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceslv.html#a9dd87a23f8731f3ba4168ad6d1f675f6">slv::parse</a>(<span class="keyword">const</span> std::string&amp; _string, <span class="keywordtype">long</span> <span class="keywordtype">double</span>&amp; _value) {</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordflow">return</span> parseFP(_string, _value);</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>}</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
 <div class="ttc" id="anamespaceslv_html"><div class="ttname"><a href="namespaceslv.html">slv</a></div><div class="ttdef"><b>Definition:</b> slv_read.h:25</div></div>
 <div class="ttc" id="anamespaceslv_html_a9dd87a23f8731f3ba4168ad6d1f675f6"><div class="ttname"><a href="namespaceslv.html#a9dd87a23f8731f3ba4168ad6d1f675f6">slv::parse</a></div><div class="ttdeci">bool parse(const std::string &amp;_string, T &amp;_value)</div><div class="ttdef"><b>Definition:</b> slv_parse.h:34</div></div>
 <div class="ttc" id="aslv__parse_8h_html"><div class="ttname"><a href="slv__parse_8h.html">slv_parse.h</a></div></div>

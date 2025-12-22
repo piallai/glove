@@ -11,6 +11,7 @@ var searchData=
   ['finish_8',['finish',['../class_slv_progression_qt.html#a62d17d23c7b6db13ceddc0f3a7ad5d61',1,'SlvProgressionQt']]],
   ['flagtype_9',['FlagType',['../namespaceslv_1_1flag.html#a042d10c8bf396079c30c2f1a6d07634f',1,'slv::flag']]],
   ['format_5fva_5flist_10',['format_va_list',['../namespaceslv_1_1string.html#acc7ad7884af6fb0e2ed14b8fd1ea5866',1,'slv::string']]],
-  ['fromqstandarditem_11',['fromQStandardItem',['../namespaceglv_1_1tdata.html#aa07140f1df008dc4261808a896700084',1,'glv::tdata']]],
-  ['fromqstandarditemmodel_12',['fromQStandardItemModel',['../namespaceglv_1_1tdata.html#a74ffef3627df992796155c1004cef560',1,'glv::tdata']]]
+  ['from_5fmilliseconds_11',['from_milliseconds',['../class_slv_timer.html#ad454adc65412961de756ab92a6f0245b',1,'SlvTimer']]],
+  ['fromqstandarditem_12',['fromQStandardItem',['../namespaceglv_1_1tdata.html#aa07140f1df008dc4261808a896700084',1,'glv::tdata']]],
+  ['fromqstandarditemmodel_13',['fromQStandardItemModel',['../namespaceglv_1_1tdata.html#a74ffef3627df992796155c1004cef560',1,'glv::tdata']]]
 ];
