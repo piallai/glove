@@ -51,24 +51,24 @@ void SlvTimer::check_display(std::string _message) {
 std::string SlvTimer::get_string() const {
 
     std::string time;
-    std::vector<int> time_vector = get_time(clock() - check_times[0]);
-    if (time_vector[0] > 0) {
-        time = slv::string::to_string(time_vector[0]) + " h ";
+    Time time_array = get_time(clock() - check_times[0]);
+    if (time_array[0] > 0) {
+        time = slv::string::to_string(time_array[0]) + " h ";
     }
-    if (time_vector[1] > 0 || time_vector[0] > 0) {
-        time += slv::string::to_string(time_vector[1]) + " min ";
+    if (time_array[1] > 0 || time_array[0] > 0) {
+        time += slv::string::to_string(time_array[1]) + " min ";
     }
-    if (time_vector[2] > 0 || time_vector[1] > 0 || time_vector[0] > 0) {
-        time += slv::string::to_string(time_vector[2]) + " s ";
+    if (time_array[2] > 0 || time_array[1] > 0 || time_array[0] > 0) {
+        time += slv::string::to_string(time_array[2]) + " s ";
     }
-    if (time_vector[3] > 0 || time_vector[2] > 0 || time_vector[1] > 0 || time_vector[0] > 0) {
-        time += slv::string::to_string(time_vector[3]) + " ms ";
+    if (time_array[3] > 0 || time_array[2] > 0 || time_array[1] > 0 || time_array[0] > 0) {
+        time += slv::string::to_string(time_array[3]) + " ms ";
     }
 
     return time;
 }
 
-std::vector<int> SlvTimer::get_elasped_time() {
+SlvTimer::Time SlvTimer::get_elapsed_time() {
 
     check_times.push_back(clock());
 
@@ -76,7 +76,7 @@ std::vector<int> SlvTimer::get_elasped_time() {
 
 }
 
-std::vector<int> SlvTimer::get_elasped_time_last() {
+SlvTimer::Time SlvTimer::get_elapsed_time_last() {
 
     check_times.push_back(clock());
 
@@ -86,14 +86,14 @@ std::vector<int> SlvTimer::get_elasped_time_last() {
 
 void SlvTimer::time_display(clock_t _time) const {
 
-    std::vector<int> time_vector = get_time(_time);
-    std::cout << time_vector[0] << " h " << time_vector[1] << " min " << time_vector[2] << " s " << time_vector[3] << " ms";
+    Time time_array = get_time(_time);
+    std::cout << time_array[0] << " h " << time_array[1] << " min " << time_array[2] << " s " << time_array[3] << " ms";
 
 }
 
-std::vector<int> SlvTimer::get_time(clock_t _time) const {
+SlvTimer::Time SlvTimer::get_time(clock_t _time) const {
 
-    std::vector<int> time_vector;
+    Time time_array;
 
     double time = double(_time) / CLOCKS_PER_SEC;
 
@@ -103,15 +103,42 @@ std::vector<int> SlvTimer::get_time(clock_t _time) const {
     int n_hours, n_minutes, n_seconds;
 
     n_hours = (time_int - time_int % 3600) / 3600;
-    time_vector.push_back(n_hours);
+    time_array[0] = n_hours;
     time_int -= n_hours * 3600;
     n_minutes = (time_int - time_int % 60) / 60;
-    time_vector.push_back(n_minutes);
+    time_array[1] = n_minutes;
     time_int -= n_minutes * 60;
     n_seconds = (time_int - time_int % 1) / 1;
-    time_vector.push_back(n_seconds);
+    time_array[2] = n_seconds;
 
-    time_vector.push_back(n_milliseconds);
+    time_array[3] = n_milliseconds;
 
-    return time_vector;
+    return time_array;
+}
+
+int SlvTimer::to_milliseconds(const Time& _time) {
+
+    return (_time[0] * 3600 + _time[1] * 60 + _time[2]) * 1000 + _time[3];
+
+}
+
+SlvTimer::Time SlvTimer::from_milliseconds(const int& _milliseconds) {
+
+    Time time_array;
+
+    int n_hours, n_minutes, n_seconds;
+    int time_int = _milliseconds;
+
+    n_hours = (_milliseconds % 3600000) / 3600000;
+    time_array[0] = n_hours;
+    time_int -= n_hours * 3600000;
+    n_minutes = (time_int - time_int % 60000) / 60000;
+    time_array[1] = n_minutes;
+    time_int -= n_minutes * 60000;
+    n_seconds = (time_int - time_int % 1000) / 1000;
+    time_array[2] = n_seconds;
+    time_int -= n_seconds * 1000;
+    time_array[3] = time_int;
+
+    return time_array;
 }

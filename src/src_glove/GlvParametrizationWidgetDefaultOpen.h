@@ -15,27 +15,17 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Example of timer management
+#pragma once
 
-#ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
-#include "misc/SlvTimer.h"
-#else
-#define GLOVE_DISABLE_QT // no need of Qt here
-#include "glove.h"
-#endif
+/*! Parametrizations are closed by default.*/
+template <class Tparametrization>
+struct GlvParametrizationWidgetDefaultOpen {
+	static constexpr bool open = false;
+};
 
-#include <thread>//used only for simulating elapsed time
-
-int main(int argc, char* argv[]) {
-
-    SlvTimer timer;
-    timer.check_display();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    timer.check_display();
-    std::cout << timer.get_elapsed_time() << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    std::cout << timer.get_elapsed_time_last() << std::endl;
-    std::cout << timer.get_elapsed_time() << std::endl;
-
-}
-
+/*! Make the parametrization open by default.*/
+#define glvm_parametrization_open(Tparametrization) \
+template <>\
+struct GlvParametrizationWidgetDefaultOpen<Tparametrization> {\
+	static constexpr bool open = true;\
+};

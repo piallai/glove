@@ -22,6 +22,7 @@
 #include "SlvName.h"
 #include "SlvLblName.h"
 #include "SlvMacrosDeclarations.h"
+#include "misc/SlvTimer.h"
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
 #include <QObject>
 #endif
@@ -73,6 +74,8 @@ private:
 	* In this case, hiding must be managed using finish().*/
 	bool l_recurrent;
 
+	SlvTimer timer;
+
 public:
 
 	SlvProgressionQt(std::string _name = "", bool _l_recurrent = false);
@@ -98,6 +101,11 @@ public:
 	* If true, default hiding policy on ending will avoid glitches.
 	* In this case, hiding must be managed using finish().*/
 	bool is_recurrent() const;
+
+	/*! Get the number of seconds elapsed since the progress has started.*/
+	SlvTimer::Time get_time_elapsed();
+	/*! Get the number of seconds remaining before the progress is complete.*/
+	SlvTimer::Time get_time_remaining();
 
 	/*! Whether the progression as reached its maximum or not: *iterator_ptr >= Niterations-1.
 	* Return true if the progression was not started yet.*/
@@ -155,7 +163,7 @@ public :
 
 	/*! Cast to iterator.*/
 	operator std::size_t() const;
-	/*! Initialize iterator and start progress.*/
+	/*! Initialize iterator and start progress. Usefull when using SlvProgressionQt in a for(). Caution: Niterations can not be known before << in this case.*/
 	SlvProgressionQt& operator=(const std::size_t _iterator);
 
 	/*! Control of maximum. Compare iterator < _Niterations and updates Niterations. Comparison in for-loop used to set Niterations.
@@ -185,6 +193,9 @@ public :
 
 private:
 
+	/*! Return absolute value. Depends if the iterator is a pointer or not.*/
+	std::size_t get_value_abs() const;
+
 	/*! Enforce finish by setting the iterator_ptr to finish value Niterations.
 	* The loop will end if the iterator is properly related to the iterator_ptr pointer.*/
 	void iterator_finish();
@@ -198,9 +209,9 @@ private:
 signals:
 
 	/*! Emitted when progress starts.*/
-	void started();
-	/*! Emit progress value in a range [0, 100] when progress is updated.*/
-	void updated(int _value);
+	void started(int _maximum_abs);
+	/*! Emit progress value in a range [0, 100] when progress is updated. Also emits absolute value and its maximum. Also emits estimated remaining time in seconds to reach maximum.*/
+	void updated(int _value, int _value_abs, int _maximum_abs, SlvTimer::Time _time_elapsed, SlvTimer::Time _time_remaining);
 	/*! If an iterator or iterator_ptr is provided, is automatically emitted at end of loop.*/
 	void ended();
 	/*! Emitted when progress is completely over. If _l_remove is true, the progression will be removed of the progression manager (if managed by one).*/

@@ -175,8 +175,7 @@ bool SlvFile::operator==(const SlvFile& _file) const {
 
     return file_name == _file.file_name \
         && directory == _file.directory \
-        && description == _file.description \
-        && allowed_extensions == _file.allowed_extensions;
+        && description == _file.description;
 
 }
 

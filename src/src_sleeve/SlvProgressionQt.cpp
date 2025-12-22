@@ -84,6 +84,20 @@ bool SlvProgressionQt::is_recurrent() const {
 
 }
 
+SlvTimer::Time SlvProgressionQt::get_time_elapsed() {
+
+	return timer.get_elapsed_time();
+
+}
+
+SlvTimer::Time SlvProgressionQt::get_time_remaining() {
+
+	int remaining = SlvTimer::to_milliseconds(timer.get_elapsed_time_last());
+	remaining *= (int)(Niterations - get_value_abs());
+	return SlvTimer::from_milliseconds(remaining);
+
+}
+
 bool SlvProgressionQt::is_over() const {
 
 	if (l_started) {
@@ -134,8 +148,10 @@ void SlvProgressionQt::start() {
 
 	clear_progress();
 	l_started = true;
+
+	timer.reset();
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit started();
+	emit started((int)Niterations);
 #endif
 
 }
@@ -192,10 +208,23 @@ void SlvProgressionQt::start_pv(const unsigned int _Niterations) {
 	l_started = true;
 	Niterations = _Niterations;
 
+	timer.reset();
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit started();
+	emit started((int)Niterations);
 #endif
 
+}
+
+std::size_t SlvProgressionQt::get_value_abs() const {
+
+	std::size_t value_abs = 0;
+	if (iterator_ptr) {
+		value_abs = get_iterator_ptr_value + 1;
+	} else if (l_iterating) {
+		value_abs = iterator;
+	}
+
+	return value_abs;
 }
 
 bool SlvProgressionQt::update() {
@@ -203,13 +232,10 @@ bool SlvProgressionQt::update() {
 	if (Niterations) {
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
 		int value = -1;
-		if (iterator_ptr) {
-			value = int(100 * (get_iterator_ptr_value + 1) / Niterations);
-		} else if (l_iterating) {
-			value = int(100 * (iterator) / Niterations);
-		}
+		std::size_t value_abs = get_value_abs();
+		value = int(100 * value_abs / Niterations);
 		if (value >= 0) {
-			emit updated(value);
+			emit updated(value, (int)value_abs, (int)Niterations, get_time_elapsed(), get_time_remaining());
 			if (is_over()) {
 				end();
 			}
@@ -230,7 +256,7 @@ bool SlvProgressionQt::update(int _value) {
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
 		int value = 100 * (_value + 1) / Niterations;
 		if (value >= 0) {
-			emit updated(value);
+			emit updated(value, _value, (int)Niterations, get_time_elapsed(), get_time_remaining());
 			if (is_iterator_ptr_over(_value, Niterations)) {
 				end();
 			}
@@ -317,8 +343,9 @@ SlvProgressionQt& SlvProgressionQt::operator=(const std::size_t _iterator) {
 	iterator = _iterator;
 	l_iterating = true;
 
+	timer.reset();
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-	emit started();
+	emit started((int)Niterations);
 #endif
 	return *this;
 }

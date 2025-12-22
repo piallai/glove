@@ -19,10 +19,11 @@
 
 #include <time.h>
 #include "SlvName.h"
+#include "std_array.h"
 
 /*! Class to measure execution time.
 * At instantiation/reset, a reference time is measured and added to stack of checked times.
-* Each time get_elasped_time, get_elasped_time_last, or check_display, method is called, a new checked time is added. Check sample012 for example.*/
+* Each time get_elapsed_time, get_elapsed_time_last, or check_display, method is called, a new checked time is added. Check sample012 for example.*/
 class SlvTimer : public SlvName {
 
 private:
@@ -30,6 +31,9 @@ private:
 	std::vector<clock_t> check_times;
 
 public:
+
+	/*! Parsed time as: hours, minutes, seconds, milliseconds.*/
+	typedef std::array<int, 4> Time;
 
 	SlvTimer(std::string _name = "");
 	~SlvTimer();
@@ -43,20 +47,24 @@ public:
 
 	/*! Get elapsed time from reference into hours, minutes, seconds, milliseconds.
 	* Each time this method is called, a check time is added.*/
-	std::vector<int> get_elasped_time();
+	Time get_elapsed_time();
 	/*! Get elapsed time from last check into hours, minutes, seconds, milliseconds.
 	* Each time this method is called, a check time is added.*/
-	std::vector<int> get_elasped_time_last();
+	Time get_elapsed_time_last();
 
 	/*! Measure elapsed time and display it via std::cout. \p _message is an optional display message.
 	* Each time this method is called, a check time is added.*/
 	void check_display(std::string _message = "");
+
+	/*! Convert time to total milliseconds.*/
+	static int to_milliseconds(const Time& _time);
+	static Time from_milliseconds(const int& _milliseconds);
 
 private:
 
 	/*! Display time \p _time.*/
 	void time_display(clock_t _time) const;
 	/*! Parse \p _time into hours, minutes, seconds, milliseconds.*/
-	std::vector<int> get_time(clock_t _time) const;
+	Time get_time(clock_t _time) const;
 
 };

@@ -19,6 +19,7 @@
 
 #include "GlvWidgetData.h"
 #include "GlvParametrizationWidget.h"
+#include "GlvParametrizationWidgetDefaultOpen.h"
 
 /*! GlvWidgetData for type SlvParametrization*/
 template <class Tparametrization>
@@ -29,6 +30,15 @@ public:
         QWidget::setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
         this->set_checkable_collapse(true);
         this->set_scrollable(false);
+        if (GlvParametrizationWidgetDefaultOpen<Tparametrization>::open || _value != Tparametrization()) {
+            this->setChecked(true);
+        }
+    }
+    void set_value(const Tparametrization& _value) {
+        GlvParametrizationWidget<Tparametrization>::set_value(_value);
+        if (_value != Tparametrization()) {
+            this->setChecked(true);
+        }
     }
     ~GlvWidgetData() {}
 

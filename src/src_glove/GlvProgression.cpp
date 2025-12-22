@@ -67,9 +67,9 @@ void GlvProgression::set_progression(SlvProgressionQt* _progression) {
         progression = _progression;
 
 #if OPTION_ENABLE_SLV_QT_PROGRESS==1
-        connect(progression, SIGNAL(started()), this, SLOT(start()));
+        connect(progression, SIGNAL(started(int)), this, SLOT(start(int)));
         // thread safe. In case executed slot doesn't have time to go through.
-        connect(progression, SIGNAL(updated(int)), this, SLOT(setValue(int)), Qt::BlockingQueuedConnection);
+        connect(progression, SIGNAL(updated(int, int, int, SlvTimer::Time, SlvTimer::Time)), this, SLOT(update_progress(int, int, int, SlvTimer::Time, SlvTimer::Time)), Qt::BlockingQueuedConnection);
         connect(progression, SIGNAL(ended()), this, SLOT(end()));
         connect(progression, SIGNAL(finished(bool)), this, SLOT(final(bool)));
 #endif
@@ -94,10 +94,17 @@ bool GlvProgression::is_over() const {
     return progression->is_over();
 }
 
-void GlvProgression::start() {
+void GlvProgression::start(int _maximum_abs) {
 
     QProgressDialog::reset();//to reset wasCanceled
     setValue(0);
+    QString label_abs = QString::number(0) + "/";
+    if (_maximum_abs > 0) {
+        label_abs += QString::number(_maximum_abs);
+    } else {
+        label_abs = "";
+    }
+    setToolTip(label_abs);
 
     l_has_started = true;
 
@@ -122,6 +129,38 @@ void GlvProgression::start() {
     }
 
     show();
+}
+
+void GlvProgression::update_progress(int _value, int _value_abs, int _maximum_abs, SlvTimer::Time _time_elapsed, SlvTimer::Time _time_remaining) {
+
+    QProgressDialog::setValue(_value);
+
+    bool l_display_tooltip = _time_remaining[0] > 0 || _time_remaining[1] > 0 || _time_remaining[2] > 0;
+
+    if (l_display_tooltip) {// do not display tooltip if progress is about to end (ie: ~s)
+
+        QString tooltip_text = QString::number(_value_abs) + "/" + QString::number(_maximum_abs);
+        tooltip_text += "\nRemaining time : ";
+        bool l_time_display = false;
+        if (_time_remaining[0] > 0) {
+            tooltip_text += QString::number(_time_remaining[0]) + " h ";
+            l_time_display = true;
+        }
+        if (_time_remaining[1] > 0) {
+            tooltip_text += QString::number(_time_remaining[1]) + " min ";
+            l_time_display = true;
+        }
+        if (_time_remaining[2] > 0) {
+            tooltip_text += QString::number(_time_remaining[2]) + " s";
+            l_time_display = true;
+        }
+
+        setToolTip(tooltip_text);
+
+    } else {
+        setToolTip(QString());
+    }
+
 }
 
 void GlvProgression::end() {

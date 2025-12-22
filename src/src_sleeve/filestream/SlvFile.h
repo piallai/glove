@@ -91,7 +91,7 @@ public:
     /*! Return true if the file exists.*/
     bool exists() const;
 
-    /*! Equal if file name, directory, description and allowed extensions are identical.
+    /*! Equal if file name, directory, and description are identical. Allowed extensions are not considered for comparison.
     * Different of is_equivalent method.*/
     bool operator==(const SlvFile& _file) const;
     bool operator!=(const SlvFile& _file) const;

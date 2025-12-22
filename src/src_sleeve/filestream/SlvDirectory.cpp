@@ -25,8 +25,8 @@
 #endif
 #include "filestream/slv_rw.h"
 
-SlvDirectory::SlvDirectory() {
-    l_relative = false;
+SlvDirectory::SlvDirectory() :SlvDirectory("") {
+
 }
 
 SlvDirectory::SlvDirectory(const std::string _string) {

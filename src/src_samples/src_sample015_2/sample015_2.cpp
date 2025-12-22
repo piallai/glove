@@ -31,6 +31,8 @@
 
 #include "parametrization_gui.h"
 
+glvm_parametrization_open(ConfigType)
+
 int main(int argc, char* argv[]) {
 
 	GLOVE_APP_PARAM(Parametrization)

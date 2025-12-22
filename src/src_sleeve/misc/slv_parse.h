@@ -33,11 +33,14 @@ namespace slv {
 template <class T>
 bool slv::parse(const std::string& _string, T& _value) {
 
-	std::istringstream iss(_string);
+	if (!_string.empty()) {
+		std::istringstream iss(_string);
+		iss >> _value;
+		return true;
+	} else {
+		return false;
+	}
 
-	iss >> _value;
-
-	return true;
 }
 
 inline bool slv::parse(const std::string& _string, std::string& _value) {

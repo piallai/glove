@@ -22,6 +22,7 @@ class QPushButton;
 class SlvProgressionQt;
 class GlvProgressMgr;
 #include "SlvMacrosDeclarations.h"
+#include "misc/SlvTimer.h"
 
 /*! Widget managing progress a SlvProgressionQt.*/
 class GlvProgression : public QProgressDialog {
@@ -68,8 +69,10 @@ public slots:
 private slots:
 
     /*! Start/reset GlvProgression.
-    * Enable or diable Cancel button depending on the attached progression..*/
-    void start();
+    * Enable or diable Cancel button depending on the attached progression.*/
+    void start(int _maximum_abs);
+    /*! Update progress.*/
+    void update_progress(int _value, int _value_abs, int _maximum_abs, SlvTimer::Time _time_elapsed, SlvTimer::Time _time_remaining);
     /*! Auto hide if enabled.*/
     void end();
     /*! Remove or hide progression from GlvProgressMgr.*/

@@ -122,7 +122,6 @@ SlvStatus GlvParametrizationWidget<Tparametrization>::parse_arguments(const std:
         if (status) {
             GlvParametersWidget_base::CLI_parameters = CLI_parameters;
             set_parametrization(parametrization);
-            //GlvParametersWidget_base::CLI_arguments_line = SlvCLI::get_CLI(parametrization, _l_explicit_bool_arg);
         }
     }
     return status;

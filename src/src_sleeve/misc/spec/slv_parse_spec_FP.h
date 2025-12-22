@@ -26,15 +26,19 @@ namespace slv {
     namespace {//private
         template <class T>
         bool parseFP(const std::string& _string, T& _value) {
-            if (_string == "inf") {
-                _value = INFINITY;
-            } else if (_string == "-inf") {
-                _value = -INFINITY;
+            if (!_string.empty()) {
+                if (_string == "inf") {
+                    _value = INFINITY;
+                } else if (_string == "-inf") {
+                    _value = -INFINITY;
+                } else {
+                    std::istringstream iss(_string);
+                    iss >> _value;
+                }
+                return true;
             } else {
-                std::istringstream iss(_string);
-                iss >> _value;
+                return false;
             }
-            return true;
         }
     }
 }
