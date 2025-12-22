@@ -42,6 +42,10 @@ Depending on your needs, several declinaison of the macro exist:
 
 ## Optional macros
 
+#### <code>GLOVE_APP_TITLE</code>
+
+To set a title to the application. Must be defined in main, before calling the GLOVE_APP macro.
+
 #### <code>GLOVE_APP_AUTO</code>
 
 To create an application than can be launched using no cli arguments (double clicking on the app for instance), add the macro <code>#define GLOVE_APP_AUTO true</code> before calling <code>GLOVE_APP</code>.

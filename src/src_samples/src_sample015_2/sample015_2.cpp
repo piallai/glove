@@ -35,6 +35,7 @@ glvm_parametrization_open(ConfigType)
 
 int main(int argc, char* argv[]) {
 
+	GLOVE_APP_TITLE("This is the sample 015_2")
 	GLOVE_APP_PARAM(Parametrization)
 
 	std::cout << "argc = " << argc << std::endl;

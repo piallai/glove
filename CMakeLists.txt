@@ -17,7 +17,7 @@
 
 cmake_minimum_required(VERSION 3.0.0)
 
-PROJECT(Glove VERSION 0.7.11
+PROJECT(Glove VERSION 0.7.12
         DESCRIPTION "A Qt C++ library for simple GUI")
 
 message(STATUS "Glove " ${PROJECT_VERSION})
