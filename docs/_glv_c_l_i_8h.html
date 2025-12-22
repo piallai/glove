@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.11</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.12</span>
    </div>
   </td>
  </tr>
@@ -137,6 +137,8 @@ Macros</h2></td></tr>
 <tr class="separator:a424b3db2a3832771a876c60bb32e9e41"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9107187acb838d3d8ca92b7411b46305"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a9107187acb838d3d8ca92b7411b46305">GLOVE_APP_RECURRENT_TYPE</a>&#160;&#160;&#160;int</td></tr>
 <tr class="separator:a9107187acb838d3d8ca92b7411b46305"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acfb2fe4ad56f5c8c7f55ae5cb6f550a4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#acfb2fe4ad56f5c8c7f55ae5cb6f550a4">GLOVE_APP_TITLE</a>(title)&#160;&#160;&#160;GlvApp::set_title(title);</td></tr>
+<tr class="separator:acfb2fe4ad56f5c8c7f55ae5cb6f550a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c09d273b113d266e473ad49f34d682e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a7c09d273b113d266e473ad49f34d682e">glvm_pv_GLOVE_APP</a>(Tparametrization,  _l_auto_glove)</td></tr>
 <tr class="separator:a7c09d273b113d266e473ad49f34d682e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a3eadd29a9e403949ddc1797d786fbc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_glv_c_l_i_8h.html#a2a3eadd29a9e403949ddc1797d786fbc">GLOVE_APP_MSVC_NO_CONSOLE</a>&#160;&#160;&#160;comment(linker, &quot;/SUBSYSTEM:windows /ENTRY:mainCRTStartup&quot;)</td></tr>
@@ -371,6 +373,25 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Optional: Disable program execution in a separate thread. Progressions and status display can not be managed in this mode, only input parametrization can. Can be convenient if one wants to execute the program in the closest conditions as the initial program is. The program being 'gloved' remains fully compliant with thread mode deactivated. Default is : true. To be set just before calling GLOVE_APP. </p>
+
+</div>
+</div>
+<a id="acfb2fe4ad56f5c8c7f55ae5cb6f550a4" name="acfb2fe4ad56f5c8c7f55ae5cb6f550a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acfb2fe4ad56f5c8c7f55ae5cb6f550a4">&#9670;&#160;</a></span>GLOVE_APP_TITLE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GLOVE_APP_TITLE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">title</td><td>)</td>
+          <td>&#160;&#160;&#160;GlvApp::set_title(title);</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>To set a title to the application. Must be defined in main, before calling the GLOVE_APP macro. </p>
 
 </div>
 </div>
