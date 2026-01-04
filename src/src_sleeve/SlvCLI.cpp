@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -267,6 +267,7 @@ std::pair<int, char**> SlvCLI::get_arguments(const std::vector< std::pair<std::s
 
 	int argc = 2 * Nfilled_parameters + (int)solo_arguments.size() + 1;
 	char** argv = new char* [argc];
+	argv[0] = new char('\0');
 
 	int k_arg = 0;
 	for (int i = 0; i < parameter_arguments.size(); i++) {

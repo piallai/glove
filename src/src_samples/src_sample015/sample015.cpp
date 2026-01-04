@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #include "GlvWidgetData_spec_AT.h"
 #include "GlvWidgetData_spec_SlvSize2d.h"
 #include "GlvWidgetData_spec_SlvParametrization.h"
-#include "GlvCLI.h"
+#include "GlvApp.h"
 #else
 #define GLOVE_ENABLE_JSON
 #include "glove.h"

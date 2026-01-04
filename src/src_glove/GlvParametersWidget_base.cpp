@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -45,9 +45,7 @@ public:
 			if (min_width > max_width) {
 				min_width = max_width;
 			}
-			if (widget()->size().height() > QScrollArea::size().height()) {
-				min_width += QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent);
-			}
+			min_width += QApplication::style()->pixelMetric(QStyle::PM_ScrollBarExtent);
 			QScrollArea::setMinimumWidth(min_width);
 		}
 		return QWidget::eventFilter(object, event);

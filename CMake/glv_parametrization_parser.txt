@@ -1,6 +1,6 @@
 # 
 # This file is part of the Glove distribution (https://github.com/piallai/glove).
-# Copyright (C) 2024 - 2025 Pierre Allain.
+# Copyright (C) 2024 - 2026 Pierre Allain.
 # 
 # This program is free software: you can redistribute it and/or modify  
 # it under the terms of the GNU General Public License as published by  
@@ -59,7 +59,7 @@ function(GLV_JSON_PARSER _JSON_STRING _IS_PARAMETRIZATION _IS_PARAMETER _PARAMET
 			string(JSON JSON_MEMBER MEMBER ${JSON_STRING} ${index})
 			string(JSON JSON_VAR GET ${JSON_STRING} ${JSON_MEMBER})
 
-			if (NOT ${JSON_VAR} STREQUAL "")
+			if (NOT ${JSON_VAR} STREQUAL "" OR "${JSON_VAR}" STREQUAL "file")# "file", workaround of an issue on linux. Considered falsely empty otherwise. Related to CMP0054
 			
 				string(SUBSTRING ${JSON_VAR} 0 1 JSON_VAR_FIRST_CHAR)
 

@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -43,8 +43,8 @@ GlvWidgetSaveLoad_base::GlvWidgetSaveLoad_base(const SlvFileExtensions& _allowed
 	main_layout->addWidget(load_button);
 	this->setLayout(main_layout);
 
-	connect(save_button, SIGNAL(clicked()), this, SLOT(save_slot()));
-	connect(load_button, SIGNAL(clicked()), this, SLOT(load_slot()));
+	connect(save_button, SIGNAL(clicked()), this, SLOT(save()));
+	connect(load_button, SIGNAL(clicked()), this, SLOT(load()));
 
 	open_file = NULL;
 }
@@ -143,7 +143,7 @@ void GlvWidgetSaveLoad_base::delete_open_file() {
 
 }
 
-void GlvWidgetSaveLoad_base::save_slot() {
+void GlvWidgetSaveLoad_base::save() {
 
 	GlvWidgetSaveLoad_base::open_file_save();
 	if (GlvWidgetSaveLoad_base::is_ready(QIODevice::WriteOnly)) {
@@ -153,7 +153,7 @@ void GlvWidgetSaveLoad_base::save_slot() {
 
 }
 
-void GlvWidgetSaveLoad_base::load_slot() {
+void GlvWidgetSaveLoad_base::load() {
 
 	if (GlvWidgetSaveLoad_base::open_file_load()) {
 		if (GlvWidgetSaveLoad_base::is_ready(QIODevice::ReadOnly)) {

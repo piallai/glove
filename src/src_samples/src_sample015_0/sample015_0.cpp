@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "param/SlvParametrizationMacro.h"
 #include "GlvParametrizationDialog.h"
 #include "GlvWidgetData_spec_AT.h"
-#include "GlvCLI.h"
+#include "GlvApp.h"
 #else
 #define GLOVE_ENABLE_JSON
 #include "glove.h"
@@ -43,7 +43,11 @@ glvm_parametrization(ParametersCLI, "CLI parameters",
 
 struct RecurrentStruct {
 	int total_loops;
-	// Auto repeat if returns true
+	// Method mandatory to implement
+	SlvStatus clear() {
+		return SlvStatus();
+	}
+	// Method mandatory to implement : Auto repeat if returns true
 	operator bool() const {
 		return false;
 	}

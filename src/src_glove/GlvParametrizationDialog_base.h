@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,11 @@ public:
 
     /*! Show or hide the button controlling rules complying, next to 'Ok' and 'Cancel'.*/
     void enable_abide_rules_button(bool _l_enable);
+
+    /*! Return the 'Ok' button of the dialog.*/
+    QPushButton* get_ok_button();
+    /*! Return the 'Cancel' button of the dialog.*/
+    QPushButton* get_cancel_button();
 
 protected :
     void set_parameters_widget_base(GlvParametersWidget_base* _parameters_widget_base);

@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -162,7 +162,7 @@ template <class Tparametrization>
 SlvFileExtensions GlvParametrizationSaveLoad<Tparametrization>::allowed_extensions_constructor(SlvFileExtensions _allowed_extensions) {
 
     SlvFileExtensions allowed_extensions = _allowed_extensions;
-    allowed_extensions.add(SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true));
+    allowed_extensions.add("." + SlvFileMgr::replace_forbidden_file_characters(Tparametrization::name(), '_', true, true));
 #if OPTION_USE_THIRDPARTY_JSON==1
     if (slv::rw::json::ReadWrite<Tparametrization>::l_valid) {
         allowed_extensions.add(".json");

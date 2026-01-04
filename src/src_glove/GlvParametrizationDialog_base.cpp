@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -74,6 +74,18 @@ void GlvParametrizationDialog_base::enable_abide_rules_button(bool _l_enable) {
 
 }
 
+QPushButton* GlvParametrizationDialog_base::get_ok_button() {
+
+    return button_box->button(QDialogButtonBox::Ok);
+
+}
+
+QPushButton* GlvParametrizationDialog_base::get_cancel_button() {
+
+    return button_box->button(QDialogButtonBox::Cancel);
+
+}
+
 void GlvParametrizationDialog_base::set_parameters_widget_base(GlvParametersWidget_base* _parameters_widget_base) {
 
     parameters_widget_base = _parameters_widget_base;
@@ -134,6 +146,9 @@ void GlvParametrizationDialog_base::resizeEvent(QResizeEvent* _event) {
             height += button_box->size().height();
             height += this->layout()->contentsMargins().top() + this->layout()->contentsMargins().bottom();
             height += m_layout->spacing();
+            if (m_layout->menuBar()) {
+                height += m_layout->menuBar()->size().height();
+            }
             setMaximumHeight(height);
 
         }

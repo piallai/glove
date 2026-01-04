@@ -46,6 +46,22 @@ Depending on your needs, several declinaison of the macro exist:
 
 To set a title to the application. Must be defined in main, before calling the GLOVE_APP macro.
 
+#### <code>GLOVE_APP_MENU</code>
+
+To set the application as 'classical' interface with a menu bar. Default is <code>true</code>. If <code>false</code>, a simple dialog will appear instead.
+
+#### <code>GLOVE_APP_MENU_HELP</code>
+
+To add an helper (result of -h or --help) to the application. Default is <code>false</code>.
+
+#### <code>GLOVE_APP_MENU_ABOUT</code>
+
+To set an 'About' text (rich text) to the application. Must be defined in main, before calling the GLOVE_APP macro. Used only if GLOVE_APP_MENU is <code>true</code>.
+
+#### <code>GLOVE_APP_MENU_LICENSE_ADD</code>
+
+Add the license of a component (ex: a library). Rich text is managed: compatible with hyperlinks. The licensed components will be referenced in 'About'.
+
 #### <code>GLOVE_APP_AUTO</code>
 
 To create an application than can be launched using no cli arguments (double clicking on the app for instance), add the macro <code>#define GLOVE_APP_AUTO true</code> before calling <code>GLOVE_APP</code>.

@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -164,15 +164,22 @@ std::string SlvCLI::get_CLI(const Tparametrization& _parametrization, bool _l_CL
 
 	std::string CLI_line;
 
-	std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > serialization = _parametrization.get_string_serialization_bool();
+	std::pair< std::vector< std::pair<std::string, std::string> >, std::vector< std::pair<std::string, bool> > > serialization;
 
+	std::vector<std::string> solo_arguments;
 	if (_l_CLI_mode) {
 		serialization = _parametrization.get_string_serialization_bool();
+		for (auto it = serialization.second.begin(); it != serialization.second.end(); ++it) {
+			if (it->second) {
+				solo_arguments.push_back(it->first);
+			}
+		}
 	} else {
 		serialization.first = _parametrization.get_string_serialization();
+		// ignores serialization.second and solo_arguments
 	}
 
-	std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(serialization.first, serialization.second, false);
+	std::pair<int, char**> cli_arguments = SlvCLI::get_arguments(serialization.first, solo_arguments, false);
 
 	for (int i = 1; i < cli_arguments.first; i++) {
 		CLI_line += cli_arguments.second[i];

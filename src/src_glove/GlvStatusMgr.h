@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ public:
 	/*! Forbid continuation.*/
 	void set_frozen();
 	/*! Whether continue is possible or not.*/
-	bool proceeed() const;
+	bool proceed() const;
 
 private slots:
 

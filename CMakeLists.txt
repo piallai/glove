@@ -1,6 +1,6 @@
 ﻿# 
 # This file is part of the Glove distribution (https://github.com/piallai/glove).
-# Copyright (C) 2024 - 2025 Pierre Allain.
+# Copyright (C) 2024 - 2026 Pierre Allain.
 # 
 # This program is free software: you can redistribute it and/or modify  
 # it under the terms of the GNU General Public License as published by  
@@ -17,7 +17,7 @@
 
 cmake_minimum_required(VERSION 3.0.0)
 
-PROJECT(Glove VERSION 0.7.12
+PROJECT(Glove VERSION 0.8.0
         DESCRIPTION "A Qt C++ library for simple GUI")
 
 message(STATUS "Glove " ${PROJECT_VERSION})
@@ -89,6 +89,9 @@ endif()
 
 if(COMMAND cmake_policy)
    cmake_policy(SET CMP0003 NEW)
+   if(UNIX)
+      cmake_policy(SET CMP0054 NEW) # glv_parametrization_parser "file" issue
+   endif()
 endif(COMMAND cmake_policy)
 
 IF(MSVC)

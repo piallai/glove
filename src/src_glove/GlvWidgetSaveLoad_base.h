@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -70,9 +70,11 @@ public:
 	virtual SlvStatus load(const std::string& _file_name) = 0;
 
 
-private slots:
+public slots:
 
-	void save_slot();
-	void load_slot();
+	/*! Open file to save to.*/
+	void save();
+	/*! Open file to load from.*/
+	void load();
 
 };

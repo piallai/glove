@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 */
 
 // Example for generating a paramrtrization windows from a json parametrization file
+// + some macro tests
 
 #ifndef OPTION_COMPILE_SAMPLES_WITH_SINGLE_HEADER
 #include "param/SlvParametrizationMacro.h"
@@ -23,7 +24,7 @@
 #include "GlvWidgetData_spec_SlvFile.h"
 #include "GlvWidgetData_spec_AT.h"
 #include "GlvWidgetData_spec_SlvParametrization.h"
-#include "GlvCLI.h"
+#include "GlvApp.h"
 #else
 #define GLOVE_ENABLE_JSON
 #include "glove.h"
@@ -36,6 +37,9 @@ glvm_parametrization_open(ConfigType)
 int main(int argc, char* argv[]) {
 
 	GLOVE_APP_TITLE("This is the sample 015_2")
+	GLOVE_APP_MENU_HELP(true)
+	GLOVE_APP_MENU_ABOUT("About the sample 015_2")
+	GLOVE_APP_MENU_LICENSE_ADD("Glove", "GPLv3", "C++ Qt library for easy graphical user interfaces ", "https://github.com/piallai/glove")
 	GLOVE_APP_PARAM(Parametrization)
 
 	std::cout << "argc = " << argc << std::endl;

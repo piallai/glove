@@ -1,6 +1,6 @@
 /*
 * This file is part of the Glove distribution (https://github.com/piallai/glove).
-* Copyright (C) 2024 - 2025 Pierre Allain.
+* Copyright (C) 2024 - 2026 Pierre Allain.
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,11 +15,16 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "GlvCLI.h"
+#include "GlvApp.h"
 
 #include "GlvProgressMgr.h"
+#include <QScrollArea>
 
+GLOVE_APP_SHARED_API_QT glvm_staticVariable_impl(, std::string, GlvApp, autosave_file_name, "");
+GLOVE_APP_SHARED_API_QT glvm_staticVariable_impl(, GlvApp::RecurrentClearer_base*, GlvApp, recurrent_clearer, NULL);
+GLOVE_APP_SHARED_API_QT glvm_staticVariable_impl(, std::vector<GlvApp::ComponentLicense>, GlvApp, component_licenses, );
 glvm_staticVariable_impl(, SlvPoolFactory<SlvProgressionQt COMMA slv::lbl::Name>, GlvApp, progressions, {});
+glvm_staticVariable_impl(, GlvAppObject*, GlvApp, app_object, NULL);
 
 SlvProgressionQt* GlvApp::get_progression(const slv::lbl::Name& _name) {
 
@@ -43,8 +48,19 @@ void GlvApp::show(const SlvStatus& _status, bool _l_wait) {
 			status_mgr()->display();
 		}
 
-		while (!status_mgr()->proceeed()) {}
+		while (!status_mgr()->proceed()) {}
 
 	}
+
+}
+
+GLOVE_APP_SHARED_API_QT void GlvApp::add_component_license(std::string _component_name, std::string _license, std::string _component_text, std::string _component_url) {
+
+	ComponentLicense component_license;
+	component_license.component_name = _component_name;
+	component_license.license = _license;
+	component_license.component_text = _component_text;
+	component_license.component_url = _component_url;
+	component_licenses().push_back(component_license);
 
 }

@@ -46,8 +46,12 @@ glvm_parametrization(ParametersCLI, "CLI parameters",
 
 ```cpp
 struct RecurrentStruct {
-    int total_loops = 0;
-    // Auto repeat if returns true
+    int total_loops;
+    // Method mandatory to implement
+    SlvStatus clear() {
+	     return SlvStatus();
+    }
+    // Method mandatory to implement : Auto repeat if returns true
     operator bool() const {
     	return false;
     }                

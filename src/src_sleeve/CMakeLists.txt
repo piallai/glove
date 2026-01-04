@@ -1,6 +1,6 @@
 # 
 # This file is part of the Glove distribution (https://github.com/piallai/glove).
-# Copyright (C) 2024 - 2025 Pierre Allain.
+# Copyright (C) 2024 - 2026 Pierre Allain.
 # 
 # This program is free software: you can redistribute it and/or modify  
 # it under the terms of the GNU General Public License as published by  
@@ -262,6 +262,9 @@ SET(SLEEVE_SOURCES
 	
 	SlvCLI.h
 	SlvCLI.cpp
+	
+	SlvCaptureStream.h
+	SlvCaptureStream.cpp
 			
 	##### Parameter classes #########
 	SlvProportion.h

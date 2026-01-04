@@ -195,5 +195,5 @@ even though in this example the *size* parameter is irrelevant as an output dire
 
 ### Remarks
 
-- If dialog is cancelled, the execution will stop.
+- If the window is closed (ie: if dialog is cancelled), the execution will stop.
 - Command line arguments defining a parameter must start with the character - to be recognized as so.
