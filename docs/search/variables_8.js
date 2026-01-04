@@ -16,6 +16,7 @@ var searchData=
   ['layout_5fitems_13',['layout_items',['../class_glv_map_widget__base.html#a823b414f33637c74601a49dcd18555da',1,'GlvMapWidget_base::layout_items()'],['../class_glv_vector_widget__base.html#af815cfd48c33ebccc59a4d312b1d044c',1,'GlvVectorWidget_base::layout_items()']]],
   ['layout_5ftype_14',['layout_type',['../class_glv_parameters_widget__base.html#a2c11f70ec80ea40caa02d46218b1ac5b',1,'GlvParametersWidget_base']]],
   ['left_15',['left',['../class_slv_sides2d.html#a4b5b2cf92a8fc00ab68db5d67772cd78',1,'SlvSides2d']]],
-  ['list_5flayout_16',['list_layout',['../class_glv_list_dialog__base.html#ab6ab4fcfcabf049374128cf6facfb86f',1,'GlvListDialog_base']]],
-  ['list_5fname_5fwidget_17',['list_name_widget',['../class_glv_list_dialog__base.html#af98d31340b741826d09c5acd5796d5ae',1,'GlvListDialog_base']]]
+  ['license_16',['license',['../struct_glv_app_1_1_component_license.html#a23977261432f117d6bb9facdefdc8da8',1,'GlvApp::ComponentLicense']]],
+  ['list_5flayout_17',['list_layout',['../class_glv_list_dialog__base.html#ab6ab4fcfcabf049374128cf6facfb86f',1,'GlvListDialog_base']]],
+  ['list_5fname_5fwidget_18',['list_name_widget',['../class_glv_list_dialog__base.html#af98d31340b741826d09c5acd5796d5ae',1,'GlvListDialog_base']]]
 ];

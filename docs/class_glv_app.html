@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.12</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.8.0</span>
    </div>
   </td>
  </tr>
@@ -78,10 +78,14 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="_glv_c_l_i_8h_source.html">GlvCLI.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="_glv_app_8h_source.html">GlvApp.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_glv_app_1_1_component_license.html">ComponentLicense</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app_1_1_recurrent_clearer__base.html">RecurrentClearer_base</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app_1_1_recurrent_wrapper.html">RecurrentWrapper</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -89,21 +93,83 @@ Classes</h2></td></tr>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aa87725753f89351f8cec980802ebf0a3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#aa87725753f89351f8cec980802ebf0a3">glvm_staticVariableGetSet</a> (std::string, title, &quot;&quot;)</td></tr>
 <tr class="separator:aa87725753f89351f8cec980802ebf0a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad566a1d3321c32b4f277ce7db20264e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#aad566a1d3321c32b4f277ce7db20264e">glvm_staticVariableGetSet</a> (std::string, about, &quot;&quot;)</td></tr>
+<tr class="separator:aad566a1d3321c32b4f277ce7db20264e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1af431a693915fbfe08ac75e6a3bd34"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#aa1af431a693915fbfe08ac75e6a3bd34">glvm_staticVariableGetSet_bool</a> (helper, false)</td></tr>
+<tr class="separator:aa1af431a693915fbfe08ac75e6a3bd34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a367d04d6b09361aeaf6b99b4452b8a83"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#a367d04d6b09361aeaf6b99b4452b8a83">glvm_staticVariable_def</a> (, std::vector&lt; <a class="el" href="struct_glv_app_1_1_component_license.html">ComponentLicense</a> &gt;, component_licenses)</td></tr>
+<tr class="separator:a367d04d6b09361aeaf6b99b4452b8a83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f4bd83a6129feaedb1dd2b4b2b85e81"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#a7f4bd83a6129feaedb1dd2b4b2b85e81">glvm_staticVariable_def</a> (, std::string, autosave_file_name)</td></tr>
+<tr class="separator:a7f4bd83a6129feaedb1dd2b4b2b85e81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa2b9a9cddbe9760117e7183aea653a7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#aaa2b9a9cddbe9760117e7183aea653a7">glvm_staticVariable_def</a> (, <a class="el" href="class_glv_app_1_1_recurrent_clearer__base.html">RecurrentClearer_base</a> *, recurrent_clearer)</td></tr>
+<tr class="separator:aaa2b9a9cddbe9760117e7183aea653a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a9f4f830898c47249af9383e8182cb04c"><td class="memTemplParams" colspan="2">template&lt;class Tparametrization , class Trecurrent &gt; </td></tr>
-<tr class="memitem:a9f4f830898c47249af9383e8182cb04c"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_glv_app.html#a9f4f830898c47249af9383e8182cb04c">main</a> (int _argc, char *_argv[], bool _l_auto_glove, bool _l_threaded, bool _l_recurrent, Trecurrent &amp;_recurrent)</td></tr>
-<tr class="separator:a9f4f830898c47249af9383e8182cb04c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63cc727aa1f22c4eabeb831c7ec2db2b"><td class="memTemplParams" colspan="2">template&lt;class Tparametrization , class Trecurrent &gt; </td></tr>
-<tr class="memitem:a63cc727aa1f22c4eabeb831c7ec2db2b"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_glv_app.html#a63cc727aa1f22c4eabeb831c7ec2db2b">main_recurrent</a> (int _argc, char *_argv[], bool _l_threaded, Interface &amp;_interface, bool _l_recurrent, Trecurrent &amp;_recurrent)</td></tr>
-<tr class="separator:a63cc727aa1f22c4eabeb831c7ec2db2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12d21ba8187f27c61d7acf3eeb7b8f57"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#a12d21ba8187f27c61d7acf3eeb7b8f57">add_component_license</a> (std::string _component_name, std::string _license, std::string _component_text, std::string _component_url)</td></tr>
+<tr class="separator:a12d21ba8187f27c61d7acf3eeb7b8f57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28602395d6fa6bf0bebec5ff30280435"><td class="memTemplParams" colspan="2">template&lt;class Tparametrization , class Trecurrent &gt; </td></tr>
+<tr class="memitem:a28602395d6fa6bf0bebec5ff30280435"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_glv_app.html#a28602395d6fa6bf0bebec5ff30280435">main</a> (int _argc, char *_argv[], bool _l_auto_glove, bool _l_main_menu, bool _l_threaded, bool _l_recurrent, Trecurrent &amp;_recurrent)</td></tr>
+<tr class="separator:a28602395d6fa6bf0bebec5ff30280435"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82caaf65c682b80a5aa1e80c13f7dc42"><td class="memTemplParams" colspan="2">template&lt;class Tparametrization , class Trecurrent &gt; </td></tr>
+<tr class="memitem:a82caaf65c682b80a5aa1e80c13f7dc42"><td class="memTemplItemLeft" align="right" valign="top">static int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_glv_app.html#a82caaf65c682b80a5aa1e80c13f7dc42">main_recurrent</a> (int _argc, char *_argv[], bool _l_main_menu, bool _l_threaded, Interface &amp;_interface, bool _l_recurrent, Trecurrent &amp;_recurrent)</td></tr>
+<tr class="separator:a82caaf65c682b80a5aa1e80c13f7dc42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac20e019b8a2e3ad55c8eadcef4a47a43"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_slv_progression_qt.html">SlvProgressionQt</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#ac20e019b8a2e3ad55c8eadcef4a47a43">get_progression</a> (const <a class="el" href="namespaceslv_1_1lbl.html#ab51033eb34a2e588bc7b9fa5f48e950d">slv::lbl::Name</a> &amp;_name)</td></tr>
 <tr class="separator:ac20e019b8a2e3ad55c8eadcef4a47a43"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0d5be9b17ff7337dc08c22baba70ed8"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_glv_app.html#ac0d5be9b17ff7337dc08c22baba70ed8">show</a> (const <a class="el" href="class_slv_status.html">SlvStatus</a> &amp;_status, bool _l_wait=true)</td></tr>
 <tr class="separator:ac0d5be9b17ff7337dc08c22baba70ed8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Class managing the transformation of a CLI application to CLI-GUI application. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a12d21ba8187f27c61d7acf3eeb7b8f57" name="a12d21ba8187f27c61d7acf3eeb7b8f57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12d21ba8187f27c61d7acf3eeb7b8f57">&#9670;&#160;</a></span>add_component_license()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GlvApp::add_component_license </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>_component_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>_license</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>_component_text</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>_component_url</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ac20e019b8a2e3ad55c8eadcef4a47a43" name="ac20e019b8a2e3ad55c8eadcef4a47a43"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac20e019b8a2e3ad55c8eadcef4a47a43">&#9670;&#160;</a></span>get_progression()</h2>
 
@@ -130,8 +196,126 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="aaa2b9a9cddbe9760117e7183aea653a7" name="aaa2b9a9cddbe9760117e7183aea653a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa2b9a9cddbe9760117e7183aea653a7">&#9670;&#160;</a></span>glvm_staticVariable_def() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">GlvApp::glvm_staticVariable_def </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_glv_app_1_1_recurrent_clearer__base.html">RecurrentClearer_base</a> *&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">recurrent_clearer&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7f4bd83a6129feaedb1dd2b4b2b85e81" name="a7f4bd83a6129feaedb1dd2b4b2b85e81"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f4bd83a6129feaedb1dd2b4b2b85e81">&#9670;&#160;</a></span>glvm_staticVariable_def() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">GlvApp::glvm_staticVariable_def </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">autosave_file_name&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a367d04d6b09361aeaf6b99b4452b8a83" name="a367d04d6b09361aeaf6b99b4452b8a83"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a367d04d6b09361aeaf6b99b4452b8a83">&#9670;&#160;</a></span>glvm_staticVariable_def() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">GlvApp::glvm_staticVariable_def </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="struct_glv_app_1_1_component_license.html">ComponentLicense</a> &gt;&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">component_licenses&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aad566a1d3321c32b4f277ce7db20264e" name="aad566a1d3321c32b4f277ce7db20264e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad566a1d3321c32b4f277ce7db20264e">&#9670;&#160;</a></span>glvm_staticVariableGetSet() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">GlvApp::glvm_staticVariableGetSet </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">about&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&quot;&quot;&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="aa87725753f89351f8cec980802ebf0a3" name="aa87725753f89351f8cec980802ebf0a3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa87725753f89351f8cec980802ebf0a3">&#9670;&#160;</a></span>glvm_staticVariableGetSet()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa87725753f89351f8cec980802ebf0a3">&#9670;&#160;</a></span>glvm_staticVariableGetSet() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -164,8 +348,36 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a9f4f830898c47249af9383e8182cb04c" name="a9f4f830898c47249af9383e8182cb04c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f4f830898c47249af9383e8182cb04c">&#9670;&#160;</a></span>main()</h2>
+<a id="aa1af431a693915fbfe08ac75e6a3bd34" name="aa1af431a693915fbfe08ac75e6a3bd34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1af431a693915fbfe08ac75e6a3bd34">&#9670;&#160;</a></span>glvm_staticVariableGetSet_bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">GlvApp::glvm_staticVariableGetSet_bool </td>
+          <td>(</td>
+          <td class="paramtype">helper&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">false&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a28602395d6fa6bf0bebec5ff30280435" name="a28602395d6fa6bf0bebec5ff30280435"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28602395d6fa6bf0bebec5ff30280435">&#9670;&#160;</a></span>main()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -192,6 +404,12 @@ template&lt;class Tparametrization , class Trecurrent &gt; </div>
           <td></td>
           <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>_l_auto_glove</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_main_menu</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -226,8 +444,8 @@ template&lt;class Tparametrization , class Trecurrent &gt; </div>
 
 </div>
 </div>
-<a id="a63cc727aa1f22c4eabeb831c7ec2db2b" name="a63cc727aa1f22c4eabeb831c7ec2db2b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a63cc727aa1f22c4eabeb831c7ec2db2b">&#9670;&#160;</a></span>main_recurrent()</h2>
+<a id="a82caaf65c682b80a5aa1e80c13f7dc42" name="a82caaf65c682b80a5aa1e80c13f7dc42"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82caaf65c682b80a5aa1e80c13f7dc42">&#9670;&#160;</a></span>main_recurrent()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -248,6 +466,12 @@ template&lt;class Tparametrization , class Trecurrent &gt; </div>
           <td></td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>_argv</em>[], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>_l_main_menu</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -327,8 +551,8 @@ template&lt;class Tparametrization , class Trecurrent &gt; </div>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li><a class="el" href="_glv_c_l_i_8h_source.html">GlvCLI.h</a></li>
-<li><a class="el" href="_glv_c_l_i_8cpp.html">GlvCLI.cpp</a></li>
+<li><a class="el" href="_glv_app_8h_source.html">GlvApp.h</a></li>
+<li><a class="el" href="_glv_app_8cpp.html">GlvApp.cpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

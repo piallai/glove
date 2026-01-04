@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.7.12</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.8.0</span>
    </div>
   </td>
  </tr>
@@ -78,7 +78,7 @@ $(function() {
 <div class="contents">
 <a href="_slv_c_l_i_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/*</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment">* This file is part of the Glove distribution (https://github.com/piallai/glove).</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">* Copyright (C) 2024 - 2025 Pierre Allain.</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">* Copyright (C) 2024 - 2026 Pierre Allain.</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment">*</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment">* This program is free software: you can redistribute it and/or modify</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment">* it under the terms of the GNU General Public License as published by</span></div>
@@ -214,25 +214,32 @@ $(function() {
 <div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span> </div>
 <div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>    std::string CLI_line;</div>
 <div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span> </div>
-<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>    std::pair&lt; std::vector&lt; std::pair&lt;std::string, std::string&gt; &gt;, std::vector&lt; std::pair&lt;std::string, bool&gt; &gt; &gt; serialization = _parametrization.get_string_serialization_bool();</div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>    std::pair&lt; std::vector&lt; std::pair&lt;std::string, std::string&gt; &gt;, std::vector&lt; std::pair&lt;std::string, bool&gt; &gt; &gt; serialization;</div>
 <div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span> </div>
-<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>    <span class="keywordflow">if</span> (_l_CLI_mode) {</div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>        serialization = _parametrization.get_string_serialization_bool();</div>
-<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>        serialization.first = _parametrization.get_string_serialization();</div>
-<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>    }</div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span> </div>
-<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>    std::pair&lt;int, char**&gt; cli_arguments = <a class="code hl_function" href="struct_slv_c_l_i.html#a58d45a7c255f60b20468e2998bf115f3">SlvCLI::get_arguments</a>(serialization.first, serialization.second, <span class="keyword">false</span>);</div>
-<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span> </div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 1; i &lt; cli_arguments.first; i++) {</div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>        CLI_line += cli_arguments.second[i];</div>
-<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>        <span class="keywordflow">if</span> (i &lt; cli_arguments.first - 1) {</div>
-<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>            CLI_line += <span class="stringliteral">&quot; &quot;</span>;</div>
-<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>        }</div>
-<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>    }</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>    std::vector&lt;std::string&gt; solo_arguments;</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>    <span class="keywordflow">if</span> (_l_CLI_mode) {</div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>        serialization = _parametrization.get_string_serialization_bool();</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>        <span class="keywordflow">for</span> (<span class="keyword">auto</span> it = serialization.second.begin(); it != serialization.second.end(); ++it) {</div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>            <span class="keywordflow">if</span> (it-&gt;second) {</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>                solo_arguments.push_back(it-&gt;first);</div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>            }</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>        }</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>        serialization.first = _parametrization.get_string_serialization();</div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>        <span class="comment">// ignores serialization.second and solo_arguments</span></div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>    }</div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span> </div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>    std::pair&lt;int, char**&gt; cli_arguments = <a class="code hl_function" href="struct_slv_c_l_i.html#a58d45a7c255f60b20468e2998bf115f3">SlvCLI::get_arguments</a>(serialization.first, solo_arguments, <span class="keyword">false</span>);</div>
 <div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span> </div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>    <span class="keywordflow">return</span> CLI_line;</div>
-<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>}</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 1; i &lt; cli_arguments.first; i++) {</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>        CLI_line += cli_arguments.second[i];</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>        <span class="keywordflow">if</span> (i &lt; cli_arguments.first - 1) {</div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>            CLI_line += <span class="stringliteral">&quot; &quot;</span>;</div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>        }</div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>    }</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span> </div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>    <span class="keywordflow">return</span> CLI_line;</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>}</div>
 <div class="ttc" id="a_slv_status_8h_html"><div class="ttname"><a href="_slv_status_8h.html">SlvStatus.h</a></div></div>
 <div class="ttc" id="aclass_slv_status_html"><div class="ttname"><a href="class_slv_status.html">SlvStatus</a></div><div class="ttdef"><b>Definition:</b> SlvStatus.h:31</div></div>
 <div class="ttc" id="aclass_slv_status_html_a02fac697652fce6ab407b149f806a05ca7b83d3f08fa392b79e3f553b585971cd"><div class="ttname"><a href="class_slv_status.html#a02fac697652fce6ab407b149f806a05ca7b83d3f08fa392b79e3f553b585971cd">SlvStatus::statusType::warning</a></div><div class="ttdeci">@ warning</div></div>
