@@ -52,7 +52,7 @@ To set the application as 'classical' interface with a menu bar. Default is <cod
 
 #### <code>GLOVE_APP_MENU_HELP</code>
 
-To add an helper (result of -h or --help) to the application. Default is <code>false</code>.
+To add an helper (result of -h or --help) to the application. Default is <code>false</code>. Caution: not compatible with a program using <code>std::exit</code> to terminate the program after displaying the helper.
 
 #### <code>GLOVE_APP_MENU_ABOUT</code>
 

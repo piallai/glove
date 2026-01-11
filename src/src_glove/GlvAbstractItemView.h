@@ -42,10 +42,16 @@ private:
 
     //mini_offset is used if table_view is itself a delegate. Needed for some reason, otherwise unnecessary scrollbars can appear
     //Tweak parameters. Best case would be not to need them (ie = 0)
-    glvm_staticVariable(const, int, mini_offset_x, 2);
-    glvm_staticVariable(const, int, mini_offset_y, 2);
-    glvm_staticVariable(const, int, mini_offset_with_delegate_x, 2);
-    glvm_staticVariable(const, int, mini_offset_with_delegate_y, 2);
+#if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
+#define OFFSET_TWEAK 2
+#else
+#define OFFSET_TWEAK 4
+#endif
+    glvm_staticVariable(const, int, mini_offset_x, OFFSET_TWEAK);
+    glvm_staticVariable(const, int, mini_offset_y, OFFSET_TWEAK);
+    glvm_staticVariable(const, int, mini_offset_with_delegate_x, OFFSET_TWEAK);
+    glvm_staticVariable(const, int, mini_offset_with_delegate_y, OFFSET_TWEAK);
+#undef OFFSET_TWEAK
 
 public:
 
