@@ -10,7 +10,7 @@ var indexSectionsWithContent =
   7: "filrs",
   8: "acegimorvw",
   9: "gos",
-  10: "_abcdegimpstv"
+  10: "_abcdegimopstv"
 };
 
 var indexSectionNames =

@@ -179,6 +179,7 @@ var menudata={children:[
 {text:"g",url:"globals_defs_g.html#index_g"},
 {text:"i",url:"globals_defs_i.html#index_i"},
 {text:"m",url:"globals_defs_m.html#index_m"},
+{text:"o",url:"globals_defs_o.html#index_o"},
 {text:"p",url:"globals_defs_p.html#index_p"},
 {text:"s",url:"globals_defs_s.html#index_s"},
 {text:"t",url:"globals_defs_t.html#index_t"},
