@@ -35,6 +35,11 @@ protected:
 
 	bool is_param_init_auto() const;
 
+public :
+
+	/*! Option : Whether to serialize both the parameter name and its alias (if it exists).*/
+	glvm_staticVariable(const, bool, l_serialize_alias, false);
+
 public:
 
 	/*! Set parameter value using >> operator.*/

@@ -174,7 +174,7 @@ public:
 	template <class Tparametrization, class Trecurrent>
 	static int main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_main_menu, bool _l_threaded, bool _l_recurrent, Trecurrent& _recurrent);
 	template <class Tparametrization, class Trecurrent>
-	static int main_recurrent(int _argc, char* _argv[], bool _l_main_menu, bool _l_threaded, Interface& _interface, bool _l_recurrent, Trecurrent& _recurrent);
+	static int main_recurrent(int _argc, char* _argv[], bool _l_main_menu, bool _l_threaded, Interface& _interface_, bool _l_recurrent, Trecurrent& _recurrent);
 
 	glvm_staticVariable_def(, std::string, autosave_file_name);
 	glvm_staticVariable_def(, RecurrentClearer_base*, recurrent_clearer);
@@ -197,7 +197,7 @@ private:
 	glvm_staticVariable(, SlvStatus, status, {});
 	glvm_staticVariable(, GlvProgressMgr*, progress_mgr, NULL);
 	glvm_staticVariable(, GlvStatusMgr*, status_mgr, NULL);
-	glvm_staticVariable(, Interface, interface, );
+	glvm_staticVariable(, Interface, interface_, );
 	glvm_staticVariable_def(, GlvAppObject*, app_object);
 
 public :
@@ -248,7 +248,7 @@ private:
 	int argc;
 	char** argv;
 	Trecurrent* recurrent_var;
-	Interface* interface = NULL;
+	Interface* interface_ = NULL;
 	bool l_main_menu = false;
 
 public:
@@ -261,8 +261,8 @@ public:
 		recurrent_var = _recurrent_var;
 	}
 
-	void set_interface(Interface* _interface) {
-		interface = _interface;
+	void set_interface(Interface* _interface_) {
+		interface_ = _interface_;
 	}
 
 	void set_main_menu(bool _l_main_menu) {
@@ -272,7 +272,7 @@ public:
 	void relaunch() {
 		bool l_threaded = true;
 		bool l_recurrent = true;
-		GlvApp::main_recurrent<Tparametrization, Trecurrent>(argc, argv, l_main_menu, l_threaded, *interface, l_recurrent, *recurrent_var);
+		GlvApp::main_recurrent<Tparametrization, Trecurrent>(argc, argv, l_main_menu, l_threaded, *interface_, l_recurrent, *recurrent_var);
 	}
 
 };
@@ -318,7 +318,7 @@ std::string GlvApp::get_autosave_file_name() {
 }
 
 template <class Tparametrization, class Trecurrent>
-int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_main_menu, bool _l_threaded, Interface& _interface, bool _l_recurrent, Trecurrent& _recurrent_var) {
+int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_main_menu, bool _l_threaded, Interface& _interface_, bool _l_recurrent, Trecurrent& _recurrent_var) {
 
 	if (progress_mgr()) {
 		progress_mgr()->hide();
@@ -394,15 +394,15 @@ int GlvApp::main_recurrent(int _argc, char* _argv[], bool _l_main_menu, bool _l_
 		if (_l_threaded) {
 
 			if (_l_recurrent) {
-				dynamic_cast<RecurrentWrapperT<Tparametrization, Trecurrent>*>(_interface.recurrent_wrapper)->set(cli_arguments.first, cli_arguments.second, &_recurrent_var);
+				dynamic_cast<RecurrentWrapperT<Tparametrization, Trecurrent>*>(_interface_.recurrent_wrapper)->set(cli_arguments.first, cli_arguments.second, &_recurrent_var);
 			}
 
 #if QT_VERSION_MAJOR < 6
-			_interface.future = QtConcurrent::run(std::bind(&glv_cli_main<Tparametrization, Trecurrent>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization(), _l_recurrent, std::ref(_recurrent_var)));
+			_interface_.future = QtConcurrent::run(std::bind(&glv_cli_main<Tparametrization, Trecurrent>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization(), _l_recurrent, std::ref(_recurrent_var)));
 #else
-			_interface.future = QtConcurrent::run(&glv_cli_main<Tparametrization, Trecurrent>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization(), _l_recurrent, std::ref(_recurrent_var));
+			_interface_.future = QtConcurrent::run(&glv_cli_main<Tparametrization, Trecurrent>, cli_arguments.first, cli_arguments.second, true, dialog.get_parametrization(), _l_recurrent, std::ref(_recurrent_var));
 #endif
-			_interface.future_watcher.setFuture(_interface.future);
+			_interface_.future_watcher.setFuture(_interface_.future);
 
 			if (progress_mgr()) {
 				progress_mgr()->show();
@@ -458,13 +458,13 @@ int GlvApp::main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_main_menu
 			}
 
 			if (!_l_recurrent) {
-				QObject::connect(&interface().future_watcher, &QFutureWatcher<int>::finished, &q_app, &QCoreApplication::quit, Qt::QueuedConnection);
+				QObject::connect(&interface_().future_watcher, &QFutureWatcher<int>::finished, &q_app, &QCoreApplication::quit, Qt::QueuedConnection);
 			} else {
 				RecurrentWrapperT<Tparametrization, Trecurrent>* recurrent_wrapper = new RecurrentWrapperT<Tparametrization, Trecurrent>;
-				recurrent_wrapper->set_interface(&interface());
+				recurrent_wrapper->set_interface(&interface_());
 				recurrent_wrapper->set_main_menu(_l_main_menu);
-				interface().recurrent_wrapper = recurrent_wrapper;
-				QObject::connect(&interface().future_watcher, SIGNAL(finished()), interface().recurrent_wrapper, SLOT(relaunch()));
+				interface_().recurrent_wrapper = recurrent_wrapper;
+				QObject::connect(&interface_().future_watcher, SIGNAL(finished()), interface_().recurrent_wrapper, SLOT(relaunch()));
 			}
 
 		}
@@ -484,7 +484,7 @@ int GlvApp::main(int _argc, char* _argv[], bool _l_auto_glove, bool _l_main_menu
 			app_object()->set_about(about());
 		}
 
-		int exit = main_recurrent<Tparametrization>(_argc, _argv, _l_main_menu, _l_threaded, interface(), _l_recurrent, _recurrent_var);
+		int exit = main_recurrent<Tparametrization>(_argc, _argv, _l_main_menu, _l_threaded, interface_(), _l_recurrent, _recurrent_var);
 
 		if (!exit && _l_threaded) {
 

@@ -141,7 +141,7 @@ struct SlvParameterSpec {
     static std::vector< std::pair<std::string, std::string> > get_string_serialization(const SlvParameter<Tparam>& _parameter) {
         std::vector< std::pair<std::string, std::string> > serialization;
         serialization.push_back({ _parameter.get_name(), slv::string::to_string(_parameter.get_value()) });
-        if (!_parameter.get_alias().empty()) {
+        if (!_parameter.get_alias().empty() && SlvParameter_base::l_serialize_alias()) {
             serialization.push_back({ _parameter.get_alias(), slv::string::to_string(_parameter.get_value()) });
         }
         return serialization;

@@ -58,7 +58,7 @@ std::string SlvFileMgr::get_file_name_str(const std::string& _path, bool _l_exte
 
     std::string file_name;
 
-    size_t position = _path.find_last_of('/');
+    size_t position = _path.find_last_of("/\\");
 
     if (position != std::string::npos) {
         position++;

@@ -117,13 +117,18 @@ void GlvProgression::start(int _maximum_abs) {
 
     QProgressDialog::setLabelText(glv::toQString(text));
 
+    if (_maximum_abs > 0) {
+        setMaximum(100);
+    } else {
+        setMaximum(0);
+    }
+
     if (progression->has_iterator_ptr() || progression->is_iterating()) {
         cancel_button->setEnabled(true);
         setMaximum(100);
         connect(this, SIGNAL(canceled()), this, SLOT(cancel()), Qt::ConnectionType::UniqueConnection);
     } else {
         cancel_button->hide();
-        setMaximum(0);
         findChild<QProgressBar*>()->setTextVisible(false);
         disconnect(this, SIGNAL(canceled()), this, SLOT(cancel()));
     }
