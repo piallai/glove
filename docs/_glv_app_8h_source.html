@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Glove<span id="projectnumber">&#160;0.8.1</span>
+   <div id="projectname">Glove<span id="projectnumber">&#160;0.8.2</span>
    </div>
   </td>
  </tr>
@@ -239,7 +239,7 @@ $(function() {
 <div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>    <span class="keyword">template</span> &lt;<span class="keyword">class</span> Tparametrization, <span class="keyword">class</span> Trecurrent&gt;</div>
 <div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> main(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>* _argv[], <span class="keywordtype">bool</span> _l_auto_glove, <span class="keywordtype">bool</span> _l_main_menu, <span class="keywordtype">bool</span> _l_threaded, <span class="keywordtype">bool</span> _l_recurrent, Trecurrent&amp; _recurrent);</div>
 <div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>    <span class="keyword">template</span> &lt;<span class="keyword">class</span> Tparametrization, <span class="keyword">class</span> Trecurrent&gt;</div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> main_recurrent(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>* _argv[], <span class="keywordtype">bool</span> _l_main_menu, <span class="keywordtype">bool</span> _l_threaded, Interface&amp; _interface, <span class="keywordtype">bool</span> _l_recurrent, Trecurrent&amp; _recurrent);</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>    <span class="keyword">static</span> <span class="keywordtype">int</span> main_recurrent(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>* _argv[], <span class="keywordtype">bool</span> _l_main_menu, <span class="keywordtype">bool</span> _l_threaded, Interface&amp; _interface_, <span class="keywordtype">bool</span> _l_recurrent, Trecurrent&amp; _recurrent);</div>
 <div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span> </div>
 <div class="line"><a id="l00179" name="l00179"></a><span class="lineno"><a class="line" href="class_glv_app.html#a7f4bd83a6129feaedb1dd2b4b2b85e81">  179</a></span>    <a class="code hl_function" href="class_glv_app.html#a7f4bd83a6129feaedb1dd2b4b2b85e81">glvm_staticVariable_def</a>(, std::string, autosave_file_name);</div>
 <div class="line"><a id="l00180" name="l00180"></a><span class="lineno"><a class="line" href="class_glv_app.html#aaa2b9a9cddbe9760117e7183aea653a7">  180</a></span>    <a class="code hl_function" href="class_glv_app.html#aaa2b9a9cddbe9760117e7183aea653a7">glvm_staticVariable_def</a>(, <a class="code hl_class" href="class_glv_app_1_1_recurrent_clearer__base.html">RecurrentClearer_base</a>*, recurrent_clearer);</div>
@@ -260,7 +260,7 @@ $(function() {
 <div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    <a class="code hl_define" href="_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe">glvm_staticVariable</a>(, <a class="code hl_class" href="class_slv_status.html">SlvStatus</a>, status, {});</div>
 <div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    <a class="code hl_define" href="_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe">glvm_staticVariable</a>(, <a class="code hl_class" href="class_glv_progress_mgr.html">GlvProgressMgr</a>*, progress_mgr, NULL);</div>
 <div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>    <a class="code hl_define" href="_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe">glvm_staticVariable</a>(, <a class="code hl_class" href="class_glv_status_mgr.html">GlvStatusMgr</a>*, status_mgr, NULL);</div>
-<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    <a class="code hl_define" href="_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe">glvm_staticVariable</a>(, Interface, interface, );</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    <a class="code hl_define" href="_slv_macros_declarations_8h.html#a89e76f8e2c844e5a4f1c23f4c9db8dbe">glvm_staticVariable</a>(, Interface, interface_, );</div>
 <div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    <a class="code hl_define" href="_slv_macros_declarations_8h.html#ae56d7e29680c0b5099d2b2b6ead47b44">glvm_staticVariable_def</a>(, <a class="code hl_class" href="class_glv_app_object.html">GlvAppObject</a>*, app_object);</div>
 <div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span> </div>
 <div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>public :</div>
@@ -308,7 +308,7 @@ $(function() {
 <div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>    <span class="keywordtype">int</span> argc;</div>
 <div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>    <span class="keywordtype">char</span>** argv;</div>
 <div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>    Trecurrent* recurrent_var;</div>
-<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>    Interface* <span class="keyword">interface </span>= NULL;</div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>    Interface* interface_ = NULL;</div>
 <div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>    <span class="keywordtype">bool</span> l_main_menu = <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span> </div>
 <div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span><span class="keyword">public</span>:</div>
@@ -321,8 +321,8 @@ $(function() {
 <div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>        recurrent_var = _recurrent_var;</div>
 <div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>    }</div>
 <div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span> </div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>    <span class="keywordtype">void</span> set_interface(Interface* _interface) {</div>
-<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>        <span class="keyword">interface </span>= _interface;</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>    <span class="keywordtype">void</span> set_interface(Interface* _interface_) {</div>
+<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>        interface_ = _interface_;</div>
 <div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>    }</div>
 <div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span> </div>
 <div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>    <span class="keywordtype">void</span> set_main_menu(<span class="keywordtype">bool</span> _l_main_menu) {</div>
@@ -332,7 +332,7 @@ $(function() {
 <div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_glv_app_1_1_recurrent_wrapper.html#a6721a6ae4ea26c997f55c9392fba073d">relaunch</a>() {</div>
 <div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>        <span class="keywordtype">bool</span> l_threaded = <span class="keyword">true</span>;</div>
 <div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>        <span class="keywordtype">bool</span> l_recurrent = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>        GlvApp::main_recurrent&lt;Tparametrization, Trecurrent&gt;(argc, argv, l_main_menu, l_threaded, *interface, l_recurrent, *recurrent_var);</div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>        GlvApp::main_recurrent&lt;Tparametrization, Trecurrent&gt;(argc, argv, l_main_menu, l_threaded, *interface_, l_recurrent, *recurrent_var);</div>
 <div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>    }</div>
 <div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span> </div>
 <div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>};</div>
@@ -378,7 +378,7 @@ $(function() {
 <div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>}</div>
 <div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span> </div>
 <div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> Tparametrization, <span class="keyword">class</span> Trecurrent&gt;</div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno"><a class="line" href="class_glv_app.html#a82caaf65c682b80a5aa1e80c13f7dc42">  321</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="class_glv_app.html#a82caaf65c682b80a5aa1e80c13f7dc42">GlvApp::main_recurrent</a>(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>* _argv[], <span class="keywordtype">bool</span> _l_main_menu, <span class="keywordtype">bool</span> _l_threaded, Interface&amp; _interface, <span class="keywordtype">bool</span> _l_recurrent, Trecurrent&amp; _recurrent_var) {</div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno"><a class="line" href="class_glv_app.html#ab3a90f17d9443f7b6a947bd546b0daf1">  321</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="class_glv_app.html#ab3a90f17d9443f7b6a947bd546b0daf1">GlvApp::main_recurrent</a>(<span class="keywordtype">int</span> _argc, <span class="keywordtype">char</span>* _argv[], <span class="keywordtype">bool</span> _l_main_menu, <span class="keywordtype">bool</span> _l_threaded, Interface&amp; _interface_, <span class="keywordtype">bool</span> _l_recurrent, Trecurrent&amp; _recurrent_var) {</div>
 <div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span> </div>
 <div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>    <span class="keywordflow">if</span> (progress_mgr()) {</div>
 <div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>        progress_mgr()-&gt;hide();</div>
@@ -454,15 +454,15 @@ $(function() {
 <div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>        <span class="keywordflow">if</span> (_l_threaded) {</div>
 <div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span> </div>
 <div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>            <span class="keywordflow">if</span> (_l_recurrent) {</div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>                <span class="keyword">dynamic_cast&lt;</span>RecurrentWrapperT&lt;Tparametrization, Trecurrent&gt;*<span class="keyword">&gt;</span>(_interface.recurrent_wrapper)-&gt;set(cli_arguments.first, cli_arguments.second, &amp;_recurrent_var);</div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>                <span class="keyword">dynamic_cast&lt;</span>RecurrentWrapperT&lt;Tparametrization, Trecurrent&gt;*<span class="keyword">&gt;</span>(_interface_.recurrent_wrapper)-&gt;set(cli_arguments.first, cli_arguments.second, &amp;_recurrent_var);</div>
 <div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>            }</div>
 <div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span> </div>
 <div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span><span class="preprocessor">#if QT_VERSION_MAJOR &lt; 6</span></div>
-<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span>            _interface.future = QtConcurrent::run(std::bind(&amp;glv_cli_main&lt;Tparametrization, Trecurrent&gt;, cli_arguments.first, cli_arguments.second, <span class="keyword">true</span>, dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>(), _l_recurrent, std::ref(_recurrent_var)));</div>
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span>            _interface_.future = QtConcurrent::run(std::bind(&amp;glv_cli_main&lt;Tparametrization, Trecurrent&gt;, cli_arguments.first, cli_arguments.second, <span class="keyword">true</span>, dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>(), _l_recurrent, std::ref(_recurrent_var)));</div>
 <div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>            _interface.future = QtConcurrent::run(&amp;glv_cli_main&lt;Tparametrization, Trecurrent&gt;, cli_arguments.first, cli_arguments.second, <span class="keyword">true</span>, dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>(), _l_recurrent, std::ref(_recurrent_var));</div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>            _interface_.future = QtConcurrent::run(&amp;glv_cli_main&lt;Tparametrization, Trecurrent&gt;, cli_arguments.first, cli_arguments.second, <span class="keyword">true</span>, dialog.<a class="code hl_function" href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">get_parametrization</a>(), _l_recurrent, std::ref(_recurrent_var));</div>
 <div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>            _interface.future_watcher.setFuture(_interface.future);</div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>            _interface_.future_watcher.setFuture(_interface_.future);</div>
 <div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span> </div>
 <div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>            <span class="keywordflow">if</span> (progress_mgr()) {</div>
 <div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>                progress_mgr()-&gt;show();</div>
@@ -518,13 +518,13 @@ $(function() {
 <div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span>            }</div>
 <div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span> </div>
 <div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span>            <span class="keywordflow">if</span> (!_l_recurrent) {</div>
-<div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span>                QObject::connect(&amp;interface().future_watcher, &amp;QFutureWatcher&lt;int&gt;::finished, &amp;q_app, &amp;QCoreApplication::quit, Qt::QueuedConnection);</div>
+<div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span>                QObject::connect(&amp;interface_().future_watcher, &amp;QFutureWatcher&lt;int&gt;::finished, &amp;q_app, &amp;QCoreApplication::quit, Qt::QueuedConnection);</div>
 <div class="line"><a id="l00462" name="l00462"></a><span class="lineno">  462</span>            } <span class="keywordflow">else</span> {</div>
 <div class="line"><a id="l00463" name="l00463"></a><span class="lineno">  463</span>                RecurrentWrapperT&lt;Tparametrization, Trecurrent&gt;* recurrent_wrapper = <span class="keyword">new</span> RecurrentWrapperT&lt;Tparametrization, Trecurrent&gt;;</div>
-<div class="line"><a id="l00464" name="l00464"></a><span class="lineno">  464</span>                recurrent_wrapper-&gt;set_interface(&amp;interface());</div>
+<div class="line"><a id="l00464" name="l00464"></a><span class="lineno">  464</span>                recurrent_wrapper-&gt;set_interface(&amp;interface_());</div>
 <div class="line"><a id="l00465" name="l00465"></a><span class="lineno">  465</span>                recurrent_wrapper-&gt;set_main_menu(_l_main_menu);</div>
-<div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span>                interface().recurrent_wrapper = recurrent_wrapper;</div>
-<div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span>                QObject::connect(&amp;interface().future_watcher, SIGNAL(finished()), interface().recurrent_wrapper, SLOT(relaunch()));</div>
+<div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span>                interface_().recurrent_wrapper = recurrent_wrapper;</div>
+<div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span>                QObject::connect(&amp;interface_().future_watcher, SIGNAL(finished()), interface_().recurrent_wrapper, SLOT(relaunch()));</div>
 <div class="line"><a id="l00468" name="l00468"></a><span class="lineno">  468</span>            }</div>
 <div class="line"><a id="l00469" name="l00469"></a><span class="lineno">  469</span> </div>
 <div class="line"><a id="l00470" name="l00470"></a><span class="lineno">  470</span>        }</div>
@@ -544,7 +544,7 @@ $(function() {
 <div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span>            app_object()-&gt;set_about(about());</div>
 <div class="line"><a id="l00485" name="l00485"></a><span class="lineno">  485</span>        }</div>
 <div class="line"><a id="l00486" name="l00486"></a><span class="lineno">  486</span> </div>
-<div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span>        <span class="keywordtype">int</span> exit = main_recurrent&lt;Tparametrization&gt;(_argc, _argv, _l_main_menu, _l_threaded, interface(), _l_recurrent, _recurrent_var);</div>
+<div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span>        <span class="keywordtype">int</span> exit = main_recurrent&lt;Tparametrization&gt;(_argc, _argv, _l_main_menu, _l_threaded, interface_(), _l_recurrent, _recurrent_var);</div>
 <div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span> </div>
 <div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span>        <span class="keywordflow">if</span> (!exit &amp;&amp; _l_threaded) {</div>
 <div class="line"><a id="l00490" name="l00490"></a><span class="lineno">  490</span> </div>
@@ -627,11 +627,11 @@ $(function() {
 <div class="ttc" id="aclass_glv_app_html_a28602395d6fa6bf0bebec5ff30280435"><div class="ttname"><a href="class_glv_app.html#a28602395d6fa6bf0bebec5ff30280435">GlvApp::main</a></div><div class="ttdeci">static int main(int _argc, char *_argv[], bool _l_auto_glove, bool _l_main_menu, bool _l_threaded, bool _l_recurrent, Trecurrent &amp;_recurrent)</div><div class="ttdef"><b>Definition:</b> GlvApp.h:431</div></div>
 <div class="ttc" id="aclass_glv_app_html_a367d04d6b09361aeaf6b99b4452b8a83"><div class="ttname"><a href="class_glv_app.html#a367d04d6b09361aeaf6b99b4452b8a83">GlvApp::glvm_staticVariable_def</a></div><div class="ttdeci">glvm_staticVariable_def(, std::vector&lt; ComponentLicense &gt;, component_licenses)</div></div>
 <div class="ttc" id="aclass_glv_app_html_a7f4bd83a6129feaedb1dd2b4b2b85e81"><div class="ttname"><a href="class_glv_app.html#a7f4bd83a6129feaedb1dd2b4b2b85e81">GlvApp::glvm_staticVariable_def</a></div><div class="ttdeci">glvm_staticVariable_def(, std::string, autosave_file_name)</div></div>
-<div class="ttc" id="aclass_glv_app_html_a82caaf65c682b80a5aa1e80c13f7dc42"><div class="ttname"><a href="class_glv_app.html#a82caaf65c682b80a5aa1e80c13f7dc42">GlvApp::main_recurrent</a></div><div class="ttdeci">static int main_recurrent(int _argc, char *_argv[], bool _l_main_menu, bool _l_threaded, Interface &amp;_interface, bool _l_recurrent, Trecurrent &amp;_recurrent)</div><div class="ttdef"><b>Definition:</b> GlvApp.h:321</div></div>
 <div class="ttc" id="aclass_glv_app_html_aa1af431a693915fbfe08ac75e6a3bd34"><div class="ttname"><a href="class_glv_app.html#aa1af431a693915fbfe08ac75e6a3bd34">GlvApp::glvm_staticVariableGetSet_bool</a></div><div class="ttdeci">glvm_staticVariableGetSet_bool(helper, false)</div></div>
 <div class="ttc" id="aclass_glv_app_html_aa87725753f89351f8cec980802ebf0a3"><div class="ttname"><a href="class_glv_app.html#aa87725753f89351f8cec980802ebf0a3">GlvApp::glvm_staticVariableGetSet</a></div><div class="ttdeci">glvm_staticVariableGetSet(std::string, title, &quot;&quot;)</div></div>
 <div class="ttc" id="aclass_glv_app_html_aaa2b9a9cddbe9760117e7183aea653a7"><div class="ttname"><a href="class_glv_app.html#aaa2b9a9cddbe9760117e7183aea653a7">GlvApp::glvm_staticVariable_def</a></div><div class="ttdeci">glvm_staticVariable_def(, RecurrentClearer_base *, recurrent_clearer)</div></div>
 <div class="ttc" id="aclass_glv_app_html_aad566a1d3321c32b4f277ce7db20264e"><div class="ttname"><a href="class_glv_app.html#aad566a1d3321c32b4f277ce7db20264e">GlvApp::glvm_staticVariableGetSet</a></div><div class="ttdeci">glvm_staticVariableGetSet(std::string, about, &quot;&quot;)</div></div>
+<div class="ttc" id="aclass_glv_app_html_ab3a90f17d9443f7b6a947bd546b0daf1"><div class="ttname"><a href="class_glv_app.html#ab3a90f17d9443f7b6a947bd546b0daf1">GlvApp::main_recurrent</a></div><div class="ttdeci">static int main_recurrent(int _argc, char *_argv[], bool _l_main_menu, bool _l_threaded, Interface &amp;_interface_, bool _l_recurrent, Trecurrent &amp;_recurrent)</div><div class="ttdef"><b>Definition:</b> GlvApp.h:321</div></div>
 <div class="ttc" id="aclass_glv_app_object_html"><div class="ttname"><a href="class_glv_app_object.html">GlvAppObject</a></div><div class="ttdef"><b>Definition:</b> GlvAppObject.h:43</div></div>
 <div class="ttc" id="aclass_glv_parametrization_dialog_html"><div class="ttname"><a href="class_glv_parametrization_dialog.html">GlvParametrizationDialog</a></div><div class="ttdef"><b>Definition:</b> GlvParametrizationDialog.h:30</div></div>
 <div class="ttc" id="aclass_glv_parametrization_dialog_html_a93a202224dc3cae979e3578a54a03eb4"><div class="ttname"><a href="class_glv_parametrization_dialog.html#a93a202224dc3cae979e3578a54a03eb4">GlvParametrizationDialog::get_parametrization</a></div><div class="ttdeci">const Tparametrization &amp; get_parametrization() const</div><div class="ttdef"><b>Definition:</b> GlvParametrizationDialog.h:119</div></div>
